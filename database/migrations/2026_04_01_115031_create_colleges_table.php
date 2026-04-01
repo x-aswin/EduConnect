@@ -20,6 +20,7 @@ return new class extends Migration
 
             // Institutional Details
             $table->string('institution_name');
+            $table->string('photo')->nullable();
             $table->string('college_phone');
             $table->text('address');
             $table->string('website')->nullable();

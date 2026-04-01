@@ -18,6 +18,7 @@ return new class extends Migration
 
             // Personal Information
             $table->string('full_name');
+            $table->string('photo')->nullable();
             $table->string('phone');
             $table->date('dob');
             $table->string('gender');

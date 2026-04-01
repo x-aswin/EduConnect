@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('qualification');
             $table->string('expertise'); //"Mathematics", "Placement Training"
             $table->text('bio')->nullable();
-            $table->string('profile_photo')->nullable();
+            $table->string('photo')->nullable();
             $table->timestamps();
         });
     }

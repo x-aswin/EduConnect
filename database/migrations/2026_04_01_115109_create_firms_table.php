@@ -17,6 +17,7 @@ return new class extends Migration
         
             $table->string('org_name'); // "Victory Sports Club"
             $table->string('org_type'); // "NGO", "Church", "Corporate"
+            $table->string('photo')->nullable();
             
             // Point of Contact details
             $table->string('contact_person'); // The name of the person who will be the main contact for this firm
