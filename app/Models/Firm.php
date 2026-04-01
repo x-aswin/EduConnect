@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'user_id', 
     'org_name', 
     'org_type', 
+    'photo',
     'contact_person', 
     'designation', 
     'phone', 
