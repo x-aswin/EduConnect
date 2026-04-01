@@ -34,18 +34,53 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:student,college,firm,mentor'], // Validate the role
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'status' => 'active',
         ]);
+
+        if ($request->role === 'student') {
+        \App\Models\Student::create([
+            'user_id' => $user->id,
+            'full_name' => $request->name,
+        ]);
+        } elseif ($request->role === 'college') {
+            \App\Models\College::create([
+                'user_id' => $user->id,
+                'institution_name' => $request->name,
+            ]);
+        } elseif ($request->role === 'firm') {
+            \App\Models\Firm::create([
+                'user_id' => $user->id,
+                'org_name' => $request->name,
+            ]);
+        } elseif ($request->role === 'mentor') {
+            \App\Models\Mentor::create([
+                'user_id' => $user->id,
+            ]);
+        }
 
         event(new Registered($user));
 
         Auth::login($user);
 
+
+        if ($user->role === 'student') {
+            return redirect()->route('student.profile.edit');
+        } elseif ($user->role === 'college') {
+            return redirect()->route('college.profile.edit');
+        } elseif ($user->role === 'firm') {
+            return redirect()->route('firm.profile.edit');
+        } elseif ($user->role === 'mentor') {
+            return redirect()->route('mentor.profile.edit');
+        }else {
         return redirect(route('dashboard', absolute: false));
+        }
     }
 }

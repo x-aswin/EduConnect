@@ -19,15 +19,15 @@ return new class extends Migration
             // Personal Information
             $table->string('full_name');
             $table->string('photo')->nullable();
-            $table->string('phone');
-            $table->date('dob');
-            $table->string('gender');
+            $table->string('phone')->nullable();
+            $table->date('dob')->nullable();
+            $table->string('gender')->nullable();
 
             // Academic Background
             // "+2", "BCA"
-            $table->string('current_qualification');
+            $table->string('current_qualification')->nullable();
 
-            $table->text('address');
+            $table->text('address')->nullable();
         
             $table->timestamps();
         });
