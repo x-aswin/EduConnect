@@ -17,10 +17,10 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('student')->name('student.')->group(function () {
         // The page to show the form
-        Route::get('/profile-setup', [StudentProfileController::class, 'edit'])->name('profile.edit');
+        Route::get('/complete-profile', [StudentProfileController::class, 'edit'])->name('profile.edit');
         
         // The logic to handle the form submission
-        Route::patch('/profile-setup', [StudentProfileController::class, 'update'])->name('profile.update');
+        Route::patch('/complete-profile', [StudentProfileController::class, 'update'])->name('profile.update');
     });
 
 

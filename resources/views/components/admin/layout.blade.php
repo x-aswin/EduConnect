@@ -1,4 +1,4 @@
-<x-base-layout>
+<x-base.layout>
     <div class="d-flex">
         <div class="bg-dark text-white vh-100 p-3" style="width: 250px;">
             <h4>EduConnect</h4>
@@ -11,4 +11,4 @@
             {{ $slot }}
         </div>
     </div>
-</x-base-layout>
+</x-base.layout>

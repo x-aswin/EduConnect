@@ -48,7 +48,6 @@ class RegisteredUserController extends Controller
         if ($request->role === 'student') {
         \App\Models\Student::create([
             'user_id' => $user->id,
-            'full_name' => $request->name,
         ]);
         } elseif ($request->role === 'college') {
             \App\Models\College::create([
