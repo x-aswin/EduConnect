@@ -39,6 +39,7 @@ class StudentController extends Controller
         'name'     => 'required|string|max:255',
         'email'    => 'required|email|unique:users,email',
         'password' => 'required|string|min:8|confirmed',
+        'status'   => 'required|in:active,blocked',
         'phone'    => 'required|digits:10',
         'photo'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         'dob'      => 'required|date',
@@ -57,7 +58,7 @@ class StudentController extends Controller
             'email'    => $request->email,
             'password' => Hash::make($request->password),
             'role'     => 'student',
-            'status'   => 'active',
+            'status'   => $request->status,
         ]);
 
         // Handle Photo Upload if exists
@@ -120,6 +121,7 @@ class StudentController extends Controller
         $rules = [
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email,' . $student->user->id,
+            'status'   => 'required|in:active,blocked',
             'phone'    => 'required|digits:10',
             'photo'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'dob'      => 'required|date',
@@ -142,6 +144,7 @@ class StudentController extends Controller
             $student->user->update([
                 'name'  => $request->name,
                 'email' => $request->email,
+                'status' => $request->status,
             ]);
 
             // Update password only if provided

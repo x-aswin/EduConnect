@@ -13,7 +13,6 @@
         <i class="bi bi-plus-lg"></i> Add New Student
     </button>
 
-
     <div class="card mt-4 shadow-sm">
     <div class="card-header bg-white py-3">
         <h6 class="mb-0 fw-bold">Registered Students</h6>
@@ -28,6 +27,7 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Qualification</th>
+                        <th>Status</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -45,6 +45,15 @@
                         <td>{{ $student->user->email }}</td>
                         <td>{{ $student->phone }}</td>
                         <td><span class="badge bg-info text-dark">{{ $student->current_qualification }}</span></td>
+                        <td>
+                            @if($student->user->status == 'active')
+                                <span class="badge bg-success-subtle text-success border border-success">Active</span>
+                            @elseif($student->user->status == 'blocked')
+                                <span class="badge bg-danger-subtle text-danger border border-danger">blocked</span>
+                            @else
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary">Pending</span>
+                            @endif
+                        </td>
                         <td class="text-center">
                             <div class="btn-group shadow-sm gap-1">
                                 <a href="{{ route('admin.students.show', $student->id) }}">
@@ -104,9 +113,10 @@
                                         style="width: 120px; height: 120px; object-fit: cover;">
                                     @if($isView)
                                         <h4 class="mt-2">{{ $editStudent->user->name }}</h4>
-                                        <span class="badge bg-success">Active Student</span>
+                                        {{-- <span class="badge bg-success">Active Student</span> --}}
                                     @endif
                                 </div>
+                                
                             @endif
 
 
@@ -182,16 +192,26 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label">Current Qualification (e.g. +2, BCA)</label>
+                            <div class="col-md-4">
+                                <label class="form-label">Current Qualification</label>
                                 <input type="text" name="current_qualification" class="form-control @error('current_qualification') is-invalid @enderror" value="{{ old('current_qualification', $editStudent->current_qualification ?? '') }}" {{ $isView ? 'disabled' : '' }}>
                                 @error('current_qualification')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <div class="col-md-4">
+                            <label class="form-label">Account Status</label>
+                            <select name="status" class="form-select @error('status') is-invalid @enderror" {{ $isView ? 'disabled' : '' }}>
+                                <option value="active" {{ old('status', $editStudent->user->status ?? 'active') == 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="blocked" {{ old('status', $editStudent->user->status ?? '') == 'blocked' ? 'selected' : '' }}>Blocked</option>
+                            </select>
+                            @error('status')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                             @if (!$isView)
 
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">Profile Photo</label>
                                 <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror">
                                 @error('photo')
