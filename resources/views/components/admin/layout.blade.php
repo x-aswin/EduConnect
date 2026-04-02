@@ -1,14 +1,111 @@
 <x-base.layout>
-    <div class="d-flex">
-        <div class="bg-dark text-white vh-100 p-3" style="width: 250px;">
-            <h4>EduConnect</h4>
+@push('styles')
+    <style>
+
+body {
+    background-color: #f8f9fa;
+}
+
+#wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+    background: #212529; /* Dark Sidebar */
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#content {
+    width: 100%;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.nav-link {
+    color: rgba(255,255,255,.75);
+}
+
+.nav-link:hover, .nav-link.active {
+    color: #fff;
+    background: rgba(255,255,255,.1);
+}</style>
+@endpush
+<div id="wrapper">
+    <nav id="sidebar" class="border-end">
+        <div class="p-4">
+            <h4 class="text-white mb-4">EduConnect <span class="fs-6 text-primary">Admin</span></h4>
             <ul class="nav flex-column">
-                <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link text-white">Dashboard</a></li>
-                <li class="nav-item"><a href="" class="nav-link text-white">Colleges</a></li>
+                <li class="nav-item">
+                    <a class="nav-link active py-3" href="{{ route('dashboard') }}">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link py-3" href="#">
+                        <i class="bi bi-people me-2"></i> Manage Students
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link py-3" href="#">
+                        <i class="bi bi-building me-2"></i> Manage Colleges
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link py-3" href="#">
+                        <i class="bi bi-briefcase me-2"></i> Job/Firms
+                    </a>
+                </li>
+                <hr class="text-secondary">
+                <li class="nav-item">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start py-3 text-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                        </button>
+                    </form>
+                </li>
             </ul>
         </div>
-        <div class="flex-grow-1 p-4">
+    </nav>
+
+    <div id="content" class="d-flex flex-column">
+        
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 rounded px-3">
+            <div class="container-fluid">
+                <span class="navbar-text fw-bold">Welcome, {{ Auth::user()->name }}</span>
+                <div class="ms-auto">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Admin Account
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button class="dropdown-item text-danger">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-grow-1">
             {{ $slot }}
-        </div>
+        </main>
+
+        <footer class="text-center py-4 text-muted border-top mt-5">
+            <p class="mb-0">&copy; {{ date('Y') }} EduConnect</p>
+        </footer>
     </div>
+</div>
 </x-base.layout>

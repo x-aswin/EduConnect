@@ -30,7 +30,6 @@ class ProfileController extends Controller
         
         // Update with the validated data
         $student->update([
-            'full_name'             => $request->full_name,
             'phone'                 => $request->phone,
             'dob'                   => $request->dob,
             'gender'                => $request->gender,

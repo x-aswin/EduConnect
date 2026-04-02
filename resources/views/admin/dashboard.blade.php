@@ -1,29 +1,24 @@
+
 <x-admin.layout>
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div class="col">
-            <div class="card h-100 shadow-sm border-primary">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Pending Colleges</h5>
-                    <p class="card-text display-4">08</p>
-                    <a href="#" class="btn btn-outline-primary btn-sm">Review Now</a>
+<div class="container-fluid">
+        <h2 class="mb-4">Admin Dashboard</h2>
+        
+        {{-- <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white mb-4">
+                    <div class="card-body">Total Students: 150</div>
                 </div>
             </div>
-        </div>
-        <div class="col">
-            <div class="card h-100 shadow-sm border-success">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Active Students</h5>
-                    <p class="card-text display-4">245</p>
+            <div class="col-md-4">
+                <div class="card bg-success text-white mb-4">
+                    <div class="card-body">Active Colleges: 12</div>
                 </div>
             </div>
-        </div>
-        <div class="col">
-            <div class="card h-100 shadow-sm border-warning">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Pending Firms</h5>
-                    <p class="card-text display-4">03</p>
+            <div class="col-md-4">
+                <div class="card bg-warning text-white mb-4">
+                    <div class="card-body">Pending Verifications: 5</div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 </x-admin.layout>
