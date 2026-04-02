@@ -8,15 +8,17 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index() 
     {
-        return view('admin.manage-student');
+        $students = Student::with('user')->latest()->get();
+        return view('admin.manage-student', compact('students'));
     }
 
     /**
@@ -37,8 +39,13 @@ class StudentController extends Controller
         'name'     => 'required|string|max:255',
         'email'    => 'required|email|unique:users,email',
         'password' => 'required|string|min:8|confirmed',
-        'phone'    => 'nullable|digits:10',
+        'phone'    => 'required|digits:10',
         'photo'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'dob'      => 'required|date',
+        'gender'   => 'required|in:male,female,other',
+        'current_qualification' => 'required|string|max:255',
+        'address'  => 'required|string|max:255'
+
     ]);
 
     //  Database Transaction (Ensures both tables save or neither does)
@@ -78,15 +85,28 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $students = Student::with('user')->latest()->get();
+        $editStudent = Student::with('user')->findOrFail($id);
+        $viewOnly = true; // Flag to disable inputs
+        
+        return view('admin.manage-student', compact('students', 'editStudent', 'viewOnly'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Request $request, string $id)
     {
-        //
+        $students = Student::with('user')->latest()->get(); // Still need the list for the table
+        $isDeleteMode = $request->query('mode') === 'delete';
+
+        if(!$isDeleteMode){
+            $editStudent = Student::with('user')->findOrFail($id);
+            return view('admin.manage-student', compact('students', 'editStudent'));
+        }else{
+            $deleteStudent = Student::with('user')->findOrFail($id); // The one we are editing
+            return view('admin.manage-student', compact('students', 'deleteStudent', 'isDeleteMode'));
+        }
     }
 
     /**
@@ -94,14 +114,83 @@ class StudentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $student = Student::with('user')->findOrFail($id);
+
+        // Validation - email should be unique except for current student
+        $rules = [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email,' . $student->user->id,
+            'phone'    => 'required|digits:10',
+            'photo'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'dob'      => 'required|date',
+            'gender'   => 'required|in:male,female,other',
+            'current_qualification' => 'required|string|max:255',
+            'address'  => 'required|string|max:255'
+        ];
+
+        // Password is optional on update
+        if ($request->filled('password')) {
+            $rules['password'] = 'required|string|min:8|confirmed';
+        }
+
+        $request->validate($rules);
+
+        // Database Transaction
+        DB::transaction(function () use ($request, $student) {
+            
+            // Update User record
+            $student->user->update([
+                'name'  => $request->name,
+                'email' => $request->email,
+            ]);
+
+            // Update password only if provided
+            if ($request->filled('password')) {
+                $student->user->update([
+                    'password' => Hash::make($request->password)
+                ]);
+            }
+
+            // Handle Photo Upload
+            $updateData = [
+                'phone'                 => $request->phone,
+                'dob'                   => $request->dob,
+                'gender'                => $request->gender,
+                'current_qualification' => $request->current_qualification,
+                'address'               => $request->address,
+            ];
+
+            if ($request->hasFile('photo')) {
+                $updateData['photo'] = $request->file('photo')->store('students/photos', 'public');
+            }
+
+            $student->update($updateData);
+        });
+
+        return redirect()->route('admin.students.index')->with('success', 'Student updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
-        //
-    }
+{
+    $student = Student::findOrFail($id);
+    $user = $student->user;
+
+    DB::transaction(function () use ($student, $user) {
+        // 1. Delete the profile photo from storage if it exists
+        if ($student->photo && Storage::disk('public')->exists($student->photo)) {
+            Storage::disk('public')->delete($student->photo);
+        }
+
+        // 2. Delete Student Profile
+        $student->delete();
+
+        // 3. Delete User Account
+        $user->delete();
+    });
+
+    return redirect()->route('admin.students.index')->with('success', 'Student and associated account deleted successfully!');
+}
 }
