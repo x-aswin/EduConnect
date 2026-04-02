@@ -1,5 +1,5 @@
 
-<x-admin.layout>
+<x-admin.layout active="dashboard">
 <div class="container-fluid">
         <h2 class="mb-4">Admin Dashboard</h2>
         

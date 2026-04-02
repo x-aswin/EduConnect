@@ -1,3 +1,5 @@
+@props(['active' => null])
+
 <x-base.layout>
 @push('styles')
     <style>
@@ -42,22 +44,22 @@ body {
             <h4 class="text-white mb-4">EduConnect <span class="fs-6 text-primary">Admin</span></h4>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link active py-3" href="{{ route('dashboard') }}">
+                    <a class="nav-link py-3 {{ $active === 'dashboard' ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-3" href="#">
+                    <a class="nav-link py-3 {{ $active === 'students' ? 'active' : '' }}" href="{{ route('admin.students.index') }}">
                         <i class="bi bi-people me-2"></i> Manage Students
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-3" href="#">
+                    <a class="nav-link py-3 {{ $active === 'colleges' ? 'active' : '' }}" href="#">
                         <i class="bi bi-building me-2"></i> Manage Colleges
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-3" href="#">
+                    <a class="nav-link py-3 {{ $active === 'firms' ? 'active' : '' }}" href="#">
                         <i class="bi bi-briefcase me-2"></i> Job/Firms
                     </a>
                 </li>
