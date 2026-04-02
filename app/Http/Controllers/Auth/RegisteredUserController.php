@@ -71,13 +71,13 @@ class RegisteredUserController extends Controller
 
 
         if ($user->role === 'student') {
-            return redirect()->route('student.profile.edit');
+            return redirect()->route('student.complete.profile.edit');
         } elseif ($user->role === 'college') {
-            return redirect()->route('college.profile.edit');
+            return redirect()->route('college.complete.profile.edit');
         } elseif ($user->role === 'firm') {
-            return redirect()->route('firm.profile.edit');
+            return redirect()->route('firm.complete.profile.edit');
         } elseif ($user->role === 'mentor') {
-            return redirect()->route('mentor.profile.edit');
+            return redirect()->route('mentor.complete.profile.edit');
         }else {
         return redirect(route('dashboard', absolute: false));
         }

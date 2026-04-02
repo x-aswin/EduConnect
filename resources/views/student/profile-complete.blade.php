@@ -4,7 +4,7 @@
     <h2 class="text-2xl font-semibold mb-4">Complete Your Profile</h2>
     <p class="mb-6 text-gray-600">Please fill in the details below to complete your student profile.</p>
 
-    <form action="{{ route('student.profile.update') }}" method="POST">
+    <form action="{{ route('student.complete.profile.update') }}" method="POST">
         @csrf
         @method('PATCH')
 
