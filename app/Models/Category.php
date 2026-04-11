@@ -10,10 +10,10 @@ use Illuminate\Support\Str;
 #[Fillable(['name', 'slug', 'description', 'icon'])]
 class Category extends Model
 {
-    // public function Course(): HasMany
-    // {
-    //     return $this->hasMany(Course::class);
-    // }
+    public function Course(): HasMany
+    {
+        return $this->hasMany(Course::class);
+    }
     protected static function booted()
     {
         static::creating(function ($category) {
