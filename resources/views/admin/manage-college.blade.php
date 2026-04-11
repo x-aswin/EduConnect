@@ -21,7 +21,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
-                        <th>Name</th>
+                        <th>Acronym / Institution Name</th>
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Website</th>
@@ -36,7 +36,8 @@
                         <td>
                             <div class="d-flex align-items-center">
                                 <img src="{{ $college->photo ? asset('storage/' . $college->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($college->institution_name ?? 'Unknown College') }}" 
-                                     class="rounded-circle me-2" width="35" height="35" alt="Profile">
+                                     class="rounded me-2" width="42" height="42" style="object-fit: cover;" alt="Profile">
+                                {{ $college->user->name ?? 'Unknown College' }} / 
                                 {{ $college->institution_name ?? 'Unknown College' }}
                             </div>
                         </td>
@@ -107,7 +108,7 @@
                             @if(!$isCreate)
                                 <div class="text-center mb-4">
                                     <img src="{{ $editCollege->photo ? asset('storage/' . $editCollege->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($editCollege->institution_name) }}" 
-                                        class="rounded-circle img-thumbnail shadow-sm" 
+                                        class="rounded img-thumbnail shadow-sm" 
                                         style="width: 120px; height: 120px; object-fit: cover;">
                                     @if($isView)
                                         <h4 class="mt-2">{{ $editCollege->institution_name }}</h4>
@@ -117,13 +118,34 @@
                                 
                             @endif
 
+                            @if(!$isCreate && !empty($editCollege->verification_doc))
+                                @php
+                                    $verificationUrl = asset('storage/' . $editCollege->verification_doc);
+                                    $verificationExt = strtolower(pathinfo($editCollege->verification_doc, PATHINFO_EXTENSION));
+                                    $isPdfDoc = $verificationExt === 'pdf';
+                                @endphp
+                                <div class="mb-4">
+                                    <h6 class="border-bottom pb-2">Verification Document Preview</h6>
+                                    <div class="border rounded p-2 bg-light-subtle">
+                                        @if($isPdfDoc)
+                                            <iframe src="{{ $verificationUrl }}" title="Verification Document" style="width: 100%; height: 340px; border: 0;"></iframe>
+                                        @else
+                                            <img src="{{ $verificationUrl }}" class="img-fluid rounded" style="max-height: 340px; width: 100%; object-fit: contain;" alt="Verification Document">
+                                        @endif
+                                        <div class="mt-2 text-end">
+                                            <a href="{{ $verificationUrl }}" target="_blank" class="btn btn-sm btn-outline-primary">Open Document</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
 
 
 
                         <div class="row g-3">
                             <h6 class="border-bottom pb-2">Account Information</h6>
                             <div class="col-md-6">
-                                <label class="form-label">Full Name</label>
+                                <label class="form-label">Acronym</label>
                                 <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $editCollege->user->name ?? '') }}" {{ $isView ? 'disabled' : '' }}>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -167,6 +189,8 @@
                                 @enderror
                             </div>
 
+                            
+
                             <h6 class="border-bottom pb-2 mt-4">Institution Details</h6>
                             <div class="col-md-4">
                                 <label class="form-label">Institution Name</label>
@@ -191,6 +215,34 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Address</label>
+                                <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="2" {{ $isView ? 'disabled' : '' }}>{{ old('address', $editCollege->address ?? '') }}</textarea>
+                                @error('address')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            @if (!$isView)
+                            <div class="col-md-8">
+                                <label class="form-label">Verification Document</label>
+                                <input type="file" name="verification_doc" class="form-control @error('verification_doc') is-invalid @enderror">
+                                @error('verification_doc')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+
+                            <div class="col-md-4">
+                                <label class="form-label">College Photo</label>
+                                <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror">
+                                @error('photo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            @endif
 
                             <h6 class="border-bottom pb-2 mt-4">Contact Person</h6>
                             <div class="col-md-4">
@@ -217,32 +269,6 @@
                                 @enderror
                             </div>
 
-                            @if (!$isView)
-
-                            <div class="col-md-4">
-                                <label class="form-label">Profile Photo</label>
-                                <input type="file" name="photo" class="form-control @error('photo') is-invalid @enderror">
-                                @error('photo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-8">
-                                <label class="form-label">Verification Document</label>
-                                <input type="file" name="verification_doc" class="form-control @error('verification_doc') is-invalid @enderror">
-                                @error('verification_doc')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            @endif
-
-                            <div class="col-md-12">
-                                <label class="form-label">Address</label>
-                                <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="2" {{ $isView ? 'disabled' : '' }}>{{ old('address', $editCollege->address ?? '') }}</textarea>
-                                @error('address')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
                         </div>
                     </div>
                   

@@ -23,4 +23,12 @@ class Mentor extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the college this mentor belongs to.
+     */
+    public function college(): BelongsTo
+    {
+        return $this->belongsTo(College::class);
+    }
 }

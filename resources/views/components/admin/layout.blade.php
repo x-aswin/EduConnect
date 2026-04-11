@@ -54,13 +54,18 @@ body {
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-3 {{ $active === 'colleges' ? 'active' : '' }}" href="#">
+                    <a class="nav-link py-3 {{ $active === 'colleges' ? 'active' : '' }}" href="{{ route('admin.colleges.index') }}">
                         <i class="bi bi-building me-2"></i> Manage Colleges
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-3 {{ $active === 'firms' ? 'active' : '' }}" href="#">
-                        <i class="bi bi-briefcase me-2"></i> Job/Firms
+                    <a class="nav-link py-3 {{ $active === 'mentors' ? 'active' : '' }}" href="{{ route('admin.mentors.index') }}">
+                        <i class="bi bi-person-workspace me-2"></i> Manage Mentors
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link py-3 {{ $active === 'firms' ? 'active' : '' }}" href="{{ route('admin.firms.index') }}">
+                        <i class="bi bi-briefcase me-2"></i> Manage Firms
                     </a>
                 </li>
                 <hr class="text-secondary">
