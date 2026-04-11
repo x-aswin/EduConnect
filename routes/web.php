@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -11,6 +12,9 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    if (Auth::user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

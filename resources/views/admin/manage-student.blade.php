@@ -37,18 +37,18 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <img src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->user->name) }}" 
+                                <img src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->user?->name ?? 'Unknown User') }}" 
                                      class="rounded-circle me-2" width="35" height="35" alt="Profile">
-                                {{ $student->user->name }}
+                                {{ $student->user?->name ?? 'Unknown User' }}
                             </div>
                         </td>
-                        <td>{{ $student->user->email }}</td>
-                        <td>{{ $student->phone }}</td>
+                        <td>{{ $student->user?->email ?? 'N/A' }}</td>
+                        <td>{{ $student?->phone ?? 'N/A' }}</td>
                         <td><span class="badge bg-info text-dark">{{ $student->current_qualification }}</span></td>
                         <td>
-                            @if($student->user->status == 'active')
+                            @if($student->user?->status == 'active')
                                 <span class="badge bg-success-subtle text-success border border-success">Active</span>
-                            @elseif($student->user->status == 'blocked')
+                            @elseif($student->user?->status == 'blocked')
                                 <span class="badge bg-danger-subtle text-danger border border-danger">blocked</span>
                             @else
                                 <span class="badge bg-secondary-subtle text-secondary border border-secondary">Pending</span>
@@ -264,7 +264,7 @@
                     <a href="{{ route('admin.students.index') }}" class="btn-close btn-close-white"></a>
                 </div>
                 <div class="modal-body text-center">
-                    <p>Delete <strong>{{ $deleteStudent->user->name }}</strong>?</p>
+                    <p>Delete <strong>{{ $deleteStudent->user?->name ?? 'Unknown User' }}</strong>?</p>
                 </div>
                 <div class="modal-footer">
                     <form action="{{ route('admin.students.destroy', $deleteStudent->id) }}" method="POST">

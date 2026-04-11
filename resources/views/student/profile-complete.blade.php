@@ -4,7 +4,7 @@
     <h2 class="text-2xl font-semibold mb-4">Complete Your Profile</h2>
     <p class="mb-6 text-gray-600">Please fill in the details below to complete your student profile.</p>
 
-    <form action="{{ route('student.complete.profile.update') }}" method="POST">
+    <form action="{{ route('student.complete.profile.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
 
@@ -91,6 +91,18 @@
                 rows="3" 
                 required>{{ old('address', $student->address) }}</textarea>
             <x-input-error :messages="$errors->get('address')" class="mt-2" />
+        </div>
+
+    {{-- Photo Upload --}}
+        <div class="mb-3">
+            <x-input-label for="photo" :value="__('Photo')" />
+            <input 
+                id="photo" 
+                name="photo" 
+                type="file" 
+                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" 
+                accept="image/*" />
+            <x-input-error :messages="$errors->get('photo')" class="mt-2" />
         </div>
 
         <button type="submit" class="btn btn-primary w-100">
