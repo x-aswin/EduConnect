@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(
+#[Fillable([
     'college_id', 'category_id', 'mentor_id', 'title', 'slug', 
-        'description', 'course_image', 'course_type', 'price', 
-        'is_certified', 'total_seats', 'available_seats', 
-        'start_date', 'end_date', 'time_slot', 'venue', 'status'
-)]
+    'description', 'course_image', 'course_type', 'price', 
+    'is_certified', 'total_seats', 'available_seats', 
+    'start_date', 'end_date', 'time_slot', 'venue', 'status'
+])]
 class Course extends Model
 {
     protected static function booted()
