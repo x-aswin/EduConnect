@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\CollegeController as AdminCollegeController;
+use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\FirmController as AdminFirmController;
 use App\Http\Controllers\Admin\MentorController as AdminMentorController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
@@ -31,6 +32,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::resource('/mentors', AdminMentorController::class)->names('mentors');
         Route::resource('/firms', AdminFirmController::class)->names('firms');
         Route::resource('/categories', AdminCategoryController::class)->names('categories');
+        Route::resource('/courses', AdminCourseController::class)->names('courses');
     });
 });
 

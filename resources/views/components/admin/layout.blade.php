@@ -73,6 +73,11 @@ body {
                         <i class="bi bi-tags me-2"></i> Manage Categories
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link py-3 {{ $active === 'courses' ? 'active' : '' }}" href="{{ route('admin.courses.index') }}">
+                        <i class="bi bi-journal-text me-2"></i> Manage Courses
+                    </a>
+                </li>
                 <hr class="text-secondary">
                 <li class="nav-item">
                     <form method="POST" action="{{ route('logout') }}">
