@@ -12,21 +12,42 @@ body {
     display: flex;
     width: 100%;
     align-items: stretch;
+    height: 100vh;
+    overflow: hidden;
 }
 
 #sidebar {
     min-width: 250px;
     max-width: 250px;
-    min-height: 100vh;
+    height: 100vh;
     background: #212529; /* Dark Sidebar */
     color: #fff;
     transition: all 0.3s;
+    overflow-y: auto;
+    flex-shrink: 0;
 }
 
 #content {
     width: 100%;
+    height: 100vh;
+    overflow: hidden;
     padding: 20px;
-    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
 }
 
 .nav-link {
@@ -93,7 +114,7 @@ body {
 
     <div id="content" class="d-flex flex-column">
         
-        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 rounded px-3">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 rounded px-3 topbar">
             <div class="container-fluid">
                 <span class="navbar-text fw-bold">Welcome, {{ Auth::user()->name }}</span>
                 <div class="ms-auto">
@@ -102,8 +123,8 @@ body {
                             Admin Account
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            {{-- <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Settings</a></li> --}}
+                            {{-- <li><hr class="dropdown-divider"></li> --}}
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
@@ -116,13 +137,15 @@ body {
             </div>
         </nav>
 
-        <main class="flex-grow-1">
-            {{ $slot }}
-        </main>
+        <div class="content-scroll">
+            <main class="flex-grow-1">
+                {{ $slot }}
+            </main>
 
-        <footer class="text-center py-4 text-muted border-top mt-5">
-            <p class="mb-0">&copy; {{ date('Y') }} EduConnect</p>
-        </footer>
+            <footer class="text-center py-4 text-muted border-top mt-5">
+                <p class="mb-0">&copy; {{ date('Y') }} EduConnect</p>
+            </footer>
+        </div>
     </div>
 </div>
 </x-base.layout>
