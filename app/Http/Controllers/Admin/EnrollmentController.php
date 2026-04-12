@@ -51,7 +51,9 @@ class EnrollmentController extends Controller
             'payment_status' => 'required|in:pending,paid,na',
             'requested_venue' => 'nullable|string|max:255',
             'proposed_schedule' => 'nullable|date',
-            'participant_count' => 'nullable|integer|min:1',
+            'participants' => 'nullable|array',
+            'participants.*.name' => 'nullable|string|max:255',
+            'participants.*.contact_info' => 'nullable|string|max:255',
         ]);
 
         $user = User::select('id', 'role')->findOrFail($validated['user_id']);
@@ -72,18 +74,38 @@ class EnrollmentController extends Controller
 
         $enrollmentType = $user->role === 'firm' ? 'firm' : 'student';
 
-        if ($enrollmentType === 'firm' && empty($validated['participant_count'])) {
+        $participants = collect($validated['participants'] ?? [])
+            ->map(function ($participant) {
+                return [
+                    'name' => trim((string) ($participant['name'] ?? '')),
+                    'contact_info' => trim((string) ($participant['contact_info'] ?? '')),
+                ];
+            })
+            ->filter(function ($participant) {
+                return $participant['name'] !== '' || $participant['contact_info'] !== '';
+            })
+            ->values();
+
+        if ($enrollmentType === 'firm' && $participants->isEmpty()) {
             return back()->withErrors([
-                'participant_count' => 'Participant count is required for firm enrollments.',
+                'participants' => 'At least one participant is required for firm enrollments.',
             ])->withInput();
         }
 
+        if ($participants->contains(fn ($participant) => $participant['name'] === '' || $participant['contact_info'] === '')) {
+            return back()->withErrors([
+                'participants' => 'Each participant must include both name and contact info.',
+            ])->withInput();
+        }
+
+        $participantCount = $enrollmentType === 'firm' ? $participants->count() : null;
+
         $calculatedTotalAmount = $enrollmentType === 'firm'
-            ? ((float) $course->price * (int) ($validated['participant_count'] ?? 0))
+            ? ((float) $course->price * (int) ($participantCount ?? 0))
             : (float) $course->price;
 
-        DB::transaction(function () use ($validated, $enrollmentType, $calculatedTotalAmount) {
-            Enrollment::create([
+        DB::transaction(function () use ($validated, $enrollmentType, $participantCount, $calculatedTotalAmount, $participants) {
+            $enrollment = Enrollment::create([
                 'user_id' => $validated['user_id'],
                 'course_id' => $validated['course_id'],
                 'type' => $enrollmentType,
@@ -91,9 +113,13 @@ class EnrollmentController extends Controller
                 'payment_status' => $validated['payment_status'],
                 'requested_venue' => $validated['requested_venue'] ?? null,
                 'proposed_schedule' => $validated['proposed_schedule'] ?? null,
-                'participant_count' => $enrollmentType === 'firm' ? ($validated['participant_count'] ?? null) : null,
+                'participant_count' => $participantCount,
                 'total_amount' => $calculatedTotalAmount,
             ]);
+
+            if ($enrollmentType === 'firm' && $participants->isNotEmpty()) {
+                $enrollment->participants()->createMany($participants->all());
+            }
         });
 
         return redirect()->route('admin.enrollments.index')->with('success', 'Enrollment added successfully!');
@@ -161,18 +187,59 @@ class EnrollmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $enrollment = Enrollment::findOrFail($id);
+        $enrollment = Enrollment::with('course')->findOrFail($id);
 
         $validated = $request->validate([
             'status' => 'required|in:pending,confirmed,rejected',
             'payment_status' => 'required|in:pending,paid,na',
+            'participants' => 'nullable|array',
+            'participants.*.name' => 'nullable|string|max:255',
+            'participants.*.contact_info' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($enrollment, $validated) {
+        $participants = collect($validated['participants'] ?? [])
+            ->map(function ($participant) {
+                return [
+                    'name' => trim((string) ($participant['name'] ?? '')),
+                    'contact_info' => trim((string) ($participant['contact_info'] ?? '')),
+                ];
+            })
+            ->filter(function ($participant) {
+                return $participant['name'] !== '' || $participant['contact_info'] !== '';
+            })
+            ->values();
+
+        if ($enrollment->type === 'firm') {
+            if ($participants->isEmpty()) {
+                return back()->withErrors([
+                    'participants' => 'At least one participant is required for firm enrollments.',
+                ])->withInput();
+            }
+
+            if ($participants->contains(fn ($participant) => $participant['name'] === '' || $participant['contact_info'] === '')) {
+                return back()->withErrors([
+                    'participants' => 'Each participant must include both name and contact info.',
+                ])->withInput();
+            }
+        }
+
+        DB::transaction(function () use ($enrollment, $validated, $participants) {
+            $participantCount = $enrollment->type === 'firm' ? $participants->count() : null;
+            $totalAmount = $enrollment->type === 'firm'
+                ? ((float) $enrollment->course->price * (int) ($participantCount ?? 0))
+                : (float) $enrollment->course->price;
+
             $enrollment->update([
                 'status' => $validated['status'],
                 'payment_status' => $validated['payment_status'],
+                'participant_count' => $participantCount,
+                'total_amount' => $totalAmount,
             ]);
+
+            if ($enrollment->type === 'firm') {
+                $enrollment->participants()->delete();
+                $enrollment->participants()->createMany($participants->all());
+            }
         });
 
         return redirect()->route('admin.enrollments.index')->with('success', 'Enrollment updated successfully!');

@@ -27,6 +27,7 @@
                         <th>Status</th>
                         <th>Payment</th>
                         <th>Participants</th>
+                        <th>Total Cost</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -62,7 +63,14 @@
                                     <span class="badge bg-light text-dark border">N/A</span>
                                 @endif
                             </td>
-                            <td>{{ $enrollment->type === 'firm' ? ($enrollment->participant_count ?? $enrollment->participants->count()) : '-' }}</td>
+                            <td>{{ $enrollment->type === 'firm' ? ($enrollment->participants->count() ?: $enrollment->participant_count) : '-' }}</td>
+                            <td>
+                                @if(!is_null($enrollment->total_amount))
+                                    ₹ {{ number_format((float) $enrollment->total_amount, 2) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="text-center">
                                 <div class="btn-group shadow-sm gap-1">
                                     <a href="{{ route('admin.enrollments.show', $enrollment->id) }}">
@@ -85,7 +93,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-4 text-muted">No enrollments found.</td>
+                            <td colspan="10" class="text-center py-4 text-muted">No enrollments found.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -161,8 +169,8 @@
 
                         <div class="col-md-6 firm-only-field d-none">
                             <label class="form-label">Participant Count</label>
-                            <input type="number" min="1" id="participant_count" name="participant_count" class="form-control @error('participant_count') is-invalid @enderror" value="{{ old('participant_count') }}">
-                            @error('participant_count')
+                            <input type="number" min="1" id="participant_count" class="form-control" value="{{ old('participant_count') }}" readonly>
+                            @error('participants')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -189,6 +197,56 @@
                             <input type="datetime-local" name="proposed_schedule" class="form-control @error('proposed_schedule') is-invalid @enderror" value="{{ old('proposed_schedule') }}">
                             @error('proposed_schedule')
                                 <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 firm-only-field d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">Firm Participants</label>
+                                <button type="button" id="add_participant_btn" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-lg"></i> Add Participant
+                                </button>
+                            </div>
+
+                            @php
+                                $oldParticipants = old('participants', [['name' => '', 'contact_info' => '']]);
+                                if (count($oldParticipants) === 0) {
+                                    $oldParticipants = [['name' => '', 'contact_info' => '']];
+                                }
+                            @endphp
+
+                            <div id="participants_container" class="d-grid gap-2">
+                                @foreach($oldParticipants as $index => $participant)
+                                    <div class="row g-2 participant-row" data-index="{{ $index }}">
+                                        <div class="col-md-5">
+                                            <input
+                                                type="text"
+                                                name="participants[{{ $index }}][name]"
+                                                class="form-control"
+                                                placeholder="Participant Name"
+                                                value="{{ $participant['name'] ?? '' }}"
+                                            >
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input
+                                                type="text"
+                                                name="participants[{{ $index }}][contact_info]"
+                                                class="form-control"
+                                                placeholder="Contact Info (Phone/Email)"
+                                                value="{{ $participant['contact_info'] ?? '' }}"
+                                            >
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-outline-danger w-100 remove-participant-btn">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @error('participants')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -236,8 +294,86 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Participants</label>
-                                <input type="text" class="form-control" value="{{ $editEnrollment->type === 'firm' ? ($editEnrollment->participant_count ?? $editEnrollment->participants->count()) : '-' }}" disabled>
+                                <input type="text" class="form-control" value="{{ $editEnrollment->type === 'firm' ? ($editEnrollment->participants->count() ?: $editEnrollment->participant_count) : '-' }}" disabled>
                             </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Total Cost</label>
+                                <input type="text" class="form-control" value="{{ !is_null($editEnrollment->total_amount) ? '₹ ' . number_format((float) $editEnrollment->total_amount, 2) : '-' }}" disabled>
+                            </div>
+
+                            @if($editEnrollment->type === 'firm')
+                                <div class="col-12">
+                                    @if($isView)
+                                        <label class="form-label">Participant Details</label>
+                                        @if($editEnrollment->participants->isNotEmpty())
+                                            <ul class="list-group">
+                                                @foreach($editEnrollment->participants as $participant)
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <span>{{ $participant->name }}</span>
+                                                        <small class="text-muted">{{ $participant->contact_info }}</small>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <div class="form-control bg-light">No participant details available.</div>
+                                        @endif
+                                    @else
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label mb-0">Participant Details</label>
+                                            <button type="button" id="edit_add_participant_btn" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-plus-lg"></i> Add Participant
+                                            </button>
+                                        </div>
+
+                                        @php
+                                            $editParticipants = old('participants', $editEnrollment->participants->map(function ($participant) {
+                                                return [
+                                                    'name' => $participant->name,
+                                                    'contact_info' => $participant->contact_info,
+                                                ];
+                                            })->all());
+                                            if (count($editParticipants) === 0) {
+                                                $editParticipants = [['name' => '', 'contact_info' => '']];
+                                            }
+                                        @endphp
+
+                                        <div id="edit_participants_container" class="d-grid gap-2">
+                                            @foreach($editParticipants as $index => $participant)
+                                                <div class="row g-2 edit-participant-row" data-index="{{ $index }}">
+                                                    <div class="col-md-5">
+                                                        <input
+                                                            type="text"
+                                                            name="participants[{{ $index }}][name]"
+                                                            class="form-control"
+                                                            placeholder="Participant Name"
+                                                            value="{{ $participant['name'] ?? '' }}"
+                                                        >
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <input
+                                                            type="text"
+                                                            name="participants[{{ $index }}][contact_info]"
+                                                            class="form-control"
+                                                            placeholder="Contact Info (Phone/Email)"
+                                                            value="{{ $participant['contact_info'] ?? '' }}"
+                                                        >
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <button type="button" class="btn btn-outline-danger w-100 edit-remove-participant-btn">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        @error('participants')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    @endif
+                                </div>
+                            @endif
 
                             <div class="col-md-6">
                                 <label class="form-label">Enrollment Status</label>
@@ -362,6 +498,103 @@
         const participantCountInput = document.getElementById('participant_count');
         const totalAmountInput = document.getElementById('total_amount');
         const firmFields = document.querySelectorAll('.firm-only-field');
+        const participantsContainer = document.getElementById('participants_container');
+        const addParticipantBtn = document.getElementById('add_participant_btn');
+        const editParticipantsContainer = document.getElementById('edit_participants_container');
+        const editAddParticipantBtn = document.getElementById('edit_add_participant_btn');
+
+        let participantIndex = participantsContainer
+            ? Math.max(0, ...Array.from(participantsContainer.querySelectorAll('.participant-row')).map(function (row) {
+                return parseInt(row.getAttribute('data-index') || '0', 10);
+            })) + 1
+            : 0;
+
+        let editParticipantIndex = editParticipantsContainer
+            ? Math.max(0, ...Array.from(editParticipantsContainer.querySelectorAll('.edit-participant-row')).map(function (row) {
+                return parseInt(row.getAttribute('data-index') || '0', 10);
+            })) + 1
+            : 0;
+
+        function getParticipantRows() {
+            if (!participantsContainer) {
+                return [];
+            }
+
+            return Array.from(participantsContainer.querySelectorAll('.participant-row'));
+        }
+
+        function updateParticipantCount() {
+            if (!participantCountInput) {
+                return;
+            }
+
+            participantCountInput.value = getParticipantRows().length || '';
+        }
+
+        function buildParticipantRow(index) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'row g-2 participant-row';
+            wrapper.setAttribute('data-index', index.toString());
+            wrapper.innerHTML = [
+                '<div class="col-md-5">',
+                '  <input type="text" name="participants[' + index + '][name]" class="form-control" placeholder="Participant Name">',
+                '</div>',
+                '<div class="col-md-5">',
+                '  <input type="text" name="participants[' + index + '][contact_info]" class="form-control" placeholder="Contact Info (Phone/Email)">',
+                '</div>',
+                '<div class="col-md-2">',
+                '  <button type="button" class="btn btn-outline-danger w-100 remove-participant-btn"><i class="bi bi-trash"></i></button>',
+                '</div>'
+            ].join('');
+
+            return wrapper;
+        }
+
+        function addParticipantRow() {
+            if (!participantsContainer) {
+                return;
+            }
+
+            participantsContainer.appendChild(buildParticipantRow(participantIndex));
+            participantIndex += 1;
+            updateParticipantCount();
+        }
+
+        function getEditParticipantRows() {
+            if (!editParticipantsContainer) {
+                return [];
+            }
+
+            return Array.from(editParticipantsContainer.querySelectorAll('.edit-participant-row'));
+        }
+
+        function buildEditParticipantRow(index) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'row g-2 edit-participant-row';
+            wrapper.setAttribute('data-index', index.toString());
+            wrapper.innerHTML = [
+                '<div class="col-md-5">',
+                '  <input type="text" name="participants[' + index + '][name]" class="form-control" placeholder="Participant Name" required>',
+                '</div>',
+                '<div class="col-md-5">',
+                '  <input type="text" name="participants[' + index + '][contact_info]" class="form-control" placeholder="Contact Info (Phone/Email)" required>',
+                '</div>',
+                '<div class="col-md-2">',
+                '  <button type="button" class="btn btn-outline-danger w-100 edit-remove-participant-btn"><i class="bi bi-trash"></i></button>',
+                '</div>'
+            ].join('');
+
+            return wrapper;
+        }
+
+        function addEditParticipantRow() {
+            if (!editParticipantsContainer) {
+                return;
+            }
+
+            editParticipantsContainer.appendChild(buildEditParticipantRow(editParticipantIndex));
+            editParticipantIndex += 1;
+        }
 
         function calculateTotalAmount(isFirm) {
             if (!totalAmountInput || !courseSelect) {
@@ -395,6 +628,19 @@
             firmFields.forEach(function (field) {
                 field.classList.toggle('d-none', !isFirm);
             });
+
+            getParticipantRows().forEach(function (row) {
+                const inputs = row.querySelectorAll('input');
+                inputs.forEach(function (input) {
+                    input.required = isFirm;
+                });
+            });
+
+            if (isFirm && getParticipantRows().length === 0) {
+                addParticipantRow();
+            }
+
+            updateParticipantCount();
 
             const courseOptions = courseSelect.querySelectorAll('option[data-course-type]');
             let hasSelectedVisibleOption = false;
@@ -435,8 +681,10 @@
             });
         }
 
-        if (participantCountInput) {
-            participantCountInput.addEventListener('input', function () {
+        if (addParticipantBtn) {
+            addParticipantBtn.addEventListener('click', function () {
+                addParticipantRow();
+
                 if (!userSelect) {
                     return;
                 }
@@ -445,15 +693,60 @@
                 const isFirm = selectedUserOption && selectedUserOption.getAttribute('data-user-role') === 'firm';
                 calculateTotalAmount(isFirm);
             });
+        }
 
-            participantCountInput.addEventListener('change', function () {
-                if (!userSelect) {
+        if (participantsContainer) {
+            participantsContainer.addEventListener('click', function (event) {
+                const removeButton = event.target.closest('.remove-participant-btn');
+                if (!removeButton) {
                     return;
                 }
 
-                const selectedUserOption = userSelect.options[userSelect.selectedIndex];
-                const isFirm = selectedUserOption && selectedUserOption.getAttribute('data-user-role') === 'firm';
-                calculateTotalAmount(isFirm);
+                const rows = getParticipantRows();
+                if (rows.length <= 1) {
+                    return;
+                }
+
+                const row = removeButton.closest('.participant-row');
+                if (row) {
+                    row.remove();
+                    updateParticipantCount();
+
+                    if (!userSelect) {
+                        return;
+                    }
+
+                    const selectedUserOption = userSelect.options[userSelect.selectedIndex];
+                    const isFirm = selectedUserOption && selectedUserOption.getAttribute('data-user-role') === 'firm';
+                    calculateTotalAmount(isFirm);
+                }
+            });
+
+            updateParticipantCount();
+        }
+
+        if (editAddParticipantBtn) {
+            editAddParticipantBtn.addEventListener('click', function () {
+                addEditParticipantRow();
+            });
+        }
+
+        if (editParticipantsContainer) {
+            editParticipantsContainer.addEventListener('click', function (event) {
+                const removeButton = event.target.closest('.edit-remove-participant-btn');
+                if (!removeButton) {
+                    return;
+                }
+
+                const rows = getEditParticipantRows();
+                if (rows.length <= 1) {
+                    return;
+                }
+
+                const row = removeButton.closest('.edit-participant-row');
+                if (row) {
+                    row.remove();
+                }
             });
         }
     });
