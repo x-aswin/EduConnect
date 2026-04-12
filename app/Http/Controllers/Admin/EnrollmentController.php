@@ -47,7 +47,6 @@ class EnrollmentController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
-            'type' => 'required|in:student,firm',
             'status' => 'required|in:pending,confirmed,rejected',
             'payment_status' => 'required|in:pending,paid,na',
             'requested_venue' => 'nullable|string|max:255',
@@ -57,17 +56,35 @@ class EnrollmentController extends Controller
             'college_note' => 'nullable|string|max:1000',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $user = User::select('id', 'role')->findOrFail($validated['user_id']);
+        $course = Course::select('id', 'course_type')->findOrFail($validated['course_id']);
+
+        if (!in_array($user->role, ['student', 'firm'], true)) {
+            return back()->withErrors([
+                'user_id' => 'Selected user must be a student or a firm.',
+            ])->withInput();
+        }
+
+        $expectedCourseType = $user->role === 'firm' ? 'firm_only' : 'student_only';
+        if ($course->course_type !== $expectedCourseType) {
+            return back()->withErrors([
+                'course_id' => 'Selected course type does not match the selected user type.',
+            ])->withInput();
+        }
+
+        $enrollmentType = $user->role === 'firm' ? 'firm' : 'student';
+
+        DB::transaction(function () use ($validated, $enrollmentType) {
             Enrollment::create([
                 'user_id' => $validated['user_id'],
                 'course_id' => $validated['course_id'],
-                'type' => $validated['type'],
+                'type' => $enrollmentType,
                 'status' => $validated['status'],
                 'payment_status' => $validated['payment_status'],
                 'requested_venue' => $validated['requested_venue'] ?? null,
                 'proposed_schedule' => $validated['proposed_schedule'] ?? null,
-                'participant_count' => $validated['type'] === 'firm' ? ($validated['participant_count'] ?? null) : null,
-                'total_amount' => $validated['type'] === 'firm' ? ($validated['total_amount'] ?? null) : null,
+                'participant_count' => $enrollmentType === 'firm' ? ($validated['participant_count'] ?? null) : null,
+                'total_amount' => $enrollmentType === 'firm' ? ($validated['total_amount'] ?? null) : null,
                 'college_note' => $validated['college_note'] ?? null,
             ]);
         });

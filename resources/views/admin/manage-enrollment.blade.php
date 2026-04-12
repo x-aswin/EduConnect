@@ -9,7 +9,7 @@
     <i class="bi bi-plus-lg"></i> Add New Enrollment
 </button>
 
-<div class="card mt-2 shadow-sm">
+<div class="card mt-4 shadow-sm">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
         <h6 class="mb-0 fw-bold">Manage Enrollments</h6>
         <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ $enrollments->count() }} Total</span>
@@ -107,10 +107,10 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">User / Firm</label>
-                            <select name="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
+                            <select name="user_id" id="enrollment_user_id" class="form-select @error('user_id') is-invalid @enderror" required>
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                    <option value="{{ $user->id }}" data-user-role="{{ $user->role }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} ({{ ucfirst($user->role) }})
                                     </option>
                                 @endforeach
@@ -122,10 +122,10 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Course</label>
-                            <select name="course_id" class="form-select @error('course_id') is-invalid @enderror" required>
+                            <select name="course_id" id="enrollment_course_id" class="form-select @error('course_id') is-invalid @enderror" required>
                                 <option value="">Select Course</option>
                                 @foreach($courses as $course)
-                                    <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
+                                    <option value="{{ $course->id }}" data-course-type="{{ $course->course_type }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
                                         {{ $course->title }} ({{ $course->college?->institution_name ?? 'N/A' }})
                                     </option>
                                 @endforeach
@@ -135,18 +135,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Type</label>
-                            <select name="type" id="enrollment_type" class="form-select @error('type') is-invalid @enderror" required>
-                                <option value="student" {{ old('type', 'student') === 'student' ? 'selected' : '' }}>Student</option>
-                                <option value="firm" {{ old('type') === 'firm' ? 'selected' : '' }}>Firm</option>
-                            </select>
-                            @error('type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select @error('status') is-invalid @enderror" required>
                                 <option value="pending" {{ old('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending</option>
@@ -158,7 +147,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Payment Status</label>
                             <select name="payment_status" class="form-select @error('payment_status') is-invalid @enderror" required>
                                 <option value="na" {{ old('payment_status', 'na') === 'na' ? 'selected' : '' }}>N/A</option>
@@ -381,23 +370,38 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const enrollmentType = document.getElementById('enrollment_type');
+        const userSelect = document.getElementById('enrollment_user_id');
+        const courseSelect = document.getElementById('enrollment_course_id');
         const firmFields = document.querySelectorAll('.firm-only-field');
 
-        function toggleFirmFields() {
-            if (!enrollmentType) {
+        function applyUserBasedFiltering() {
+            if (!userSelect || !courseSelect) {
                 return;
             }
 
-            const isFirm = enrollmentType.value === 'firm';
+            const selectedUserOption = userSelect.options[userSelect.selectedIndex];
+            const selectedRole = selectedUserOption ? selectedUserOption.getAttribute('data-user-role') : null;
+            const isFirm = selectedRole === 'firm';
+            const expectedCourseType = isFirm ? 'firm_only' : 'student_only';
+
             firmFields.forEach(function (field) {
                 field.classList.toggle('d-none', !isFirm);
             });
+
+            const courseOptions = courseSelect.querySelectorAll('option[data-course-type]');
+            courseOptions.forEach(function (option) {
+                const matches = option.getAttribute('data-course-type') === expectedCourseType;
+                option.hidden = !matches;
+
+                if (!matches && option.selected) {
+                    option.selected = false;
+                }
+            });
         }
 
-        if (enrollmentType) {
-            toggleFirmFields();
-            enrollmentType.addEventListener('change', toggleFirmFields);
+        if (userSelect && courseSelect) {
+            applyUserBasedFiltering();
+            userSelect.addEventListener('change', applyUserBasedFiltering);
         }
     });
 </script>
