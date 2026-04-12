@@ -171,7 +171,13 @@ class CourseController extends Controller
         $validated = $request->validate($rules);
         $isFirmOnly = $validated['course_type'] === 'firm_only';
 
-        DB::transaction(function () use ($request, $validated, $course, $isFirmOnly) {
+        $enrolledCount = $course->enrollments()
+                        ->where('status', 'confirmed')
+                        ->count();
+
+        $newAvailableSeats = ($validated['total_seats'] ?? $course->total_seats) - $enrolledCount;
+
+        DB::transaction(function () use ($newAvailableSeats, $request, $validated, $course, $isFirmOnly) {
             $updateData = [
                 'college_id' => $validated['college_id'],
                 'category_id' => $validated['category_id'],
@@ -182,7 +188,7 @@ class CourseController extends Controller
                 'price' => $validated['price'] ?? 0,
                 'is_certified' => $request->boolean('is_certified'),
                 'total_seats' => $isFirmOnly ? null : ($validated['total_seats'] ?? null),
-                'available_seats' => $isFirmOnly ? null : ($validated['total_seats'] ?? $course->available_seats),
+                'available_seats' => $isFirmOnly ? null : max(0, $newAvailableSeats),
                 'start_date' => $isFirmOnly ? null : ($validated['start_date'] ?? null),
                 'end_date' => $isFirmOnly ? null : ($validated['end_date'] ?? null),
                 'time_slot' => $isFirmOnly ? null : ($validated['time_slot'] ?? null),

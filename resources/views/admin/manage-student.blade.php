@@ -330,7 +330,4 @@
    
     </script>
 @endif
-   
-</script>
-
     </x-admin.layout>
