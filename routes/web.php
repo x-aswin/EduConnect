@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\FirmController as AdminFirmController;
 use App\Http\Controllers\Admin\MentorController as AdminMentorController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::resource('/firms', AdminFirmController::class)->names('firms');
         Route::resource('/categories', AdminCategoryController::class)->names('categories');
         Route::resource('/courses', AdminCourseController::class)->names('courses');
+        Route::resource('/enrollments', AdminEnrollmentController::class)->names('enrollments');
     });
 });
 

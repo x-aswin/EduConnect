@@ -100,6 +100,11 @@ body {
                         <i class="bi bi-journal-text me-2"></i> Manage Courses
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link py-3 {{ $active === 'enrollments' ? 'active' : '' }}" href="{{ route('admin.enrollments.index') }}">
+                        <i class="bi bi-clipboard-check me-2"></i> Manage Enrollments
+                    </a>
+                </li>
                 <hr class="text-secondary">
                 <li class="nav-item">
                     <form method="POST" action="{{ route('logout') }}">
