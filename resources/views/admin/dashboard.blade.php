@@ -157,9 +157,17 @@
                                     <td><span class="badge bg-secondary">{{ ucfirst($item->role) }}</span></td>
                                     <td>{{ $item->created_at->format('d M Y') }}</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                        @if ($item->role =="firm")
+                                            <a href="{{ route('admin.firms.edit', $item->firm->id) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-check-circle"></i> Review
                                         </a>
+                                        @else
+                                         <a href="{{ route('admin.colleges.edit', $item->college->id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-check-circle"></i> Review
+                                        </a>
+                                            
+                                        @endif
+
                                     </td>
                                 </tr>
                                 @empty
@@ -172,7 +180,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0 text-end">
-                    <a href="#" class="text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a>
+                    {{-- <a href="#" class="text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a> --}}
                 </div>
             </div>
         </div>
@@ -208,9 +216,9 @@
                                 @endphp
                                 @forelse($recentEnrollments as $enrollment)
                                 <tr>
-                                    <td>{{ $enrollment->user->name ?? 'N/A' }}</td>
-                                    <td>{{ $enrollment->course->name ?? 'N/A' }}</td>
-                                    <td>{{ $enrollment->course->college->name ?? 'N/A' }}</td>
+                                    <td>{{ $enrollment->user?->name ?? 'N/A' }}</td>
+                                    <td>{{ $enrollment->course?->title ?? 'N/A' }}</td>
+                                    <td>{{ $enrollment->course?->college?->institution_name ?? 'N/A' }}</td>
                                     <td>{{ $enrollment->created_at->format('d M Y') }}</td>
                                     <td>
                                         @if($enrollment->status == 'confirmed')
