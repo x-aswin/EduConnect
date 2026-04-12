@@ -125,7 +125,7 @@
                             <select name="course_id" id="enrollment_course_id" class="form-select @error('course_id') is-invalid @enderror" required>
                                 <option value="">Select Course</option>
                                 @foreach($courses as $course)
-                                    <option value="{{ $course->id }}" data-course-type="{{ $course->course_type }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
+                                    <option value="{{ $course->id }}" data-course-type="{{ $course->course_type }}" data-course-price="{{ $course->price ?? 0 }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
                                         {{ $course->title }} ({{ $course->college?->institution_name ?? 'N/A' }})
                                     </option>
                                 @endforeach
@@ -161,7 +161,7 @@
 
                         <div class="col-md-6 firm-only-field d-none">
                             <label class="form-label">Participant Count</label>
-                            <input type="number" min="1" name="participant_count" class="form-control @error('participant_count') is-invalid @enderror" value="{{ old('participant_count') }}">
+                            <input type="number" min="1" id="participant_count" name="participant_count" class="form-control @error('participant_count') is-invalid @enderror" value="{{ old('participant_count') }}">
                             @error('participant_count')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -169,7 +169,8 @@
 
                         <div class="col-md-6 firm-only-field d-none">
                             <label class="form-label">Total Amount</label>
-                            <input type="number" min="0" step="0.01" name="total_amount" class="form-control @error('total_amount') is-invalid @enderror" value="{{ old('total_amount') }}">
+                            <input type="number" min="0" step="0.01" id="total_amount" name="total_amount" class="form-control @error('total_amount') is-invalid @enderror" value="{{ old('total_amount') }}" readonly onkeydown="return false" onpaste="return false">
+                            <small class="text-muted">Auto-calculated from course price x participant count.</small>
                             @error('total_amount')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -191,13 +192,6 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-12">
-                            <label class="form-label">College Note</label>
-                            <textarea name="college_note" rows="3" class="form-control @error('college_note') is-invalid @enderror">{{ old('college_note') }}</textarea>
-                            @error('college_note')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
                     </div>
                 </div>
 
@@ -269,13 +263,6 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-12">
-                                <label class="form-label">College Note</label>
-                                <textarea name="college_note" rows="3" class="form-control @error('college_note') is-invalid @enderror" {{ $isView ? 'disabled' : '' }}>{{ old('college_note', $editEnrollment->college_note ?? '') }}</textarea>
-                                @error('college_note')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
                         </div>
                     @endif
                 </div>
@@ -372,7 +359,28 @@
     document.addEventListener('DOMContentLoaded', function () {
         const userSelect = document.getElementById('enrollment_user_id');
         const courseSelect = document.getElementById('enrollment_course_id');
+        const participantCountInput = document.getElementById('participant_count');
+        const totalAmountInput = document.getElementById('total_amount');
         const firmFields = document.querySelectorAll('.firm-only-field');
+
+        function calculateTotalAmount(isFirm) {
+            if (!totalAmountInput || !courseSelect) {
+                return;
+            }
+
+            const selectedCourseOption = courseSelect.options[courseSelect.selectedIndex];
+            const price = selectedCourseOption ? parseFloat(selectedCourseOption.getAttribute('data-course-price') || '0') : 0;
+
+            if (!isFirm) {
+                totalAmountInput.value = '';
+                return;
+            }
+
+            const participantCount = participantCountInput ? parseInt(participantCountInput.value || '0', 10) : 0;
+            const total = price * (participantCount > 0 ? participantCount : 0);
+
+            totalAmountInput.value = total > 0 ? total.toFixed(2) : '';
+        }
 
         function applyUserBasedFiltering() {
             if (!userSelect || !courseSelect) {
@@ -389,6 +397,8 @@
             });
 
             const courseOptions = courseSelect.querySelectorAll('option[data-course-type]');
+            let hasSelectedVisibleOption = false;
+
             courseOptions.forEach(function (option) {
                 const matches = option.getAttribute('data-course-type') === expectedCourseType;
                 option.hidden = !matches;
@@ -396,12 +406,55 @@
                 if (!matches && option.selected) {
                     option.selected = false;
                 }
+
+                if (matches && option.selected) {
+                    hasSelectedVisibleOption = true;
+                }
             });
+
+            if (!hasSelectedVisibleOption) {
+                const firstVisibleOption = Array.from(courseOptions).find(function (option) {
+                    return !option.hidden;
+                });
+
+                if (firstVisibleOption) {
+                    firstVisibleOption.selected = true;
+                }
+            }
+
+            calculateTotalAmount(isFirm);
         }
 
         if (userSelect && courseSelect) {
             applyUserBasedFiltering();
             userSelect.addEventListener('change', applyUserBasedFiltering);
+            courseSelect.addEventListener('change', function () {
+                const selectedUserOption = userSelect.options[userSelect.selectedIndex];
+                const isFirm = selectedUserOption && selectedUserOption.getAttribute('data-user-role') === 'firm';
+                calculateTotalAmount(isFirm);
+            });
+        }
+
+        if (participantCountInput) {
+            participantCountInput.addEventListener('input', function () {
+                if (!userSelect) {
+                    return;
+                }
+
+                const selectedUserOption = userSelect.options[userSelect.selectedIndex];
+                const isFirm = selectedUserOption && selectedUserOption.getAttribute('data-user-role') === 'firm';
+                calculateTotalAmount(isFirm);
+            });
+
+            participantCountInput.addEventListener('change', function () {
+                if (!userSelect) {
+                    return;
+                }
+
+                const selectedUserOption = userSelect.options[userSelect.selectedIndex];
+                const isFirm = selectedUserOption && selectedUserOption.getAttribute('data-user-role') === 'firm';
+                calculateTotalAmount(isFirm);
+            });
         }
     });
 </script>

@@ -52,12 +52,10 @@ class EnrollmentController extends Controller
             'requested_venue' => 'nullable|string|max:255',
             'proposed_schedule' => 'nullable|date',
             'participant_count' => 'nullable|integer|min:1',
-            'total_amount' => 'nullable|numeric|min:0',
-            'college_note' => 'nullable|string|max:1000',
         ]);
 
         $user = User::select('id', 'role')->findOrFail($validated['user_id']);
-        $course = Course::select('id', 'course_type')->findOrFail($validated['course_id']);
+        $course = Course::select('id', 'course_type', 'price')->findOrFail($validated['course_id']);
 
         if (!in_array($user->role, ['student', 'firm'], true)) {
             return back()->withErrors([
@@ -74,7 +72,17 @@ class EnrollmentController extends Controller
 
         $enrollmentType = $user->role === 'firm' ? 'firm' : 'student';
 
-        DB::transaction(function () use ($validated, $enrollmentType) {
+        if ($enrollmentType === 'firm' && empty($validated['participant_count'])) {
+            return back()->withErrors([
+                'participant_count' => 'Participant count is required for firm enrollments.',
+            ])->withInput();
+        }
+
+        $calculatedTotalAmount = $enrollmentType === 'firm'
+            ? ((float) $course->price * (int) ($validated['participant_count'] ?? 0))
+            : (float) $course->price;
+
+        DB::transaction(function () use ($validated, $enrollmentType, $calculatedTotalAmount) {
             Enrollment::create([
                 'user_id' => $validated['user_id'],
                 'course_id' => $validated['course_id'],
@@ -84,8 +92,7 @@ class EnrollmentController extends Controller
                 'requested_venue' => $validated['requested_venue'] ?? null,
                 'proposed_schedule' => $validated['proposed_schedule'] ?? null,
                 'participant_count' => $enrollmentType === 'firm' ? ($validated['participant_count'] ?? null) : null,
-                'total_amount' => $enrollmentType === 'firm' ? ($validated['total_amount'] ?? null) : null,
-                'college_note' => $validated['college_note'] ?? null,
+                'total_amount' => $calculatedTotalAmount,
             ]);
         });
 
@@ -159,14 +166,12 @@ class EnrollmentController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:pending,confirmed,rejected',
             'payment_status' => 'required|in:pending,paid,na',
-            'college_note' => 'nullable|string|max:1000',
         ]);
 
         DB::transaction(function () use ($enrollment, $validated) {
             $enrollment->update([
                 'status' => $validated['status'],
                 'payment_status' => $validated['payment_status'],
-                'college_note' => $validated['college_note'] ?? null,
             ]);
         });
 
