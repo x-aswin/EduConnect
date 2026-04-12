@@ -17,10 +17,10 @@ body {
 }
 
 #sidebar {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 270px;
+    max-width: 270px;
     height: 100vh;
-    background: #212529; /* Dark Sidebar */
+    background:#0e172a; /* Dark Sidebar */
     color: #fff;
     transition: all 0.3s;
     overflow-y: auto;
@@ -51,12 +51,13 @@ body {
 }
 
 .nav-link {
-    color: rgba(255,255,255,.75);
+    color: rgba(213, 213, 213, 0.75);
 }
 
 .nav-link:hover, .nav-link.active {
     color: #fff;
-    background: rgba(255,255,255,.1);
+    background: #162c53;
+    border-right: #3a82f6 4px solid;
 }</style>
 @endpush
 <div id="wrapper">
