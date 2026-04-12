@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'user_id', 
@@ -30,5 +31,9 @@ class Mentor extends Model
     public function college(): BelongsTo
     {
         return $this->belongsTo(College::class);
+    }
+    public function courses(): HasMany
+    {
+        return $this->hasMany(Course::class);
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'full_name', 'phone', 'dob', 'gender', 'current_qualification', 'address','photo'])]
+#[Fillable(['user_id', 'phone', 'dob', 'gender', 'current_qualification', 'address','photo'])]
 class Student extends Model
 {
     protected function casts(): array

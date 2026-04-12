@@ -19,10 +19,11 @@ class Course extends Model
     protected static function booted()
     {
         static::creating(function ($course) {
-            $acronym = $course->college?->user?->name ?? time();
-            $course->slug = Str::slug($course->title) . '-' . 
-                        Str::slug($acronym) . '-' . 
-                        now()->format('Y-m');
+            $college = College::find($course->college_id);
+            $acronym = $college?->user?->name ?? time();
+            $course->slug = Str::slug($course->title) . '-' .
+                            Str::slug($acronym) . '-' .
+                            now()->format('Y-m');
             $course->available_seats = $course->total_seats;
         });
 
@@ -52,6 +53,10 @@ class Course extends Model
     public function mentor(): BelongsTo
     {
         return $this->belongsTo(Mentor::class);
+    }
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
     }
 
 }
