@@ -163,7 +163,11 @@ class StudentController extends Controller
                 'address'               => $request->address,
             ];
 
+            // delete old photo first
             if ($request->hasFile('photo')) {
+                if ($student->photo && Storage::disk('public')->exists($student->photo)) {
+                    Storage::disk('public')->delete($student->photo);
+                }
                 $updateData['photo'] = $request->file('photo')->store('students/photos', 'public');
             }
 
