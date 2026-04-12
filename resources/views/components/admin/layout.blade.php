@@ -3,6 +3,12 @@
 <x-base.layout>
 @push('styles')
     <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
 
 body {
     background-color: #f8f9fa;
@@ -20,11 +26,12 @@ body {
     min-width: 250px;
     max-width: 250px;
     height: 100vh;
-    background: #212529; /* Dark Sidebar */
+    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
     color: #fff;
     transition: all 0.3s;
     overflow-y: auto;
     flex-shrink: 0;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.24);
 }
 
 #content {
@@ -40,19 +47,61 @@ body {
 
 .content-scroll {
     flex: 1;
-    overflow-y: auto;
+        color: rgba(255,255,255,.78);
+        border-radius: 14px;
+        margin-bottom: 6px;
+        padding-left: 16px;
+        padding-right: 16px;
+        transition: all 0.2s ease;
     min-height: 0;
 }
 
 .topbar {
-    position: sticky;
+        background: rgba(255,255,255,.12);
+        transform: translateX(2px);
+    }
+
+    .sidebar-brand {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+
+    .sidebar-brand-badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        color: #93c5fd;
+        font-size: 1.2rem;
+    }
+
+    .sidebar-section-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.45);
+        padding: 0 1rem 0.5rem;
     top: 0;
     z-index: 1030;
 }
 
 .nav-link {
-    color: rgba(255,255,255,.75);
-}
+            <div class="sidebar-brand">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="sidebar-brand-badge">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-white mb-0 fw-semibold">EduConnect</h4>
+                        <div class="text-primary small fw-medium">Admin Panel</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-3 pb-3">
+                <div class="sidebar-section-label">Navigation</div>
 
 .nav-link:hover, .nav-link.active {
     color: #fff;
@@ -64,7 +113,7 @@ body {
         <div class="p-4">
             <h4 class="text-white mb-4">EduConnect <span class="fs-6 text-primary">Admin</span></h4>
             <ul class="nav flex-column">
-                <li class="nav-item">
+                    <hr class="text-white-50 my-3">
                     <a class="nav-link py-3 {{ $active === 'dashboard' ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                     </a>
