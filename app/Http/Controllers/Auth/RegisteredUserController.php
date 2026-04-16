@@ -50,10 +50,11 @@ class RegisteredUserController extends Controller
             'user_id' => $user->id,
         ]);
         } elseif ($request->role === 'college') {
-            \App\Models\College::create([
-                'user_id' => $user->id,
-                'institution_name' => $request->name,
-            ]);
+            //only creating in user table, college table have not null on some values
+            // \App\Models\College::create([
+            //     'user_id' => $user->id,
+            //     'institution_name' => $request->name,
+            // ]);
         } elseif ($request->role === 'firm') {
             \App\Models\Firm::create([
                 'user_id' => $user->id,
