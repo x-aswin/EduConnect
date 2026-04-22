@@ -62,6 +62,6 @@ class ProfileController extends Controller
             'verification_doc'  => $verificationDocPath,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Profile Completed!');
+        return redirect()->route('college.dashboard')->with('success', 'Profile Completed!');
     }
 }
