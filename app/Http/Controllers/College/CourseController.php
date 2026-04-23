@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\College;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\College;
+use App\Models\Course;
+use App\Models\Mentor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CourseController extends Controller
 {
@@ -12,7 +17,18 @@ class CourseController extends Controller
      */
     public function index()
     {
-        return view('college.manage-course');
+        $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
+        $courses = Course::with(['college.user', 'mentor.user', 'category'])
+            ->where('college_id', $college->id)
+            ->latest()
+            ->get();
+        $mentors = Mentor::with(['user', 'college'])
+            ->where('college_id', $college->id)
+            ->latest()
+            ->get();
+        $categories = Category::latest()->get();
+
+        return view('college.manage-course', compact('courses', 'college', 'mentors', 'categories'));
     }
 
     /**
