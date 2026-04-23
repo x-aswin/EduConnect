@@ -10,8 +10,10 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
 use App\Http\Controllers\College\DashboardController;
 use App\Http\Controllers\College\ProfileController as CollegeProfileController;
+use App\Http\Controllers\College\CourseController as CollegeCourseController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
+use App\Models\College;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +42,20 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     });
 });
 
+Route::middleware(['auth','role:college'])->group(function(){
+    Route::prefix('college')->name('college.')->group(function(){
+        Route::get('/complete-profile', [CollegeProfileController::class, 'edit'])->name('complete.profile.edit');
+        Route::patch('/complete-profile', [CollegeProfileController::class, 'update'])->name('complete.profile.update');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::resource('/courses', CollegeCourseController::class)->names('courses');
+    });
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+
+
 
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::prefix('student')->name('student.')->group(function () {
@@ -49,28 +65,12 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         Route::patch('/complete-profile', [StudentProfileController::class, 'update'])->name('complete.profile.update');
 
     });
-
-
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
      Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
      Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth','role:college'])->group(function(){
-    Route::prefix('college')->name('college.')->group(function(){
-        Route::get('/complete-profile', [CollegeProfileController::class, 'edit'])->name('complete.profile.edit');
-        Route::patch('/complete-profile', [CollegeProfileController::class, 'update'])->name('complete.profile.update');
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    });
 
-
-
-
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-});
 
 
 require __DIR__.'/auth.php';

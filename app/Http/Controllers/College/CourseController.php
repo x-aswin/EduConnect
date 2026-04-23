@@ -5,14 +5,14 @@ namespace App\Http\Controllers\College;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class ManageCourse extends Controller
+class CourseController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        return view('college.manage-course');
     }
 
     /**

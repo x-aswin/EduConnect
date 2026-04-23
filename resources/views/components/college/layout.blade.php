@@ -120,7 +120,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'courses' ? 'active' : '' }}" href="#">
+          <a class="nav-link {{ $active === 'courses' ? 'active' : '' }}" href="{{ route('college.courses.index') }}">
             <i class="bi bi-journal-bookmark-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Courses
           </a>
         </li>
