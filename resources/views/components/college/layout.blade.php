@@ -130,7 +130,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'enrollments' ? 'active' : '' }}" href="#">
+          <a class="nav-link {{ $active === 'enrollments' ? 'active' : '' }}" href="{{ route('college.enrollments.index') }}">
             <i class="bi bi-person-lines-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Enrollments
           </a>
         </li>
