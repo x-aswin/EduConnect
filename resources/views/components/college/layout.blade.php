@@ -139,7 +139,12 @@
             <i class="bi bi-bar-chart-line me-1 d-inline-block d-lg-none d-xl-inline"></i> Reports
           </a>
         </li>
-        <!-- Additional quick action: Mentor management shortcut (optional) -->
+        <li class="nav-item">
+          <a class="nav-link {{ $active === 'profile' ? 'active' : '' }}" href="#">
+            <i class="bi bi-gear me-1 d-inline-block d-lg-none d-xl-inline"></i> Profile
+          </a>
+        </li>
+        {{-- <!-- Additional quick action: Mentor management shortcut (optional) -->
         <li class="nav-item dropdown d-none d-lg-block">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-gear me-1"></i> Manage
@@ -150,7 +155,7 @@
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-building"></i> Institution Profile</a></li>
           </ul>
-        </li>
+        </li> --}}
       </ul>
 
       <!-- Right side: Institution info + profile dropdown -->
