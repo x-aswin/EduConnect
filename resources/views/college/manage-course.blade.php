@@ -350,6 +350,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        var isViewMode = @json($isView);
         var collegeSelect = document.getElementById('college_id');
         var mentorSelect = document.getElementById('mentor_id');
         var courseTypeSelect = document.getElementById('course_type');
@@ -397,7 +398,7 @@
 
             logisticsFields.forEach(function (field) {
                 if (field.closest('.logistics-field')) {
-                    field.disabled = isFirmOnly;
+                    field.disabled = isViewMode || isFirmOnly;
                 }
             });
         }
