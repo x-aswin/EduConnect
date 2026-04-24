@@ -140,7 +140,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'profile' ? 'active' : '' }}" href="#">
+          <a class="nav-link {{ $active === 'profile' ? 'active' : '' }}" href="{{ route('college.profile.edit') }}">
             <i class="bi bi-gear me-1 d-inline-block d-lg-none d-xl-inline"></i> Profile
           </a>
         </li>
@@ -163,10 +163,11 @@
         <!-- Institution chip (college name) -->
         <div class="institution-badge d-none d-md-block me-3">
           <i class="bi bi-pin-map-fill me-1" style="color:#2563eb;"></i> 
-          <span>Cochin University College</span>
-          <span class="vr mx-2"></span>
+          <span>{{ auth()->user()->college?->institution_name ?? auth()->user()->name }} </span>
+          {{-- <span class="vr mx-2">{{ auth()->user()->name }}</span> --}}
+          <br>
           <i class="bi bi-check-circle-fill text-success me-1" style="font-size: 0.7rem;"></i>
-          <span class="text-success">Verified</span>
+          <span class="text-success">{{ auth()->user()->college?->verification_doc ? 'Verified' : 'Profile pending' }}</span>
         </div>
         
         <!-- Notifications icon (mock) -->
@@ -189,7 +190,7 @@
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person-circle"></i> My Profile</a></li>
+            <li><a class="dropdown-item" href="{{ route('college.profile.edit') }}"><i class="bi bi-person-circle"></i> My Profile</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-building"></i> College Settings</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check"></i> Verification Status</a></li>
             <li><hr class="dropdown-divider"></li>

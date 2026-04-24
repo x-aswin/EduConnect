@@ -46,16 +46,18 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth','role:college'])->group(function(){
     Route::prefix('college')->name('college.')->group(function(){
-        Route::get('/complete-profile', [CollegeProfileController::class, 'edit'])->name('complete.profile.edit');
-        Route::patch('/complete-profile', [CollegeProfileController::class, 'update'])->name('complete.profile.update');
+        Route::get('/complete-profile', [CollegeProfileController::class, 'completeEdit'])->name('complete.profile.edit');
+        Route::patch('/complete-profile', [CollegeProfileController::class, 'completeUpdate'])->name('complete.profile.update');
+        Route::get('/profile', [CollegeProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [CollegeProfileController::class, 'update'])->name('profile.update');
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('/courses', CollegeCourseController::class)->names('courses');
         Route::resource('/mentors', CollegeMentorController::class)->names('mentors');
         Route::resource('/enrollments', CollegeEnrollmentController::class)->names('enrollments');
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 
