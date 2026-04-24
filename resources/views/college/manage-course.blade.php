@@ -68,17 +68,17 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group shadow-sm gap-1">
-                                    <a href="{{ route('admin.courses.show', $course->id) }}">
+                                    <a href="{{ route('college.courses.show', $course->id) }}">
                                         <button class="btn btn-sm btn-outline-primary" title="View Course">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                     </a>
-                                    <a href="{{ route('admin.courses.edit', $course->id) }}">
+                                    <a href="{{ route('college.courses.edit', $course->id) }}">
                                         <button class="btn btn-sm btn-outline-warning" title="Edit Course">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                     </a>
-                                    <a href="{{ route('admin.courses.edit', [$course->id, 'mode' => 'delete']) }}">
+                                    <a href="{{ route('college.courses.edit', [$course->id, 'mode' => 'delete']) }}">
                                         <button class="btn btn-sm btn-outline-danger" title="Delete Course">
                                             <i class="bi bi-trash"></i>
                                         </button>
@@ -107,7 +107,7 @@
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <form action="{{ isset($editCourse) ? route('admin.courses.update', $editCourse->id) : route('admin.courses.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ isset($editCourse) ? route('college.courses.update', $editCourse->id) : route('college.courses.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @if(isset($editCourse))
                 @method('PATCH')
@@ -150,16 +150,6 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Associated College</label>
-                        <select name="college_id" id="college_id" class="form-select @error('college_id') is-invalid @enderror" {{ $isView ? 'disabled' : '' }}>
-                            <option value="">Select College</option>
-                            
-                        </select>
-                        @error('college_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Assign Mentor (Optional)</label>
@@ -281,7 +271,7 @@
 
             <div class="modal-footer">
                 @if(isset($editCourse))
-                    <a href="{{ route('admin.courses.index') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ route('college.courses.index') }}" class="btn btn-secondary">Cancel</a>
                 @else
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 @endif
@@ -302,13 +292,13 @@
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Delete Course</h5>
-                    <a href="{{ route('admin.courses.index') }}" class="btn-close btn-close-white"></a>
+                    <a href="{{ route('college.courses.index') }}" class="btn-close btn-close-white"></a>
                 </div>
                 <div class="modal-body text-center">
                     <p>Delete <strong>{{ $deleteCourse->title ?? 'Unknown Course' }}</strong>?</p>
                 </div>
                 <div class="modal-footer">
-                    <form action="{{ route('admin.courses.destroy', $deleteCourse->id) }}" method="POST">
+                    <form action="{{ route('college.courses.destroy', $deleteCourse->id) }}" method="POST">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-danger">Confirm Delete</button>
                     </form>
@@ -324,7 +314,7 @@
             var myModalDelete = document.getElementById('deleteModal');
             myModalDelete.addEventListener('hidden.bs.modal', function () {
                 if (window.location.pathname.includes('/edit')) {
-                    window.location.href = "{{ route('admin.courses.index') }}";
+                    window.location.href = "{{ route('college.courses.index') }}";
                 }
             });
         });
@@ -351,7 +341,7 @@
             var myModalElement = document.getElementById('addCourseModal');
             myModalElement.addEventListener('hidden.bs.modal', function () {
                 if (window.location.pathname.includes('/edit') || window.location.pathname.match(/\d+$/)) {
-                    window.location.href = "{{ route('admin.courses.index') }}";
+                    window.location.href = "{{ route('college.courses.index') }}";
                 }
             });
         });
