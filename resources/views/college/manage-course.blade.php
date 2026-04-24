@@ -32,7 +32,7 @@
                     <tr>
                         <th>#</th>
                         <th>Title</th>
-                        <th>College</th>
+                        {{-- <th>College</th> --}}
                         <th>Mentor</th>
                         <th>Category</th>
                         <th>Type</th>
@@ -51,7 +51,7 @@
                                     {{ $course->title ?? 'Untitled Course' }}
                                 </div>
                             </td>
-                            <td>{{ $course->college->institution_name ?? 'N/A' }}</td>
+                            {{-- <td>{{ $course->college->institution_name ?? 'N/A' }}</td> --}}
                             <td>{{ $course->mentor->user->name ?? 'Not Assigned' }}</td>
                             <td>{{ $course->category->name ?? 'N/A' }}</td>
                             <td>
