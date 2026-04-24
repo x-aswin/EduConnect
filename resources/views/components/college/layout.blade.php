@@ -125,7 +125,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'mentors' ? 'active' : '' }}" href="#">
+          <a class="nav-link {{ $active === 'mentors' ? 'active' : '' }}" href="{{ route('college.mentors.index') }}">
             <i class="bi bi-people-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Mentors
           </a>
         </li>
