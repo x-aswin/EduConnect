@@ -110,7 +110,20 @@ class CourseController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
+        $courses = Course::with(['college.user', 'mentor.user', 'category'])
+            ->where('college_id', $college->id)
+            ->latest()
+            ->get();
+        $mentors = Mentor::with(['user', 'college'])
+            ->where('college_id', $college->id)
+            ->latest()
+            ->get();
+        $categories = Category::latest()->get();
+        $editCourse = Course::with(['college.user', 'mentor.user', 'category'])->findOrFail($id);
+        $viewOnly = true;
+
+        return view('college.manage-course', compact('courses', 'mentors', 'categories', 'editCourse', 'viewOnly'));
     }
 
     /**
