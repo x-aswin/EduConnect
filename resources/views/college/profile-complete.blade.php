@@ -16,7 +16,7 @@
                 name="institution_name" 
                 type="text" 
                 class="block mt-1 w-full" 
-                :value="old('institution_name', $college->institution_name ?? auth()->user()->name)" 
+                :value="old('institution_name', $college->institution_name ?? $college->user->name ?? auth()->user()->name)" 
                 required />
             <x-input-error :messages="$errors->get('institution_name')" class="mt-2" />
         </div>

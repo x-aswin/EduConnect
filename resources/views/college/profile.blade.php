@@ -153,4 +153,5 @@
             </div>
         </div>
     </div>
+    <x-toast />
 </x-college.layout>

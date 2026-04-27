@@ -4,6 +4,7 @@ namespace App\Http\Controllers\College;
 
 use App\Http\Controllers\Controller;
 use App\Models\College;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +13,7 @@ class ProfileController extends Controller
 {
     public function edit()
     {
-        $college = College::where('user_id', Auth::id())->first();
+        $college = College::with('user')->where('user_id', Auth::id())->first();
 
         if (! $college) {
             return redirect()->route('college.complete.profile.edit');
@@ -23,9 +24,10 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
-        $college = College::where('user_id', Auth::id())->firstOrFail();
+        $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
 
         $request->validate([
+            'acronym'          => 'required|string|max:255',
             'institution_name'  => 'required|string|max:255',
             'college_phone'     => 'required|string|max:20',
             'website'           => 'nullable|url',
@@ -54,6 +56,12 @@ class ProfileController extends Controller
             $verificationDocPath = $request->file('verification_doc')->store('colleges/verifications', 'public');
         }
 
+        if ($user = User::find(Auth::id())) {
+            $user->update([
+                'name' => $request->acronym,
+            ]);
+        }
+
         $college->update([
             'institution_name'  => $request->institution_name,
             'college_phone'     => $request->college_phone,
@@ -71,7 +79,7 @@ class ProfileController extends Controller
 
     public function completeEdit()
     {
-        $college = College::where('user_id', Auth::id())->first();
+        $college = College::with('user')->where('user_id', Auth::id())->first();
 
         if (! $college) {
             $college = new College([
