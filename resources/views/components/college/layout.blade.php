@@ -162,12 +162,23 @@
       <div class="d-flex align-items-center ms-lg-3">
         <!-- Institution chip (college name) -->
         <div class="institution-badge d-none d-md-block me-3">
-          <i class="bi bi-pin-map-fill me-1" style="color:#2563eb;"></i> 
-          <span>{{ auth()->user()->college?->institution_name ?? auth()->user()->name }} </span>
-          {{-- <span class="vr mx-2">{{ auth()->user()->name }}</span> --}}
-          <br>
-          <i class="bi bi-check-circle-fill text-success me-1" style="font-size: 0.7rem;"></i>
-          <span class="text-success">{{ auth()->user()->college?->verification_doc ? 'Verified' : 'Profile pending' }}</span>
+          <div class="d-flex align-items-start gap-2">
+            <i class="bi bi-pin-map-fill mt-1" style="color:#2563eb;"></i>
+            <div class="lh-sm">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="fw-semibold text-uppercase" style="font-size: 0.82rem; letter-spacing: 0.04em;">
+                  {{ auth()->user()->name ?? 'College' }}
+                </span>
+                <span class="text-secondary" style="font-size: 0.78rem;">
+                  {{ auth()->user()->college?->institution_name ?? 'Institution name not set' }}
+                </span>
+              </div>
+              <div class="mt-1">
+                <i class="bi bi-check-circle-fill text-success me-1" style="font-size: 0.7rem;"></i>
+                <span class="text-success" style="font-size: 0.75rem;">{{ auth()->user()->college?->verification_doc ? 'Verified' : 'Profile pending' }}</span>
+              </div>
+            </div>
+          </div>
         </div>
         
         <!-- Notifications icon (mock) -->
