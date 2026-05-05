@@ -27,7 +27,7 @@ class ProfileController extends Controller
         ]);
 
         // Find the existing student record
-        $student = \App\Models\Student::where('user_id', Auth::id())->firstOrFail();
+        $student = \App\Models\Student::where('user_id',Auth::id())->firstOrFail();
 
         // Handle Photo Upload if exists
         $photoPath = null;

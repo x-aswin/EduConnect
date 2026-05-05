@@ -1,35 +1,89 @@
 <x-college.layout active="profile">
     <div class="row g-4 align-items-start">
         <div class="col-lg-4">
-            <div class="card-placeholder h-100">
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 72px; height: 72px; overflow: hidden;">
+            {{-- Profile Header --}}
+            <div class="card-placeholder mb-3">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; overflow: hidden;">
                         @if (!empty($college->photo))
                             <img src="{{ asset('storage/' . $college->photo) }}" alt="College photo" class="w-100 h-100 object-fit-cover">
                         @else
-                            <i class="bi bi-building fs-2 text-primary"></i>
+                            <i class="bi bi-building fs-3 text-primary"></i>
                         @endif
                     </div>
                     <div>
-                        <h2 class="h4 fw-bold mb-1">{{ $college->institution_name }}</h2>
-                        <p class="text-secondary mb-1">College profile management</p>
-                        <span class="badge {{ !empty($college->verification_doc) ? 'bg-success' : 'bg-warning text-dark' }}">
-                            {{ !empty($college->verification_doc) ? 'Verified' : 'Verification pending' }}
-                        </span>
+                        <h5 class="fw-bold mb-0">{{ $college->institution_name }}</h5>
+                        <small class="text-secondary">{{ $college->user->name ?? 'College' }}</small>
                     </div>
                 </div>
+            </div>
 
-                <div class="border-top pt-3 small text-secondary">
-                    <div class="mb-2"><strong class="text-dark">Contact person:</strong> {{ $college->contact_person }}</div>
-                    <div class="mb-2"><strong class="text-dark">Phone:</strong> {{ $college->college_phone }}</div>
-                    <div class="mb-2"><strong class="text-dark">Website:</strong> {{ $college->website ?? 'Not set' }}</div>
-                    @if (!empty($college->verification_doc))
-                        <div>
-                            <strong class="text-dark">Verification file:</strong>
-                            <a href="{{ asset('storage/' . $college->verification_doc) }}" target="_blank" rel="noopener">View document</a>
-                        </div>
-                    @endif
+            {{-- Verification Status Card --}}
+            <div class="card-placeholder mb-3 border-2 {{ !empty($college->verification_doc) ? 'border-success border-opacity-25' : 'border-warning border-opacity-25' }}">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-shield-check me-2 {{ !empty($college->verification_doc) ? 'text-success' : 'text-warning' }}"></i>
+                        Verification Status
+                    </h6>
+                    <span class="badge {{ !empty($college->verification_doc) ? 'bg-success' : 'bg-warning text-dark' }}">
+                        {{ !empty($college->verification_doc) ? 'Verified' : 'Pending' }}
+                    </span>
                 </div>
+                <p class="text-sm text-secondary mb-0">
+                    @if (!empty($college->verification_doc))
+                        <i class="bi bi-check-circle text-success me-1"></i> Your verification document has been uploaded.
+                    @else
+                        <i class="bi bi-exclamation-circle text-warning me-1"></i> Upload a verification document to complete your profile.
+                    @endif
+                </p>
+            </div>
+
+            {{-- Uploaded Documents Section --}}
+            <div class="card-placeholder">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-files me-2"></i> Uploaded Documents
+                </h6>
+                
+                @if (!empty($college->verification_doc))
+                    @php
+                        $verificationUrl = asset('storage/' . $college->verification_doc);
+                        $verificationExt = strtolower(pathinfo($college->verification_doc, PATHINFO_EXTENSION));
+                        $isPdf = $verificationExt === 'pdf';
+                        $fileName = basename($college->verification_doc);
+                    @endphp
+                    <div class="border rounded-2 p-3 mb-3 bg-light-subtle">
+                        <div class="d-flex align-items-start gap-2 mb-2">
+                            <div class="flex-shrink-0">
+                                @if ($isPdf)
+                                    <i class="bi bi-file-pdf fs-4 text-danger"></i>
+                                @else
+                                    <i class="bi bi-file-image fs-4 text-info"></i>
+                                @endif
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <p class="fw-semibold mb-0 text-truncate" title="{{ $fileName }}">Verification Document</p>
+                                <small class="text-secondary">{{ $verificationExt }}</small>
+                            </div>
+                        </div>
+                        <div class="btn-group w-100" role="group">
+                            <a href="{{ $verificationUrl }}" target="_blank" class="btn btn-sm btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a href="{{ $verificationUrl }}" download class="btn btn-sm btn-outline-secondary" title="Download">
+                                <i class="bi bi-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                @else
+                    <div class="text-center py-3 bg-light rounded-2">
+                        <i class="bi bi-inbox fs-3 text-secondary mb-2 d-block"></i>
+                        <p class="text-secondary small mb-0">No documents uploaded yet</p>
+                    </div>
+                @endif
+                
+                <small class="text-secondary d-block mt-2">
+                    <i class="bi bi-info-circle me-1"></i> Update your verification document in the form on the right
+                </small>
             </div>
         </div>
 
