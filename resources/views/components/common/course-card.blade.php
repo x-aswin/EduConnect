@@ -19,17 +19,44 @@
 
 <div class="col-lg-4 col-md-6">
             <div class="card course-card border-0 shadow-sm h-100">
-                {{-- Gradient header with icon --}}
-                <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 140px; background: {{ $course['image_bg'] }};">
-                    <i class="bi {{ $course['icon'] }} fs-1 {{ $course['icon_color'] }}"></i>
-                </div>
+                {{-- Header: use actual image if available, otherwise gradient + icon --}}
+                @if(!empty($course['image']))
+                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 140px; background-image: url('{{ $course['image'] }}'); background-size: cover; background-position: center;">
+                    </div>
+                @else
+                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 140px; background: {{ $course['image_bg'] }};">
+                        <i class="bi {{ $course['icon'] }} fs-1 {{ $course['icon_color'] }}"></i>
+                    </div>
+                @endif
                 <div class="card-body d-flex flex-column">
-                    {{-- Course type badge --}}
-                    @if($course['type'] == 'student_only')
-                        <span class="badge bg-primary bg-opacity-10 text-primary mb-2 align-self-start">Student Only</span>
-                    @else
-                        <span class="badge bg-warning bg-opacity-10 text-warning mb-2 align-self-start">Firm Available</span>
-                    @endif
+                    {{-- Type and category badges --}}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        @if(($course['type'] ?? '') == 'student_only')
+                            <span class="badge bg-primary bg-opacity-10 text-primary">Student Only</span>
+                        @else
+                            <span class="badge bg-warning bg-opacity-10 text-warning">Firm Available</span>
+                        @endif
+
+                        @if(!empty($course['category']))
+                            @php
+                                $badgeStyle = '';
+                                $badgeClass = '';
+                                $badgeTextClass = 'text-white';
+
+                                if(!empty($course['image_bg'])) {
+                                    $badgeStyle = 'background: ' . $course['image_bg'] . ';';
+                                    $badgeTextClass = ($course['icon_color'] ?? '') === 'text-warning' ? 'text-dark' : 'text-white';
+                                } elseif(!empty($course['icon_color'])) {
+                                    $badgeClass = str_replace('text-', 'bg-', $course['icon_color']);
+                                    $badgeTextClass = ($course['icon_color'] === 'text-warning') ? 'text-dark' : 'text-white';
+                                } else {
+                                    $badgeClass = 'bg-light';
+                                    $badgeTextClass = 'text-secondary';
+                                }
+                            @endphp
+                            <span class="badge {{ $badgeClass }} {{ $badgeTextClass }}" style="{{ $badgeStyle }}">{{ $course['category'] }}</span>
+                        @endif
+                    </div>
 
                     <h5 class="fw-bold card-title">{{ $course['title'] }}</h5>
                     <p class="small text-secondary mb-1"><i class="bi bi-building me-1"></i> {{ $course['college'] }}</p>
@@ -44,12 +71,21 @@
                         
                         {{-- Seats: conditional display --}}
                         @auth
-                            @if(auth()->user()->role == 'student')
-                                {{-- Student sees seat counter --}}
-                                <span class="small text-secondary">
-                                    <i class="bi bi-person"></i> 
-                                    {{ $course['seats_available'] }} / {{ $course['seats_total'] }} seats
-                                </span>
+                                    @if(auth()->user()->role == 'student')
+                                    @php
+                                        $totalSeats = (int) ($course['seats_total'] ?? 0);
+                                        $availableSeats = (int) ($course['seats_available'] ?? 0);
+                                        $booked = max(0, $totalSeats - $availableSeats);
+                                    @endphp
+                                    {{-- Student sees booked/total only if total seats is set (>0) --}}
+                                    @if($totalSeats > 0)
+                                        <span class="small text-secondary">
+                                            <i class="bi bi-person"></i>
+                                            {{ $booked }} / {{ $totalSeats }} seats
+                                        </span>
+                                    @else
+                                        <span class="small text-secondary"><i class="bi bi-person"></i> Seats: N/A</span>
+                                    @endif
                             @elseif(auth()->user()->role == 'firm')
                                 {{-- Firm does NOT see seat count (or maybe sees only total capacity if needed) --}}
                                 {{-- Intentionally left empty, or you could show nothing --}}
