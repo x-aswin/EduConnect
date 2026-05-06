@@ -67,94 +67,15 @@
 
     <!-- Course cards grid -->
     <div class="row g-4">
-        {{-- Example course card (repeat for each course) --}}
-        {{-- We'll show 6 courses as an example --}}
-        @php
-            $courses = [
-                [
-                    'title' => 'Full Stack Web Development',
-                    'college' => 'Cochin University College',
-                    'venue' => 'CS Lab 204',
-                    'start_date' => 'Apr 20, 2026',
-                    'price' => 'Free',
-                    'seats_total' => 30,
-                    'seats_available' => 12,
-                    'type' => 'student_only',
-                    'image_bg' => 'linear-gradient(135deg, #e0e7ff, #c7d2fe)',
-                    'icon' => 'bi-code-slash',
-                    'icon_color' => 'text-primary',
-                ],
-                [
-                    'title' => 'Ethical Hacking & Cyber Defense',
-                    'college' => 'CUSAT Tech Hub',
-                    'venue' => 'Seminar Hall',
-                    'start_date' => 'Apr 22, 2026',
-                    'price' => '₹1,200',
-                    'seats_total' => 25,
-                    'seats_available' => 7,
-                    'type' => 'firm_available',
-                    'image_bg' => 'linear-gradient(135deg, #d1fae5, #a7f3d0)',
-                    'icon' => 'bi-shield-shaded',
-                    'icon_color' => 'text-success',
-                ],
-                [
-                    'title' => 'Data Analytics with Python',
-                    'college' => 'Cochin University College',
-                    'venue' => 'IT Lab 1',
-                    'start_date' => 'Apr 25, 2026',
-                    'price' => '₹950',
-                    'seats_total' => 30,
-                    'seats_available' => 2,
-                    'type' => 'student_only',
-                    'image_bg' => 'linear-gradient(135deg, #fce7f3, #fbcfe8)',
-                    'icon' => 'bi-graph-up-arrow',
-                    'icon_color' => 'text-danger',
-                ],
-                [
-                    'title' => 'UI/UX Design Fundamentals',
-                    'college' => 'MES College of Engineering',
-                    'venue' => 'Design Studio',
-                    'start_date' => 'May 2, 2026',
-                    'price' => '₹750',
-                    'seats_total' => 20,
-                    'seats_available' => 12,
-                    'type' => 'student_only',
-                    'image_bg' => 'linear-gradient(135deg, #fef3c7, #fde68a)',
-                    'icon' => 'bi-palette2',
-                    'icon_color' => 'text-warning',
-                ],
-                [
-                    'title' => 'Business Analytics for Managers',
-                    'college' => 'IIM Kozhikode (offline cohort)',
-                    'venue' => 'Auditorium',
-                    'start_date' => 'May 10, 2026',
-                    'price' => '₹4,500',
-                    'seats_total' => 40,
-                    'seats_available' => 25,
-                    'type' => 'firm_available',
-                    'image_bg' => 'linear-gradient(135deg, #e0e7ff, #a5b4fc)',
-                    'icon' => 'bi-bar-chart-line',
-                    'icon_color' => 'text-primary',
-                ],
-                [
-                    'title' => 'Digital Marketing Bootcamp',
-                    'college' => 'Rajagiri College',
-                    'venue' => 'Media Lab',
-                    'start_date' => 'May 15, 2026',
-                    'price' => '₹1,800',
-                    'seats_total' => 35,
-                    'seats_available' => 13,
-                    'type' => 'student_only',
-                    'image_bg' => 'linear-gradient(135deg, #d1fae5, #6ee7b7)',
-                    'icon' => 'bi-camera-video',
-                    'icon_color' => 'text-success',
-                ],
-            ];
-        @endphp
-
-        @foreach($courses as $course)
+        @forelse($courses as $course)
             <x-common.course-card :course="$course" />
-        @endforeach
+        @empty
+            <div class="col-12">
+                <div class="alert alert-light border text-secondary mb-0 rounded-4">
+                    No active courses found.
+                </div>
+            </div>
+        @endforelse
     </div>
 
     <!-- Pagination -->
