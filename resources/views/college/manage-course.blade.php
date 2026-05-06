@@ -15,6 +15,29 @@
     $isEdit = isset($editCourse) && !isset($viewOnly);
     $isView = isset($editCourse) && isset($viewOnly);
     $isCreate = !isset($editCourse);
+
+    $oldSections = old('sections');
+    if (is_array($oldSections)) {
+        $sectionRows = array_values($oldSections);
+    } elseif (isset($editCourse)) {
+        $sectionRows = ($editCourse->sections ?? collect())->map(function ($section) {
+            return [
+                'id' => $section->id,
+                'heading' => $section->section_heading,
+                'content' => $section->section_content,
+            ];
+        })->values()->all();
+    } else {
+        $sectionRows = [];
+    }
+
+    if (empty($sectionRows)) {
+        $sectionRows = [[
+            'id' => '',
+            'heading' => '',
+            'content' => '',
+        ]];
+    }
 @endphp
 
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
@@ -266,6 +289,78 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div class="col-12 mt-3">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="border-bottom pb-2 mb-0">Course Sections</h6>
+                            @unless($isView)
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="college-add-course-section">
+                                    <i class="bi bi-plus-lg"></i> Add Section
+                                </button>
+                            @endunless
+                        </div>
+
+                        @if($isView)
+                            <div class="d-grid gap-3">
+                                @forelse($sectionRows as $index => $sectionRow)
+                                    <div class="border rounded-3 p-3 bg-light">
+                                        <div class="fw-semibold mb-1">Section {{ $index + 1 }}: {{ $sectionRow['heading'] ?? 'Untitled Section' }}</div>
+                                        <div class="text-secondary small" style="white-space: pre-wrap;">{{ $sectionRow['content'] ?? '' }}</div>
+                                    </div>
+                                @empty
+                                    <div class="text-muted">No sections added yet.</div>
+                                @endforelse
+                            </div>
+                        @else
+                            <div id="college-course-sections-list" class="d-grid gap-3">
+                                @foreach($sectionRows as $index => $sectionRow)
+                                    <div class="border rounded-3 p-3 bg-white" data-college-section-row>
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="fw-semibold">Section <span data-college-section-order>{{ $index + 1 }}</span></div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove-college-section>
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <input type="hidden" value="{{ $sectionRow['id'] ?? '' }}" data-college-section-field="id">
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Heading</label>
+                                            <input type="text" class="form-control" value="{{ $sectionRow['heading'] ?? '' }}" data-college-section-field="heading" placeholder="Section heading">
+                                        </div>
+
+                                        <div>
+                                            <label class="form-label">Content</label>
+                                            <textarea class="form-control" rows="3" data-college-section-field="content" placeholder="Section content">{{ $sectionRow['content'] ?? '' }}</textarea>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <template id="college-course-section-template">
+                                <div class="border rounded-3 p-3 bg-white" data-college-section-row>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="fw-semibold">Section <span data-college-section-order></span></div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-remove-college-section>
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <input type="hidden" value="" data-college-section-field="id">
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Heading</label>
+                                        <input type="text" class="form-control" value="" data-college-section-field="heading" placeholder="Section heading">
+                                    </div>
+
+                                    <div>
+                                        <label class="form-label">Content</label>
+                                        <textarea class="form-control" rows="3" data-college-section-field="content" placeholder="Section content"></textarea>
+                                    </div>
+                                </div>
+                            </template>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -356,6 +451,9 @@
         var courseTypeSelect = document.getElementById('course_type');
         var firmOnlyInfo = document.getElementById('firmOnlyInfo');
         var logisticsFields = document.querySelectorAll('.logistics-field input');
+        var sectionsList = document.getElementById('college-course-sections-list');
+        var addSectionButton = document.getElementById('college-add-course-section');
+        var sectionTemplate = document.getElementById('college-course-section-template');
 
         function filterMentorsByCollege() {
             if (!collegeSelect || !mentorSelect || mentorSelect.disabled) {
@@ -407,6 +505,75 @@
             toggleFirmOnlyFields();
             courseTypeSelect.addEventListener('change', toggleFirmOnlyFields);
         }
+
+        function renumberSections() {
+            if (!sectionsList) {
+                return;
+            }
+
+            var rows = sectionsList.querySelectorAll('[data-college-section-row]');
+
+            rows.forEach(function (row, index) {
+                var numberNode = row.querySelector('[data-college-section-order]');
+                var idField = row.querySelector('[data-college-section-field="id"]');
+                var headingField = row.querySelector('[data-college-section-field="heading"]');
+                var contentField = row.querySelector('[data-college-section-field="content"]');
+
+                if (numberNode) {
+                    numberNode.textContent = index + 1;
+                }
+
+                if (idField) {
+                    idField.name = 'sections[' + index + '][id]';
+                }
+
+                if (headingField) {
+                    headingField.name = 'sections[' + index + '][heading]';
+                }
+
+                if (contentField) {
+                    contentField.name = 'sections[' + index + '][content]';
+                }
+            });
+        }
+
+        function bindSectionRow(row) {
+            var removeButton = row.querySelector('[data-remove-college-section]');
+
+            if (removeButton) {
+                removeButton.addEventListener('click', function () {
+                    row.remove();
+
+                    if (!sectionsList.querySelectorAll('[data-college-section-row]').length && sectionTemplate) {
+                        sectionsList.appendChild(sectionTemplate.content.cloneNode(true));
+                        bindAllSectionRows();
+                    }
+
+                    renumberSections();
+                });
+            }
+        }
+
+        function bindAllSectionRows() {
+            if (!sectionsList) {
+                return;
+            }
+
+            sectionsList.querySelectorAll('[data-college-section-row]').forEach(function (row) {
+                bindSectionRow(row);
+            });
+        }
+
+        if (addSectionButton && sectionsList && sectionTemplate) {
+            addSectionButton.addEventListener('click', function () {
+                sectionsList.appendChild(sectionTemplate.content.cloneNode(true));
+                bindAllSectionRows();
+                renumberSections();
+            });
+        }
+
+        bindAllSectionRows();
+        renumberSections();
     });
 </script>
 

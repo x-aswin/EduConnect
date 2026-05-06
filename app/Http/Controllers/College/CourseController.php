@@ -29,7 +29,7 @@ class CourseController extends Controller
             ->where('college_id', $college->id)
             ->latest()
             ->get();
-        $categories = Category::latest()->get();
+        $categories = Category::orderByDesc('id')->get();
 
         return view('college.manage-course', compact('courses', 'college', 'mentors', 'categories'));
     }
@@ -63,6 +63,10 @@ class CourseController extends Controller
             'time_slot' => 'required_if:course_type,student_only|nullable|string|max:255',
             'venue' => 'required_if:course_type,student_only|nullable|string|max:255',
             'status' => 'required|in:active,inactive',
+            'sections' => 'nullable|array',
+            'sections.*.id' => 'nullable|integer|exists:course_sections,id',
+            'sections.*.heading' => 'nullable|string|max:255',
+            'sections.*.content' => 'nullable|string|max:5000',
         ];
 
         if ($request->filled('mentor_id')) {
@@ -83,7 +87,7 @@ class CourseController extends Controller
                 $imagePath = $request->file('course_image')->store('courses/images', 'public');
             }
 
-            Course::create([
+            $course = Course::create([
                 'college_id' => $college->id,
                 'category_id' => $validated['category_id'],
                 'mentor_id' => $validated['mentor_id'] ?? null,
@@ -101,6 +105,8 @@ class CourseController extends Controller
                 'venue' => $isFirmOnly ? null : ($validated['venue'] ?? null),
                 'status' => $validated['status'],
             ]);
+
+            $this->syncSections($course, $validated['sections'] ?? []);
         });
 
         return redirect()->route('college.courses.index')->with('success', 'Course created successfully!');
@@ -120,7 +126,7 @@ class CourseController extends Controller
             ->where('college_id', $college->id)
             ->latest()
             ->get();
-        $categories = Category::latest()->get();
+        $categories = Category::orderByDesc('id')->get();
         $editCourse = Course::with(['college.user', 'mentor.user', 'category'])->findOrFail($id);
         $viewOnly = true;
 
@@ -142,7 +148,7 @@ class CourseController extends Controller
             ->where('college_id', $college->id)
             ->latest()
             ->get();
-        $categories = Category::latest()->get();
+        $categories = Category::orderByDesc('id')->get();
         $isDeleteMode = $request->query('mode') === 'delete';
 
         if (!$isDeleteMode) {
@@ -178,6 +184,10 @@ class CourseController extends Controller
             'time_slot' => 'required_if:course_type,student_only|nullable|string|max:255',
             'venue' => 'required_if:course_type,student_only|nullable|string|max:255',
             'status' => 'required|in:active,inactive',
+            'sections' => 'nullable|array',
+            'sections.*.id' => 'nullable|integer|exists:course_sections,id',
+            'sections.*.heading' => 'nullable|string|max:255',
+            'sections.*.content' => 'nullable|string|max:5000',
         ];
 
        if ($request->filled('mentor_id')) {
@@ -224,6 +234,7 @@ class CourseController extends Controller
             }
 
             $course->update($updateData);
+            $this->syncSections($course, $validated['sections'] ?? []);
         });
 
         return redirect()->route('college.courses.index')->with('success', 'Course updated successfully!');
@@ -245,5 +256,43 @@ class CourseController extends Controller
         });
 
         return redirect()->route('college.courses.index')->with('success', 'Course deleted successfully!');
+    }
+
+    /**
+     * Sync submitted course sections with the database.
+     */
+    private function syncSections(Course $course, array $sections): void
+    {
+        $existingSections = $course->sections()->get()->keyBy('id');
+        $keptIds = [];
+
+        foreach (array_values($sections) as $index => $sectionData) {
+            $heading = trim((string) ($sectionData['heading'] ?? ''));
+            $content = trim((string) ($sectionData['content'] ?? ''));
+            $sectionId = $sectionData['id'] ?? null;
+
+            if ($heading === '' && $content === '') {
+                continue;
+            }
+
+            $payload = [
+                'section_heading' => $heading,
+                'section_content' => $content,
+                'priority_order' => $index + 1,
+            ];
+
+            if ($sectionId && $existingSections->has((int) $sectionId)) {
+                $existingSections->get((int) $sectionId)->update($payload);
+                $keptIds[] = (int) $sectionId;
+                continue;
+            }
+
+            $createdSection = $course->sections()->create($payload);
+            $keptIds[] = $createdSection->id;
+        }
+
+        $course->sections()
+            ->when(!empty($keptIds), fn ($query) => $query->whereNotIn('id', $keptIds), fn ($query) => $query)
+            ->delete();
     }
 }
