@@ -180,7 +180,14 @@
             <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Account Settings</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check"></i> Privacy</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="{{ route('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            <li>
+              <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="dropdown-item text-danger">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+              </form>
+            </li>
           </ul>
         </div>
       </div>
