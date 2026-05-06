@@ -1,4 +1,4 @@
-<x-student.layout>
+<x-student.layout title="Dashboard - EduConnect" active="dashboard">
   @push('styles')
   <style>
   /* ========================================
@@ -71,7 +71,7 @@
   @endpush
 
   <!-- Welcome Section -->
-  <div class="welcome-card d-flex flex-wrap align-items-center justify-content-between mb-4 mt-4">
+<div class="welcome-card d-flex flex-wrap align-items-center justify-content-between mb-4 mt-4">
     <div>
       <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-2">
         <i class="bi bi-emoji-smile me-1"></i> Welcome back!

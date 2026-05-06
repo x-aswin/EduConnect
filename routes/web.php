@@ -16,6 +16,7 @@ use App\Http\Controllers\College\MentorController as CollegeMentorController;
 use App\Http\Controllers\College\EnrollmentController as CollegeEnrollmentController;
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Student\BrowseController as StudentBrowseController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Models\College;
@@ -73,6 +74,7 @@ Route::middleware(['auth','role:college'])->group(function(){
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::prefix('student')->name('student.')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
+        Route::resource('/explore', StudentBrowseController::class)->names('explore');
 
         Route::get('/complete-profile', [StudentProfileController::class, 'edit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [StudentProfileController::class, 'update'])->name('complete.profile.update');

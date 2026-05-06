@@ -1,5 +1,5 @@
-@props(['active' => null])
-<x-base.layout>
+@props(['active' => null, 'title' => 'EduConnect'])
+<x-base.layout :title="$title">
     @push('styles')
     <style>
     /* ========================================
@@ -129,10 +129,10 @@
     <div class="collapse navbar-collapse" id="studentNavbar">
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#"><i class="bi bi-house-door-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Home</a>
+          <a class="nav-link {{ $active === 'dashboard' ? 'active' : '' }}" aria-current="page" href={{ route('student.dashboard') }}><i class="bi bi-house-door-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#"><i class="bi bi-compass me-1 d-inline-block d-lg-none d-xl-inline"></i> Browse Courses</a>
+          <a class="nav-link {{ $active === 'explore' ? 'active' : '' }}" href={{ route('student.explore.index') }}><i class="bi bi-compass me-1 d-inline-block d-lg-none d-xl-inline"></i> Browse Courses</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#"><i class="bi bi-journal-check me-1 d-inline-block d-lg-none d-xl-inline"></i> My Enrollments</a>
@@ -165,10 +165,14 @@
         <!-- Student profile dropdown -->
         <div class="dropdown">
           <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="studentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="avatar-circle me-2 d-none d-md-flex">AS</div>
+            <div class="avatar-circle me-2 d-none d-md-flex">
+              {{ strtoupper(collect(explode(' ', auth()->user()?->name ?? 'U'))->filter()->map(fn ($part) => substr($part, 0, 1))->take(2)->implode('')) }}
+            </div>
             <div class="d-none d-lg-block text-start lh-sm">
-              <span class="d-block fw-semibold" style="font-size: 0.95rem;">Aswin S.</span>
-              <span class="d-block small text-secondary" style="font-size: 0.75rem;">Student · IMCA22</span>
+              <span class="d-block fw-semibold" style="font-size: 0.95rem;">{{ auth()->user()?->name ?? 'Guest' }}</span>
+              <span class="d-block small text-secondary" style="font-size: 0.75rem;">
+                {{ ucfirst(auth()->user()?->role ?? 'User') }}{{ auth()->user()?->student?->current_qualification ? ' · ' . auth()->user()->student->current_qualification : '' }}
+              </span>
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
@@ -176,7 +180,7 @@
             <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Account Settings</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check"></i> Privacy</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="{{ route('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
           </ul>
         </div>
       </div>
