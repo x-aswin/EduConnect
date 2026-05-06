@@ -50,6 +50,8 @@ class BrowseController extends Controller
                 $imageUrl = $imagePath ? asset('storage/' . ltrim($imagePath, '/')) : null;
 
                 return [
+                    'id' => $course->id,
+                    'slug' => $course->slug,
                     'title' => $course->title,
                     'image' => $imageUrl,
                     'category' => $course->category?->name ?? null,

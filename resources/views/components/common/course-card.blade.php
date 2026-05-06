@@ -117,13 +117,13 @@
                     {{-- Enroll button - changes based on role --}}
                     @auth
                         @if(auth()->user()->role == 'student')
-                            <button class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
+                            <a href="{{ route('student.course.show', ['slug' => $course['slug'] ?? '']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
                                 <i class="bi bi-box-arrow-in-right"></i> Enroll Now
-                            </button>
+                            </a>
                         @elseif(auth()->user()->role == 'firm')
-                            <button class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
+                            <a href="{{ route('student.course.show', ['slug' => $course['slug'] ?? '']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
                                 <i class="bi bi-building"></i> Book for Firm
-                            </button>
+                            </a>
                         @endif
                     @else
                         <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold mt-auto">

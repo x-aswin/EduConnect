@@ -19,6 +19,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\BrowseController as StudentBrowseController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
+use App\Http\Controllers\Student\CourseController as StudentCourseController;
 use App\Models\College;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -75,6 +76,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::prefix('student')->name('student.')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
         Route::resource('/explore', StudentBrowseController::class)->names('explore');
+        Route::get('/courses/{slug}', [StudentCourseController::class, 'show'])->name('course.show');
 
         Route::get('/complete-profile', [StudentProfileController::class, 'edit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [StudentProfileController::class, 'update'])->name('complete.profile.update');
