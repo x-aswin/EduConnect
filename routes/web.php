@@ -84,6 +84,11 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         // List student's enrollments
         Route::get('/my-enrollments', [StudentCourseController::class, 'myEnrollments'])
             ->name('my.enrollments');
+        // Payment view and processing for a student's enrollment
+        Route::get('/enrollments/{enrollment}/payment', [StudentCourseController::class, 'payment'])
+            ->name('enrollment.payment');
+        Route::post('/enrollments/{enrollment}/pay', [StudentCourseController::class, 'processPayment'])
+            ->name('enrollment.pay');
         Route::delete('/my-enrollments/{enrollment}', [StudentCourseController::class, 'destroy'])
             ->name('my.enrollments.destroy');
 
