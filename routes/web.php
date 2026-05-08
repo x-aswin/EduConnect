@@ -16,7 +16,6 @@ use App\Http\Controllers\College\MentorController as CollegeMentorController;
 use App\Http\Controllers\College\EnrollmentController as CollegeEnrollmentController;
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Student\BrowseController as StudentBrowseController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
@@ -75,7 +74,7 @@ Route::middleware(['auth','role:college'])->group(function(){
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::prefix('student')->name('student.')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
-        Route::resource('/explore', StudentBrowseController::class)->names('explore');
+        Route::get('/explore', [StudentCourseController::class, 'index'])->name('explore.index');
         Route::get('/courses/{slug}', [StudentCourseController::class, 'show'])->name('course.show');
 
         // Student enrollment (creates an enrollment request)
