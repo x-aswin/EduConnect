@@ -63,19 +63,28 @@
                 </div>
 
                 @php
-                    $isEnrolled = false;
+                    $enrollmentStatus = null;
                     if(auth()->check()){
-                        $isEnrolled = \App\Models\Enrollment::where('user_id', auth()->id())
+                        $enrollment = \App\Models\Enrollment::where('user_id', auth()->id())
                             ->where('course_id', $course->id)
-                            ->exists();
+                            ->first();
+                        $enrollmentStatus = $enrollment?->status;
                     }
                 @endphp
 
                 @auth
                     @if(auth()->user()->role === 'student')
-                        @if($isEnrolled)
+                        @if($enrollmentStatus === 'confirmed')
                             <button type="button" class="btn btn-success rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
                                 <i class="bi bi-check-circle me-2"></i> Enrolled
+                            </button>
+                        @elseif($enrollmentStatus === 'pending')
+                            <button type="button" class="btn btn-warning rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
+                                <i class="bi bi-hourglass-split me-2"></i> Waiting for Approval
+                            </button>
+                        @elseif($enrollmentStatus === 'rejected')
+                            <button type="button" class="btn btn-danger rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
+                                <i class="bi bi-x-circle me-2"></i> Request Rejected
                             </button>
                         @else
                             <form action="{{ route('student.course.enroll', $course->id) }}" method="POST" class="d-inline">
@@ -84,18 +93,6 @@
                                     <i class="bi bi-box-arrow-in-right me-2"></i> Enroll Now
                                 </button>
                             </form>
-                        @endif
-                    @elseif(auth()->user()->role === 'firm')
-                        @if($isEnrolled)
-                            <button type="button" class="btn btn-success rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
-                                <i class="bi bi-check-circle me-2"></i> Booked
-                            </button>
-                        @else
-                            <button type="button" class="btn btn-primary rounded-pill px-5 py-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#firmEnrollmentModal">
-                                <i class="bi bi-building me-2"></i> Book for Firm
-                            </button>
-                            {{-- Include firm enrollment modal here. Create this partial as `resources/views/student/partials/firm-enroll-modal.blade.php` --}}
-                            @includeIf('student.partials.firm-enroll-modal', ['course' => $course])
                         @endif
                     @endif
                 @else
