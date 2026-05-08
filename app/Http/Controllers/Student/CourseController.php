@@ -231,6 +231,13 @@ class CourseController extends Controller
         $enrollment->payment_status = 'paid';
         $enrollment->save();
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Payment recorded — access granted.',
+                'redirect' => route('student.my.enrollments'),
+            ]);
+        }
+
         return redirect()->route('student.my.enrollments')->with('success', 'Payment recorded — access granted.');
     }
 }

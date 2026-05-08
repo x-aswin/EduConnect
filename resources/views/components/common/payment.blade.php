@@ -3,24 +3,18 @@
 @php
     $amount = (float) ($enrollment->total_amount ?? $enrollment->course->price ?? 0);
     $amountDisplay = $amount > 0 ? '₹' . number_format($amount, 2) : 'Free';
-    $courseName = $enrollment->course->title ?? 'COURSE';
-    $collegeName = $enrollment->course->college?->user?->name ?? 'COLLEGE';
 
-    $makeInitials = function ($str, $limit = 3) {
-        $str = trim(preg_replace('/[^A-Za-z0-9 ]+/', '', (string) $str));
-        if ($str === '') return 'NA';
-        $parts = preg_split('/\s+/', $str);
-        $initials = '';
-        foreach ($parts as $p) {
-            $initials .= strtoupper(substr($p, 0, 1));
-            if (strlen($initials) >= $limit) break;
-        }
-        return $initials ?: strtoupper(substr($str, 0, $limit));
+    $normalizeSegment = function ($value) {
+        $value = trim((string) $value);
+        $value = preg_replace('/\s+/', '-', $value);
+
+        return trim($value, '-');
     };
 
-    $courseCode = $makeInitials($courseName, 3);
-    $collegeCode = $makeInitials($collegeName, 3);
-    $enrollmentCode = $enrollment->id ? '#ENR-' . $courseCode . '-' . $collegeCode . '-' . now()->format('ymd') . '-' . $enrollment->id : '#ENR-NA';
+    $collegeCode = $normalizeSegment($enrollment->course->college?->user?->name ?? 'CLG');
+    $courseCode = $normalizeSegment($enrollment->course->slug ?? $enrollment->course->title ?? 'Educonnect');
+    $dateCode = optional($enrollment->created_at ?? now())->format('Y-m');
+    $enrollmentCode = $enrollment->id ? '#' . $collegeCode . '-' . $courseCode . '-' . $dateCode . '-' . $enrollment->id : '#ENR-NA';
     $qrAmount = number_format($amount, 2, '.', '');
     $qrData = rawurlencode("upi://pay?pa=educonnect1@icici&pn=EduConnect&am={$qrAmount}&cu=INR");
     $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={$qrData}";
@@ -50,7 +44,7 @@
             <div class="col-md-7">
                 <div class="mb-4">
                     <h5 class="fw-bold mb-1">{{ $enrollment->course->title ?? 'Course Title' }}</h5>
-                    <small class="text-secondary"><i class="bi bi-building me-1"></i> {{ $enrollment->course->college?->institution_name ?? 'College' }}</small>
+                    <small class="text-secondary"><i class="bi bi-building me-1"></i> {{ $enrollment->course->college?->user?->name ?? 'College' }}</small>
                     <div class="mt-2">
                         <span class="badge bg-primary bg-opacity-10 text-primary">Student Only</span>
                     </div>
@@ -167,22 +161,45 @@
             var goToEnrollments = document.getElementById('goToEnrollments');
 
             if (payForm && payButton) {
-                payForm.addEventListener('submit', function (e) {
+                payForm.addEventListener('submit', async function (e) {
                     e.preventDefault();
+
+                    var originalButtonHtml = payButton.innerHTML;
                     payButton.disabled = true;
                     payButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
 
-                    // Simulate server payment processing (replace with real fetch to server)
-                    setTimeout(function () {
+                    try {
+                        var response = await fetch(payForm.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                            },
+                            body: new FormData(payForm),
+                        });
+
+                        var payload = await response.json().catch(function () {
+                            return {};
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(payload.message || 'Payment could not be completed.');
+                        }
+
                         if (successModalEl && typeof bootstrap !== 'undefined') {
                             var modal = new bootstrap.Modal(successModalEl);
                             modal.show();
-                        } else if (successModalEl) {
-                            successModalEl.style.display = 'block';
                         }
+
+                        if (goToEnrollments) {
+                            goToEnrollments.href = payload.redirect || '{{ route('student.my.enrollments') }}';
+                        }
+                    } catch (error) {
+                        alert(error.message || 'Something went wrong while processing the payment.');
+                    } finally {
                         payButton.disabled = false;
-                        payButton.innerHTML = '<i class="bi bi-shield-check me-2"></i> Pay {{ $amountDisplay }}';
-                    }, 900);
+                        payButton.innerHTML = originalButtonHtml;
+                    }
                 });
             }
 
