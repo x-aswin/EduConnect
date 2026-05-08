@@ -121,9 +121,9 @@
                                     <i class="bi bi-eye me-1"></i> View Course
                                 </a>
                                 @if($enrollment->status === 'confirmed' && $enrollment->payment_status === 'pending')
-                                    <button type="button" class="btn btn-warning btn-sm rounded-pill" disabled>
+                                    <a href="{{ route('student.enrollment.payment', $enrollment) }}" class="btn btn-warning btn-sm rounded-pill">
                                         <i class="bi bi-credit-card me-1"></i> Pay
-                                    </button>
+                                    </a>
                                 @elseif($enrollment->status === 'pending')
                                     <form method="POST" action="{{ route('student.my.enrollments.destroy', $enrollment) }}" class="m-0">
                                         @csrf

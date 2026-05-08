@@ -183,4 +183,54 @@ class CourseController extends Controller
 
         return back()->with('success', 'Enrollment request removed.');
     }
+
+    /**
+     * Show the payment page for a student's confirmed enrollment with pending payment.
+     */
+    public function payment(Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($enrollment->user_id !== $user->id || $enrollment->type !== 'student') {
+            abort(403);
+        }
+
+        if ($enrollment->status !== 'confirmed') {
+            return back()->with('error', 'Enrollment is not approved yet.');
+        }
+
+        if ($enrollment->payment_status !== 'pending') {
+            return back()->with('info', 'Payment is already completed or not required.');
+        }
+
+        return view('student.payment', ['enrollment' => $enrollment]);
+    }
+
+    /**
+     * Process a simulated payment and mark enrollment as paid.
+     */
+    public function processPayment(Request $request, Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($enrollment->user_id !== $user->id || $enrollment->type !== 'student') {
+            abort(403);
+        }
+
+        if ($enrollment->status !== 'confirmed' || $enrollment->payment_status !== 'pending') {
+            return back()->with('error', 'Payment cannot be processed for this enrollment.');
+        }
+
+        // In a real integration you'd verify the payment gateway response here.
+        $enrollment->payment_status = 'paid';
+        $enrollment->save();
+
+        return redirect()->route('student.my.enrollments')->with('success', 'Payment recorded — access granted.');
+    }
 }
