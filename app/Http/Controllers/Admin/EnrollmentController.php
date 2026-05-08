@@ -104,7 +104,7 @@ class EnrollmentController extends Controller
             ? ((float) $course->price * (int) ($participantCount ?? 0))
             : (float) $course->price;
 
-        DB::transaction(function () use ($validated, $enrollmentType, $participantCount, $calculatedTotalAmount, $participants) {
+        DB::transaction(function () use ($validated, $enrollmentType, $participantCount, $calculatedTotalAmount, $participants, $course) {
             $enrollment = Enrollment::create([
                 'user_id' => $validated['user_id'],
                 'course_id' => $validated['course_id'],
@@ -116,6 +116,13 @@ class EnrollmentController extends Controller
                 'participant_count' => $participantCount,
                 'total_amount' => $calculatedTotalAmount,
             ]);
+
+            // If created with confirmed status, decrement seats
+            if ($validated['status'] === 'confirmed') {
+                $seatCount = $enrollmentType === 'student' ? 1 : ($participantCount ?? 1);
+                $course->available_seats = max(0, $course->available_seats - $seatCount);
+                $course->save();
+            }
 
             if ($enrollmentType === 'firm' && $participants->isNotEmpty()) {
                 $enrollment->participants()->createMany($participants->all());
@@ -224,6 +231,22 @@ class EnrollmentController extends Controller
         }
 
         DB::transaction(function () use ($enrollment, $validated, $participants) {
+            $oldStatus = $enrollment->status;
+            $newStatus = $validated['status'];
+            $course = $enrollment->course;
+            $seatCount = $enrollment->type === 'student' ? 1 : ($enrollment->participant_count ?? 1);
+
+            // Handle seat count changes based on status transitions
+            if ($oldStatus !== 'confirmed' && $newStatus === 'confirmed') {
+                // Moving to confirmed: decrement available seats
+                $course->available_seats = max(0, $course->available_seats - $seatCount);
+                $course->save();
+            } elseif ($oldStatus === 'confirmed' && $newStatus !== 'confirmed') {
+                // Moving away from confirmed: increment available seats back
+                $course->available_seats += $seatCount;
+                $course->save();
+            }
+
             $participantCount = $enrollment->type === 'firm' ? $participants->count() : null;
             $totalAmount = $enrollment->type === 'firm'
                 ? ((float) $enrollment->course->price * (int) ($participantCount ?? 0))

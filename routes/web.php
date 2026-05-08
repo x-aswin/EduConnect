@@ -82,6 +82,10 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         Route::post('/courses/{course}/enroll', [StudentCourseController::class, 'enroll'])
             ->name('course.enroll');
 
+        // List student's enrollments
+        Route::get('/my-enrollments', [StudentCourseController::class, 'myEnrollments'])
+            ->name('my.enrollments');
+
         Route::get('/complete-profile', [StudentProfileController::class, 'edit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [StudentProfileController::class, 'update'])->name('complete.profile.update');
 

@@ -135,7 +135,7 @@
           <a class="nav-link {{ $active === 'explore' ? 'active' : '' }}" href={{ route('student.explore.index') }}><i class="bi bi-compass me-1 d-inline-block d-lg-none d-xl-inline"></i> Browse Courses</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#"><i class="bi bi-journal-check me-1 d-inline-block d-lg-none d-xl-inline"></i> My Enrollments</a>
+          <a class="nav-link" href="{{ route('student.my.enrollments') }}"><i class="bi bi-journal-check me-1 d-inline-block d-lg-none d-xl-inline"></i> My Enrollments</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#"><i class="bi bi-chat-dots-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Mentorship</a>

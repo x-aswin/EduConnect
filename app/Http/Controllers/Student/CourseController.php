@@ -77,4 +77,18 @@ class CourseController extends Controller
         return redirect()->route('student.course.show', $course->slug)
             ->with('success', 'Enrollment request submitted.');
     }
+
+    /**
+     * Show all enrollments for the current student.
+     */
+    public function myEnrollments()
+    {
+        $enrollments = Enrollment::with(['course.college', 'course.mentor.user'])
+            ->where('user_id', Auth::id())
+            ->where('type', 'student')
+            ->latest('updated_at')
+            ->get();
+
+        return view('student.my-enrollments', ['enrollments' => $enrollments]);
+    }
 }
