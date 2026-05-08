@@ -118,16 +118,16 @@
                     @auth
                         @if(auth()->user()->role == 'student')
                             <a href="{{ route('student.course.show', ['slug' => $course['slug'] ?? '']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
-                                <i class="bi bi-box-arrow-in-right"></i> Enroll Now
+                                <i class="bi bi-box-arrow-in-right"></i> View Details
                             </a>
                         @elseif(auth()->user()->role == 'firm')
                             <a href="{{ route('student.course.show', ['slug' => $course['slug'] ?? '']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
-                                <i class="bi bi-building"></i> Book for Firm
+                                <i class="bi bi-building"></i> View Details
                             </a>
                         @endif
                     @else
                         <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
-                            <i class="bi bi-lock"></i> Login to Enroll
+                            <i class="bi bi-lock"></i> View Details
                         </a>
                     @endauth
                 </div>

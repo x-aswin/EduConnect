@@ -41,7 +41,7 @@
                 @endif
             </div>
             <div class="col-md-7 p-4 d-flex flex-column justify-content-center">
-                <span class="badge bg-{{ ($course->course_type ?? '') === 'student_only' ? 'primary' : 'warning' }}-subtle text-{{ ($course->course_type ?? '') === 'student_only' ? 'primary' : 'warning' }} mb-2" style="font-size: 0.75rem; padding: 0.25rem 0.8rem;">
+                <span class="badge d-inline-flex align-items-center bg-{{ ($course->course_type ?? '') === 'student_only' ? 'primary' : 'warning' }}-subtle text-{{ ($course->course_type ?? '') === 'student_only' ? 'primary' : 'warning' }} mb-2" style="font-size: 0.75rem; padding: 0.25rem 0.8rem; width: fit-content; white-space: nowrap;">
                     {{ ($course->course_type ?? '') === 'student_only' ? 'Student Only' : 'Firm Available' }}
                 </span>
 
@@ -180,12 +180,12 @@
                 </div>
             @endif
 
-            @if(!empty($course->venue))
+            {{-- @if(!empty($course->venue))
                 <div class="card border-0 shadow-sm rounded-4 p-3 bg-light">
                     <i class="bi bi-geo-alt-fill text-primary me-2"></i>
                     <strong>Venue:</strong> {{ $course->venue }}
                 </div>
-            @endif
+            @endif --}}
         </div>
     </div>
 </div>
