@@ -195,6 +195,8 @@
   </div>
 </nav>
 
+<x-toast />
+
 <main class="container py-2">
   {{ $slot }}
 </main>

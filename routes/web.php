@@ -78,6 +78,10 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         Route::resource('/explore', StudentBrowseController::class)->names('explore');
         Route::get('/courses/{slug}', [StudentCourseController::class, 'show'])->name('course.show');
 
+        // Student enrollment (creates an enrollment request)
+        Route::post('/courses/{course}/enroll', [StudentCourseController::class, 'enroll'])
+            ->name('course.enroll');
+
         Route::get('/complete-profile', [StudentProfileController::class, 'edit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [StudentProfileController::class, 'update'])->name('complete.profile.update');
 

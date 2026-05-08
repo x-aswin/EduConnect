@@ -62,15 +62,41 @@
                     @endif
                 </div>
 
+                @php
+                    $isEnrolled = false;
+                    if(auth()->check()){
+                        $isEnrolled = \App\Models\Enrollment::where('user_id', auth()->id())
+                            ->where('course_id', $course->id)
+                            ->exists();
+                    }
+                @endphp
+
                 @auth
                     @if(auth()->user()->role === 'student')
-                        <button type="button" class="btn btn-primary rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
-                            <i class="bi bi-box-arrow-in-right me-2"></i> Enroll Now
-                        </button>
+                        @if($isEnrolled)
+                            <button type="button" class="btn btn-success rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
+                                <i class="bi bi-check-circle me-2"></i> Enrolled
+                            </button>
+                        @else
+                            <form action="{{ route('student.course.enroll', $course->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-semibold shadow-sm">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Enroll Now
+                                </button>
+                            </form>
+                        @endif
                     @elseif(auth()->user()->role === 'firm')
-                        <button type="button" class="btn btn-primary rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
-                            <i class="bi bi-building me-2"></i> Book for Firm
-                        </button>
+                        @if($isEnrolled)
+                            <button type="button" class="btn btn-success rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
+                                <i class="bi bi-check-circle me-2"></i> Booked
+                            </button>
+                        @else
+                            <button type="button" class="btn btn-primary rounded-pill px-5 py-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#firmEnrollmentModal">
+                                <i class="bi bi-building me-2"></i> Book for Firm
+                            </button>
+                            {{-- Include firm enrollment modal here. Create this partial as `resources/views/student/partials/firm-enroll-modal.blade.php` --}}
+                            @includeIf('student.partials.firm-enroll-modal', ['course' => $course])
+                        @endif
                     @endif
                 @else
                     <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill px-5 py-3 fw-semibold">

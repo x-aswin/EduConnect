@@ -7,11 +7,12 @@
      * 3. Session 'error'
      * 4. Validation Errors ($errors bag)
      */
-    $finalType = $type ?? (session('success') ? 'success' : (session('error') || $errors->any() ? 'danger' : 'info'));
+    $finalType = $type ?? (session('success') ? 'success' : (session('error') ? 'danger' : (session('info') ? 'info' : ($errors->any() ? 'danger' : 'info'))));
     
     $finalMessage = $message 
         ?? session('success') 
         ?? session('error') 
+        ?? session('info')
         ?? ($errors->any() ? 'Please check the form for errors.' : null);
 @endphp
 
@@ -20,7 +21,7 @@
     <div class="toast show align-items-center text-white bg-{{ $finalType }} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body">
-                <i class="bi {{ $finalType === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' }} me-2"></i> 
+                <i class="bi {{ $finalType === 'success' ? 'bi-check-circle-fill' : ($finalType === 'info' ? 'bi-info-circle-fill' : 'bi-exclamation-triangle-fill') }} me-2"></i> 
                 {{ $finalMessage }}
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
