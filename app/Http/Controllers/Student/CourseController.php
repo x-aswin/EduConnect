@@ -148,4 +148,39 @@ class CourseController extends Controller
 
         return view('student.my-enrollments', ['enrollments' => $enrollments]);
     }
+
+    /**
+     * Remove a pending enrollment request for the current student.
+     */
+    public function destroy(Enrollment $enrollment)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($user->role !== 'student' || $enrollment->user_id !== $user->id || $enrollment->type !== 'student') {
+            abort(403);
+        }
+
+        if ($enrollment->status !== 'pending') {
+            return back()->with('error', 'The enrollment was already approved or rejected. Please contact the college if you wish to cancel it.');
+        }
+
+        $deleted = Enrollment::query()
+            ->where([
+                ['id', $enrollment->id],
+                ['user_id', $user->id],
+                ['type', 'student'],
+                ['status', 'pending'],
+            ])
+            ->delete();
+
+        if (!$deleted) {
+            return back()->with('error', 'Unable to remove this enrollment request.');
+        }
+
+        return back()->with('success', 'Enrollment request removed.');
+    }
 }

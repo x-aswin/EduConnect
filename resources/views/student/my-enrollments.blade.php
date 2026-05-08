@@ -1,8 +1,11 @@
 <x-student.layout title="My Enrollments - EduConnect" active="myenrollments">
-    <div class="mb-4">
-        <h1 class="h3 fw-bold mb-1">My Enrollments</h1>
-        <p class="text-secondary">View all your course enrollments and their status.</p>
-    </div>
+    <div class="mb-4 mt-4">
+    <h1 class="fw-bold mb-1">
+        <i class="bi bi-journal-check me-2 text-primary"></i>My Enrollments
+    </h1>
+    <p class="text-secondary mb-0">View all your course enrollments and their status.</p>
+    <p class="text-secondary mb-0">You can make payments for approved entrollment or cancel entrollment that are yet to be approved here.</p>
+</div>
 
     @if($enrollments->isEmpty())
         <div class="alert alert-light border rounded-4 text-center py-5" style="background: linear-gradient(135deg, #f5f7ff, #eef1fa);">
@@ -101,7 +104,7 @@
                                 <div class="d-flex align-items-center gap-2 p-2 bg-light rounded-3 mb-3 small">
                                     @if($enrollment->payment_status === 'pending')
                                         <i class="bi bi-exclamation-circle text-warning"></i>
-                                        <span><strong>Payment Pending</strong> - Complete payment to access the course</span>
+                                        <span><strong>Payment Pending</strong> - Complete payment</span>
                                     @elseif($enrollment->payment_status === 'paid')
                                         <i class="bi bi-check-circle text-success"></i>
                                         <span><strong>Payment Completed</strong> - You have access to this course</span>
@@ -121,6 +124,14 @@
                                     <button type="button" class="btn btn-warning btn-sm rounded-pill" disabled>
                                         <i class="bi bi-credit-card me-1"></i> Pay
                                     </button>
+                                @elseif($enrollment->status === 'pending')
+                                    <form method="POST" action="{{ route('student.my.enrollments.destroy', $enrollment) }}" class="m-0">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" onclick="return confirm('Remove this enrollment request?')">
+                                            <i class="bi bi-trash me-1"></i> Remove
+                                        </button>
+                                    </form>
                                 @endif
                             </div>
                         </div>
