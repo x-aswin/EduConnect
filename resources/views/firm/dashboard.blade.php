@@ -57,10 +57,10 @@
             </p>
         </div>
         <div class="mt-3 mt-md-0">
-            <a href="{{ route('firm.explore.index') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <a href="" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
                 <i class="bi bi-search me-1"></i> Browse Courses
             </a>
-            <a href="{{ route('firm.bookings.index') }}" class="btn btn-outline-primary rounded-pill px-4 py-2 ms-2">
+            <a href="" class="btn btn-outline-primary rounded-pill px-4 py-2 ms-2">
                 <i class="bi bi-calendar-week"></i> My Bookings
             </a>
         </div>
@@ -121,7 +121,7 @@
     <!-- Recommended Courses for Your Organisation -->
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h2 class="section-title"><i class="bi bi-stars text-warning me-2"></i>Recommended for Your Team</h2>
-        <a href="{{ route('firm.explore.index') }}" class="text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
+        <a href="" class="text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
     </div>
     <div class="row g-4 mb-5">
         <!-- Course Card 1 -->
@@ -138,7 +138,7 @@
                         <span class="fw-bold text-primary">₹2,500 / participant</span>
                         <span class="small"><i class="bi bi-people"></i> Min 8 seats</span>
                     </div>
-                    <a href="{{ route('firm.explore.show', 'ethical-hacking') }}" class="btn btn-primary rounded-pill w-100 mt-3 py-2 fw-semibold">
+                    <a href="" class="btn btn-primary rounded-pill w-100 mt-3 py-2 fw-semibold">
                         <i class="bi bi-building"></i> Book for Firm
                     </a>
                 </div>
@@ -158,7 +158,7 @@
                         <span class="fw-bold text-primary">₹4,500 / participant</span>
                         <span class="small"><i class="bi bi-people"></i> Min 10 seats</span>
                     </div>
-                    <a href="{{ route('firm.explore.show', 'business-analytics') }}" class="btn btn-primary rounded-pill w-100 mt-3 py-2 fw-semibold">
+                    <a href="" class="btn btn-primary rounded-pill w-100 mt-3 py-2 fw-semibold">
                         <i class="bi bi-building"></i> Book for Firm
                     </a>
                 </div>
@@ -178,7 +178,7 @@
                         <span class="fw-bold text-primary">₹1,800 / participant</span>
                         <span class="small"><i class="bi bi-people"></i> Min 6 seats</span>
                     </div>
-                    <a href="{{ route('firm.explore.show', 'digital-marketing') }}" class="btn btn-primary rounded-pill w-100 mt-3 py-2 fw-semibold">
+                    <a href="" class="btn btn-primary rounded-pill w-100 mt-3 py-2 fw-semibold">
                         <i class="bi bi-building"></i> Book for Firm
                     </a>
                 </div>
@@ -226,7 +226,7 @@
                     <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">8 participants</span>
                 </div>
                 <div class="mt-4 text-end">
-                    <a href="{{ route('firm.bookings.index') }}" class="text-decoration-none fw-semibold"><i class="bi bi-calendar-plus"></i> Manage all bookings</a>
+                    <a href="" class="text-decoration-none fw-semibold"><i class="bi bi-calendar-plus"></i> Manage all bookings</a>
                 </div>
             </div>
         </div>
@@ -259,7 +259,7 @@
                     </li>
                 </ul>
                 <div class="mt-4">
-                    <a href="{{ route('firm.bookings.index') }}" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold">
+                    <a href="" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold">
                         <i class="bi bi-people"></i> View All Participants
                     </a>
                 </div>

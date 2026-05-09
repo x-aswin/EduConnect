@@ -132,22 +132,22 @@
     <div class="collapse navbar-collapse" id="firmNavbar">
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'dashboard' ? 'active' : '' }}" href="{{ route('firm.dashboard') }}">
+          <a class="nav-link {{ $active === 'dashboard' ? 'active' : '' }}" href="">
             <i class="bi bi-house-door-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Home
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'explore' ? 'active' : '' }}" href="{{ route('firm.explore.index') }}">
+          <a class="nav-link {{ $active === 'explore' ? 'active' : '' }}" href="">
             <i class="bi bi-compass me-1 d-inline-block d-lg-none d-xl-inline"></i> Browse Courses
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'bookings' ? 'active' : '' }}" href="{{ route('firm.bookings.index') }}">
+          <a class="nav-link {{ $active === 'bookings' ? 'active' : '' }}" href="">
             <i class="bi bi-journal-check me-1 d-inline-block d-lg-none d-xl-inline"></i> My Bookings
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'reports' ? 'active' : '' }}" href="{{ route('firm.reports') }}">
+          <a class="nav-link {{ $active === 'reports' ? 'active' : '' }}" href="">
             <i class="bi bi-bar-chart-line me-1 d-inline-block d-lg-none d-xl-inline"></i> Reports
           </a>
         </li>
@@ -156,10 +156,10 @@
             <i class="bi bi-building me-1"></i> Organisation
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{{ route('firm.profile.edit') }}"><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
+            <li><a class="dropdown-item" href=""><i class="bi bi-pencil-square"></i> Edit Profile</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-people-fill"></i> Manage Participants</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{{ route('firm.bookings.index') }}"><i class="bi bi-calendar-check"></i> Upcoming Sessions</a></li>
+            <li><a class="dropdown-item" href=""><i class="bi bi-calendar-check"></i> Upcoming Sessions</a></li>
           </ul>
         </li>
       </ul>
@@ -191,8 +191,8 @@
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{{ route('firm.profile.edit') }}"><i class="bi bi-building"></i> Organisation Profile</a></li>
-            <li><a class="dropdown-item" href="{{ route('firm.profile.edit') }}"><i class="bi bi-person-circle"></i> My Account</a></li>
+            <li><a class="dropdown-item" href=""><i class="bi bi-building"></i> Organisation Profile</a></li>
+            <li><a class="dropdown-item" href=""><i class="bi bi-person-circle"></i> My Account</a></li>
             <li><hr class="dropdown-divider"></li>
             <li>
               <form method="POST" action="{{ route('logout') }}">
