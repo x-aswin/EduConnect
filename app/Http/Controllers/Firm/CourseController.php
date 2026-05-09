@@ -149,7 +149,18 @@ class CourseController extends Controller
             'college_note'      => $validated['college_note'] ?? null,
         ]);
 
-        return redirect()->route('firm.bookings.index')
+        return redirect()->route('firm.bookings')
             ->with('success', 'Booking request submitted successfully.');
+    }
+    function bookings()
+    {
+        $user = Auth::user();
+        $bookings = Enrollment::with('course')
+            ->where('user_id', $user->id)
+            ->where('type', 'firm')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('firm.bookings', compact('bookings'));
     }
 }

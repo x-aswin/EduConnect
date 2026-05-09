@@ -31,14 +31,73 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Number of Participants *</label>
-                                <input type="number" name="participant_count" class="form-control" min="1" 
-                                       placeholder="e.g., 10" required>
-                                <div class="form-text">You can add individual names later from your bookings.</div>
+                                <input type="number" name="participant_count" id="firm_participant_count" class="form-control" min="1" 
+                                    placeholder="e.g., 10" required readonly>
+                                <div class="form-text">Will be updated when using the + button.</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Any special request</label>
                                 <textarea name="college_note" class="form-control" rows="2" 
                                           placeholder="Optional note to the college"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Price per participant</label>
+                                <input type="text" id="firm_unit_price_display" class="form-control" readonly value="₹ {{ number_format((float) ($course->price ?? 0), 2) }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Total Amount</label>
+                                <div class="input-group">
+                                    <input type="text" id="firm_total_amount_display" class="form-control" readonly value="₹ 0.00">
+                                    <input type="hidden" name="total_amount" id="firm_total_amount_hidden" value="0">
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0 small fw-semibold">Firm Participants</label>
+                                    <div class="d-flex gap-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" id="participant_name_input" class="form-control" placeholder="Name">
+                                            <input type="text" id="participant_contact_input" class="form-control" placeholder="Phone / Email">
+                                            <button type="button" id="participant_add_btn" class="btn btn-outline-primary">
+                                                <i class="bi bi-plus-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered" id="firmParticipantsTable">
+                                        <thead class="table-light small">
+                                            <tr>
+                                                <th style="width:60%">Name</th>
+                                                <th style="width:30%">Contact</th>
+                                                <th style="width:10%">&nbsp;</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="firmParticipantsTableBody">
+                                            @php
+                                                $oldParticipants = old('participants', []);
+                                            @endphp
+                                            @if(count($oldParticipants) > 0)
+                                                @foreach($oldParticipants as $index => $p)
+                                                    <tr>
+                                                        <td>
+                                                            {{ $p['name'] ?? '' }}
+                                                            <input type="hidden" name="participants[{{ $index }}][name]" value="{{ $p['name'] ?? '' }}">
+                                                        </td>
+                                                        <td>
+                                                            {{ $p['contact_info'] ?? '' }}
+                                                            <input type="hidden" name="participants[{{ $index }}][contact_info]" value="{{ $p['contact_info'] ?? '' }}">
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <button type="button" class="btn btn-sm btn-outline-danger remove-participant-row"><i class="bi bi-trash"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            @endif
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -54,3 +113,108 @@
     </div>
 
 </x-firm.layout>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const addBtn = document.getElementById('participant_add_btn');
+        const nameInput = document.getElementById('participant_name_input');
+        const contactInput = document.getElementById('participant_contact_input');
+        const tbody = document.getElementById('firmParticipantsTableBody');
+        const participantCountInput = document.getElementById('firm_participant_count');
+
+        const unitPrice = Number(@json($course->price ?? 0));
+
+        function formatCurrency(num) {
+            try {
+                return '₹ ' + Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } catch (e) {
+                return '₹ ' + Number(num).toFixed(2);
+            }
+        }
+
+        function updateParticipantCount() {
+            const count = tbody.querySelectorAll('tr').length;
+            if (participantCountInput) participantCountInput.value = count;
+            const total = Number(unitPrice || 0) * Number(count || 0);
+            const totalHidden = document.getElementById('firm_total_amount_hidden');
+            const totalDisplay = document.getElementById('firm_total_amount_display');
+            if (totalHidden) totalHidden.value = total.toFixed(2);
+            if (totalDisplay) totalDisplay.value = formatCurrency(total);
+        }
+
+        function reindexHiddenInputs() {
+            Array.from(tbody.querySelectorAll('tr')).forEach((tr, idx) => {
+                const nameHidden = tr.querySelector('input[type="hidden"][name$="[name]"]');
+                const contactHidden = tr.querySelector('input[type="hidden"][name$="[contact_info]"]');
+                if (nameHidden) nameHidden.name = `participants[${idx}][name]`;
+                if (contactHidden) contactHidden.name = `participants[${idx}][contact_info]`;
+            });
+        }
+
+        function addParticipant(name, contact) {
+            const tr = document.createElement('tr');
+
+            const tdName = document.createElement('td');
+            tdName.textContent = name;
+            const nameHidden = document.createElement('input');
+            nameHidden.type = 'hidden';
+            nameHidden.name = `participants[][name]`;
+            nameHidden.value = name;
+            tdName.appendChild(nameHidden);
+
+            const tdContact = document.createElement('td');
+            tdContact.textContent = contact;
+            const contactHidden = document.createElement('input');
+            contactHidden.type = 'hidden';
+            contactHidden.name = `participants[][contact_info]`;
+            contactHidden.value = contact;
+            tdContact.appendChild(contactHidden);
+
+            const tdAction = document.createElement('td');
+            tdAction.className = 'text-center';
+            const remBtn = document.createElement('button');
+            remBtn.type = 'button';
+            remBtn.className = 'btn btn-sm btn-outline-danger remove-participant-row';
+            remBtn.innerHTML = '<i class="bi bi-trash"></i>';
+            tdAction.appendChild(remBtn);
+
+            tr.appendChild(tdName);
+            tr.appendChild(tdContact);
+            tr.appendChild(tdAction);
+
+            tbody.appendChild(tr);
+            reindexHiddenInputs();
+            updateParticipantCount();
+        }
+
+        if (addBtn) {
+            addBtn.addEventListener('click', function () {
+                const name = (nameInput.value || '').trim();
+                const contact = (contactInput.value || '').trim();
+                if (!name) {
+                    nameInput.classList.add('is-invalid');
+                    nameInput.focus();
+                    return;
+                }
+                nameInput.classList.remove('is-invalid');
+                addParticipant(name, contact);
+                nameInput.value = '';
+                contactInput.value = '';
+                nameInput.focus();
+            });
+        }
+
+        // Delegate remove
+        tbody.addEventListener('click', function (e) {
+            if (e.target.closest('.remove-participant-row')) {
+                const btn = e.target.closest('.remove-participant-row');
+                const tr = btn.closest('tr');
+                if (tr) tr.remove();
+                reindexHiddenInputs();
+                updateParticipantCount();
+            }
+        });
+
+        // initialize participant count from existing rows
+        updateParticipantCount();
+    });
+</script>

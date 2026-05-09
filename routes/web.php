@@ -116,10 +116,7 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::get('/courses/{slug}', [FirmCourseController::class, 'show'])->name('course.show');
         Route::post('/courses/{course}/book', [FirmCourseController::class, 'book'])
             ->name('course.book');
-
-        // // List student's enrollments
-        // Route::get('/my-enrollments', [StudentCourseController::class, 'myEnrollments'])
-        //     ->name('my.enrollments');
+        Route::get('/bookings', [FirmCourseController::class, 'bookings'])->name('bookings');
         // // Payment view and processing for a student's enrollment
         // Route::get('/enrollments/{enrollment}/payment', [StudentCourseController::class, 'payment'])
         //     ->name('enrollment.payment');
