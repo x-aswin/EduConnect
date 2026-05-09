@@ -6,6 +6,16 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('firm.profile.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PATCH')
@@ -45,14 +55,15 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Photo</label>
-                    <input type="file" name="photo" class="form-control">
+                    <input type="file" name="photo" class="form-control" accept="image/*">
                     @if(!empty($firm->photo))
                         <div class="mt-2"><img src="{{ asset('storage/' . ltrim($firm->photo, '/')) }}" alt="Firm photo" width="96" style="object-fit:cover; border-radius:8px;"></div>
                     @endif
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Verification Document</label>
-                    <input type="file" name="verification_doc" class="form-control">
+                    <input type="file" name="verification_doc" class="form-control" accept=".pdf,image/*">
+                    <div class="form-text">Allowed: PDF or image (max 5MB)</div>
                     @if(!empty($firm->verification_doc))
                         <div class="mt-2"><a href="{{ asset('storage/' . ltrim($firm->verification_doc, '/')) }}" target="_blank">Current document</a></div>
                     @endif

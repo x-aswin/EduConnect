@@ -191,8 +191,8 @@
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-building"></i> Organisation Profile</a></li>
-            <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person-circle"></i> My Account</a></li>
+            <li><a class="dropdown-item" href="{{ route('firm.profile.edit') }}"><i class="bi bi-building"></i> Organisation Profile</a></li>
+            {{-- <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person-circle"></i> My Account</a></li> --}}
             <li><hr class="dropdown-divider"></li>
             <li>
               <form method="POST" action="{{ route('logout') }}">

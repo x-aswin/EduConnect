@@ -35,7 +35,8 @@ class ProfileController extends Controller
             'phone' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:1000',
             'photo' => 'nullable|image|max:2048',
-            'verification_doc' => 'nullable|file|max:5120',
+            // Allow only PDF or common image formats for verification docs
+            'verification_doc' => 'nullable|mimes:pdf,jpg,jpeg,png,gif,svg|max:5120',
             'email' => 'nullable|email|max:255',
         ]);
 
@@ -46,8 +47,14 @@ class ProfileController extends Controller
         $firm->designation = $validated['designation'] ?? $firm->designation;
         $firm->phone = $validated['phone'] ?? $firm->phone;
         $firm->address = $validated['address'] ?? $firm->address;
+
+        // If an email was submitted, update the user's email (firms table doesn't have email column)
         if (!empty($validated['email'])) {
-            $firm->email = $validated['email'];
+            if ($user->email !== $validated['email']) {
+                $user->email = $validated['email'];
+                $user->email_verified_at = null;
+                $user->save();
+            }
         }
 
         if ($request->hasFile('photo')) {

@@ -32,11 +32,12 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Photo</label>
-                    <input type="file" name="photo" class="form-control">
+                    <input type="file" name="photo" class="form-control" accept="image/*">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Verification Document</label>
-                    <input type="file" name="verification_doc" class="form-control">
+                    <input type="file" name="verification_doc" class="form-control" accept=".pdf,image/*">
+                    <div class="form-text">Allowed: PDF or image (max 5MB)</div>
                 </div>
             </div>
 
