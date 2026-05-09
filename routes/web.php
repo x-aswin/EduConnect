@@ -138,6 +138,12 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         // Route::get('/profile', [StudentProfileController::class, 'edit'])->name('profile.edit');
         // Route::patch('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
 
+        // Firm profile management (custom pages, do not use Breeze defaults)
+        Route::get('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeEdit'])->name('complete.profile.edit');
+        Route::patch('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeUpdate'])->name('complete.profile.update');
+        Route::get('/profile', [\App\Http\Controllers\Firm\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [\App\Http\Controllers\Firm\ProfileController::class, 'update'])->name('profile.update');
+
     });
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
      Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
