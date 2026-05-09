@@ -358,7 +358,7 @@ class CourseController extends Controller
         if (!$user) return redirect()->route('login');
         if ($enrollment->user_id !== $user->id || $enrollment->type !== 'firm') abort(403);
 
-        if ($enrollment->status !== 'confirmed' || $enrollment->payment_status !== 'pending') {
+        if ($enrollment->status !== 'confirmed' || $enrollment->payment_status === 'paid') {
             return back()->with('error', 'Payment cannot be processed for this booking.');
         }
 

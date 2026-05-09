@@ -1,8 +1,11 @@
-@props(['enrollment'])
+@props(['enrollment', 'type' => 'student'])
 
 @php
     $amount = (float) ($enrollment->total_amount ?? $enrollment->course->price ?? 0);
     $amountDisplay = $amount > 0 ? '₹' . number_format($amount, 2) : 'Free';
+    
+    $paymentRoute = $type === 'firm' ? route('firm.booking.pay', $enrollment) : route('student.enrollment.pay', $enrollment);
+    $enrollmentsRoute = $type === 'firm' ? route('firm.bookings.index') : route('student.my.enrollments');
 
     $normalizeSegment = function ($value) {
         $value = trim((string) $value);
@@ -68,7 +71,7 @@
                     <input type="text" class="form-control rounded-pill py-3" placeholder="yourname@upi" id="upiInput">
                     <div class="form-text">We will not charge you – this is a demo payment.</div>
                 </div>
-                <form id="payForm" method="POST" action="{{ route('student.enrollment.pay', $enrollment) }}">
+                <form id="payForm" method="POST" action="{{ $paymentRoute }}">
                     @csrf
                     <input type="hidden" name="amount" value="{{ $amount }}">
                     <div class="mt-3">
@@ -91,7 +94,7 @@
                     </div>
                     <h4 class="fw-bold mb-2">Payment Successful!</h4>
                     <p class="text-secondary">Your enrollment has been confirmed. You now have full access to the course.</p>
-                    <a href="#" class="btn btn-primary rounded-pill px-4 mt-3" id="goToEnrollments">
+                    <a href="#" class="btn btn-primary rounded-pill px-4 mt-3" id="goToEnrollments" data-enrollments-url="{{ $enrollmentsRoute }}">
                         <i class="bi bi-journal-check me-2"></i> Go to My Enrollments
                     </a>
                 </div>
@@ -192,7 +195,7 @@
                         }
 
                         if (goToEnrollments) {
-                            goToEnrollments.href = payload.redirect || '{{ route('student.my.enrollments') }}';
+                            goToEnrollments.href = payload.redirect || goToEnrollments.getAttribute('data-enrollments-url') || '{{ $enrollmentsRoute }}';
                         }
                     } catch (error) {
                         alert(error.message || 'Something went wrong while processing the payment.');
@@ -206,7 +209,8 @@
             if (goToEnrollments) {
                 goToEnrollments.addEventListener('click', function (e) {
                     e.preventDefault();
-                    window.location.href = '{{ route('student.my.enrollments') }}';
+                    window.location.href = goToEnrollments.getAttribute('data-enrollments-url') || '{{ $enrollmentsRoute }}';
+                });
                 });
             }
         });
