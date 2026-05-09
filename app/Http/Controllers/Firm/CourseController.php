@@ -174,18 +174,136 @@ class CourseController extends Controller
             }
         });
 
-        return redirect()->route('firm.bookings')
+        return redirect()->route('firm.bookings.index')
             ->with('success', 'Booking request submitted successfully.');
     }
     function bookings()
     {
         $user = Auth::user();
-        $bookings = Enrollment::with('course')
+        $bookings = Enrollment::with(['course.college.user', 'course.mentor.user', 'participants'])
             ->where('user_id', $user->id)
             ->where('type', 'firm')
             ->orderBy('created_at', 'desc')
             ->get();
 
         return view('firm.bookings', compact('bookings'));
+    }
+
+    /**
+     * Show a single enrollment and its participants for management.
+     */
+    public function bookingShow(Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user || $enrollment->user_id !== $user->id || $enrollment->type !== 'firm') {
+            abort(403);
+        }
+
+        $participants = $enrollment->participants()->orderBy('created_at')->get();
+        $mode = request()->get('mode', 'view');
+
+        return view('firm.bookings', compact('enrollment', 'participants', 'mode'));
+    }
+
+    /**
+     * Store a participant for an enrollment.
+     */
+    public function storeParticipant(Request $request, Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user || $enrollment->user_id !== $user->id || $enrollment->type !== 'firm') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'contact_info' => 'nullable|string|max:255',
+        ]);
+
+        FirmParticipant::create([
+            'enrollment_id' => $enrollment->id,
+            'name' => $validated['name'],
+            'contact_info' => $validated['contact_info'] ?? null,
+        ]);
+
+        $enrollment->refresh();
+        $enrollment->participant_count = $enrollment->participants()->count();
+        $enrollment->total_amount = (float) ($enrollment->course->price ?? 0) * (int) $enrollment->participant_count;
+        $enrollment->save();
+
+        return redirect()->route('firm.bookings.show', $enrollment)->with('success', 'Participant added successfully.');
+    }
+
+    /**
+     * Remove a participant from an enrollment.
+     */
+    public function destroyParticipant(Request $request, Enrollment $enrollment, FirmParticipant $participant)
+    {
+        $user = Auth::user();
+        if (!$user || $enrollment->user_id !== $user->id || $enrollment->type !== 'firm') {
+            abort(403);
+        }
+        if ($participant->enrollment_id !== $enrollment->id) {
+            abort(404);
+        }
+
+        $participant->delete();
+
+        $enrollment->refresh();
+        $enrollment->participant_count = $enrollment->participants()->count();
+        $enrollment->total_amount = (float) ($enrollment->course->price ?? 0) * (int) $enrollment->participant_count;
+        $enrollment->save();
+
+        return redirect()->route('firm.bookings.show', $enrollment)->with('success', 'Participant removed.');
+    }
+
+    /**
+     * Process a simulated payment and mark enrollment as paid.
+     */
+    public function processPayment(Request $request, Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user) return redirect()->route('login');
+        if ($enrollment->user_id !== $user->id || $enrollment->type !== 'firm') abort(403);
+
+        if ($enrollment->status !== 'confirmed' || $enrollment->payment_status !== 'pending') {
+            return back()->with('error', 'Payment cannot be processed for this booking.');
+        }
+
+        $enrollment->payment_status = 'paid';
+        $enrollment->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Payment recorded — access granted.',
+                'redirect' => route('firm.bookings.index'),
+            ]);
+        }
+
+        return redirect()->route('firm.bookings.index')->with('success', 'Payment recorded — access granted.');
+    }
+
+    /**
+     * Remove a pending enrollment (booking) for the firm user.
+     */
+    public function destroy(Request $request, Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user) return redirect()->route('login');
+        if ($enrollment->user_id !== $user->id || $enrollment->type !== 'firm') abort(403);
+
+        if ($enrollment->status !== 'pending') {
+            return back()->with('error', 'The booking was already approved or rejected; cannot remove.');
+        }
+
+        $deleted = Enrollment::where([
+            ['id', $enrollment->id],
+            ['user_id', $user->id],
+            ['type', 'firm'],
+            ['status', 'pending'],
+        ])->delete();
+
+        if (!$deleted) return back()->with('error', 'Unable to remove this booking.');
+        return redirect()->route('firm.bookings.index')->with('success', 'Booking removed.');
     }
 }

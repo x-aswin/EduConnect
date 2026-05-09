@@ -116,7 +116,13 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::get('/courses/{slug}', [FirmCourseController::class, 'show'])->name('course.show');
         Route::post('/courses/{course}/book', [FirmCourseController::class, 'book'])
             ->name('course.book');
-        Route::get('/bookings', [FirmCourseController::class, 'bookings'])->name('bookings');
+        Route::get('/bookings', [FirmCourseController::class, 'bookings'])->name('bookings.index');
+        Route::get('/bookings/{enrollment}', [FirmCourseController::class, 'bookingShow'])->name('bookings.show');
+        Route::post('/bookings/{enrollment}/participants', [FirmCourseController::class, 'storeParticipant'])->name('booking.participants.store');
+        Route::patch('/bookings/{enrollment}/participants/{participant}', [FirmCourseController::class, 'updateParticipant'])->name('booking.participants.update');
+        Route::delete('/bookings/{enrollment}/participants/{participant}', [FirmCourseController::class, 'destroyParticipant'])->name('booking.participants.destroy');
+        Route::post('/bookings/{enrollment}/pay', [FirmCourseController::class, 'processPayment'])->name('booking.pay');
+        Route::delete('/bookings/{enrollment}', [FirmCourseController::class, 'destroy'])->name('bookings.destroy');
         // // Payment view and processing for a student's enrollment
         // Route::get('/enrollments/{enrollment}/payment', [StudentCourseController::class, 'payment'])
         //     ->name('enrollment.payment');
