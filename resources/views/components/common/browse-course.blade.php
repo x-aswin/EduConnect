@@ -1,3 +1,4 @@
+{{-- resources/views/components/common/explore-courses.blade.php --}}
 @props(['courses', 'type', 'categories' => [], 'sort' => 'newest'])
 
 @push('styles')
@@ -18,11 +19,20 @@
 @endpush
 
 <div class="container py-4">
-    <!-- Page heading -->
+    <!-- Page heading (dynamic for firm) -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div>
-            <h1 class="fw-bold mb-1"><i class="bi bi-compass me-2 text-primary"></i>Explore Offline Courses</h1>
-            <p class="text-secondary mb-0">Discover skill‑building programs from top colleges.</p>
+            <h1 class="fw-bold mb-1">
+                <i class="bi bi-compass me-2 text-primary"></i>
+                Explore Offline Courses
+            </h1>
+            <p class="text-secondary mb-0">
+                @if($type === 'firm')
+                    Browse courses available for your organisation. Book group training and propose your own venue & schedule.
+                @else
+                    Discover skill‑building programs from top colleges.
+                @endif
+            </p>
         </div>
         <div class="mt-3 mt-md-0"></div>
     </div>
@@ -46,6 +56,8 @@
                     @endforeach
                 </div>
             </div>
+
+            {{-- Only show sort for student (firm courses don't have a start date, venue set by college) --}}
             @if ($type === 'student')
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-secondary">Sort</label>
@@ -56,16 +68,19 @@
                     </select>
                 </div>
             @elseif ($type === 'firm')
-                 {{-- nothing for now --}}
+                {{-- Firm courses: no sort dropdown, maybe just a note --}}
+                <div class="col-md-3 d-flex align-items-end">
+                    <span class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i> Venue & schedule proposed by you</span>
+                </div>
             @else
                 <div class="col-md-3">
-                <label class="form-label fw-semibold small text-secondary">Enrollment type</label>
-                <select class="form-select rounded-pill py-2 border-0 shadow-sm bg-light">
-                    <option>All types</option>
-                    <option>Student only</option>
-                    <option>Firm available</option>
-                </select>
-            </div>
+                    <label class="form-label fw-semibold small text-secondary">Enrollment type</label>
+                    <select class="form-select rounded-pill py-2 border-0 shadow-sm bg-light">
+                        <option>All types</option>
+                        <option>Student only</option>
+                        <option>Firm available</option>
+                    </select>
+                </div>
             @endif
 
             <div class="col-12 d-flex justify-content-end gap-2 mt-2">
@@ -75,10 +90,20 @@
         </form>
     </div>
 
+    {{-- Optional: Firm info banner --}}
+    @if($type === 'firm')
+        <div class="alert alert-info border-0 rounded-4 d-flex align-items-center" role="alert">
+            <i class="bi bi-building me-2 fs-5"></i>
+            <div>
+                <strong>For Organisations:</strong> You’ll propose your preferred venue, date, and participant list when you book a course.
+            </div>
+        </div>
+    @endif
+
     <!-- Course cards grid -->
     <div class="row g-4">
         @forelse($courses as $course)
-            <x-common.course-card :course="$course" />
+            <x-common.course-card :course="$course" :type="$type" />
         @empty
             <div class="col-12">
                 <div class="alert alert-light border text-secondary mb-0 rounded-4">

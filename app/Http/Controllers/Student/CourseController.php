@@ -125,7 +125,7 @@ class CourseController extends Controller
         if (Auth::check()) {
             $isEnrolled = Enrollment::query()
                 ->where([
-                    ['user_id', Auth::id()],
+                    ['user_id', Auth::id()],nts
                     ['course_id', $course->id],
                 ])
                 ->exists();

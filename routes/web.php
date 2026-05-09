@@ -21,6 +21,7 @@ use App\Http\Controllers\Student\DashboardController as StudentDashboardControll
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
 
 use App\Http\Controllers\Firm\DashboardController as FirmDashboardController;
+use App\Http\Controllers\Firm\CourseController as FirmCourseController;
 
 use App\Http\Controllers\ProfileController;
 use App\Models\College;
@@ -111,8 +112,8 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 Route::middleware(['auth', 'role:firm'])->group(function () {
     Route::prefix('firm')->name('firm.')->group(function () {
         Route::get('/dashboard', [FirmDashboardController::class, 'index'])->name('dashboard');
-        // Route::get('/explore', [StudentCourseController::class, 'index'])->name('explore.index');
-        // Route::get('/courses/{slug}', [StudentCourseController::class, 'show'])->name('course.show');
+        Route::get('/explore', [FirmCourseController::class, 'index'])->name('explore.index');
+        Route::get('/courses/{slug}', [FirmCourseController::class, 'show'])->name('course.show');
 
         // // Student enrollment (creates an enrollment request)
         // Route::post('/courses/{course}/enroll', [StudentCourseController::class, 'enroll'])
