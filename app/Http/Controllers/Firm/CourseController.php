@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\Category;
+use App\Models\Enrollment;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class CourseController extends Controller
 {
@@ -111,5 +114,42 @@ class CourseController extends Controller
             ->firstOrFail();
         $isEnrolled = false;
         return view('firm.course-details', ['course' => $course, 'isEnrolled' => $isEnrolled]);
+    }
+    public function book(Request $request, Course $course)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'firm') {
+            return redirect()->route('login');
+        }
+
+        // Only allow booking for firm_only courses
+        if ($course->course_type !== 'firm_only') {
+            return back()->with('error', 'This course is not available for firm booking.');
+        }
+
+        // Validate the form input
+        $validated = $request->validate([
+            'requested_venue'    => 'required|string|max:255',
+            'proposed_schedule'  => 'required|date',
+            'participant_count'  => 'required|integer|min:1',
+            'college_note'       => 'nullable|string|max:500',
+        ]);
+
+        // Create a new enrollment record
+        $enrollment = Enrollment::create([
+            'course_id'         => $course->id,
+            'user_id'           => $user->id,
+            'type'              => 'firm',
+            'status'            => 'pending',
+            'requested_venue'   => $validated['requested_venue'],
+            'proposed_schedule' => $validated['proposed_schedule'],
+            'participant_count' => $validated['participant_count'],
+            'total_amount'      => $course->price * $validated['participant_count'],
+            'payment_status'    => 'na', // or 'pending' depending on your logic
+            'college_note'      => $validated['college_note'] ?? null,
+        ]);
+
+        return redirect()->route('firm.bookings.index')
+            ->with('success', 'Booking request submitted successfully.');
     }
 }

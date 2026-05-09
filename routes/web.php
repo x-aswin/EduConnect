@@ -114,10 +114,8 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::get('/dashboard', [FirmDashboardController::class, 'index'])->name('dashboard');
         Route::get('/explore', [FirmCourseController::class, 'index'])->name('explore.index');
         Route::get('/courses/{slug}', [FirmCourseController::class, 'show'])->name('course.show');
-
-        // // Student enrollment (creates an enrollment request)
-        // Route::post('/courses/{course}/enroll', [StudentCourseController::class, 'enroll'])
-        //     ->name('course.enroll');
+        Route::post('/courses/{course}/book', [FirmCourseController::class, 'book'])
+            ->name('course.book');
 
         // // List student's enrollments
         // Route::get('/my-enrollments', [StudentCourseController::class, 'myEnrollments'])
