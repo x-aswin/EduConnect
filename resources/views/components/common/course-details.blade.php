@@ -219,6 +219,7 @@
                     </div>
                 </div>
             @endif
+            <x-common.college-details-card :college="$course->college" />
         </div>
     </div>
 </div>
