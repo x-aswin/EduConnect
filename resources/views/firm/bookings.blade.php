@@ -106,13 +106,10 @@
                                             <i class="bi bi-trash me-1"></i> Remove
                                         </button>
                                     </form>
-                                @elseif($booking->status === 'confirmed' && $booking->payment_status === 'pending')
-                                    <form method="POST" action="{{ route('firm.booking.pay', $booking) }}" class="m-0">
-                                        @csrf
-                                        <button type="submit" class="btn btn-warning btn-sm rounded-pill">
-                                            <i class="bi bi-credit-card me-1"></i> Pay
-                                        </button>
-                                    </form>
+                                @elseif($booking->status === 'confirmed' && $booking->payment_status !== 'paid')
+                                    <a href="{{ route('firm.bookings.payment', $booking) }}" class="btn btn-warning btn-sm rounded-pill flex-grow-1">
+                                        <i class="bi bi-credit-card me-1"></i> Pay
+                                    </a>
                                 @elseif($booking->status === 'confirmed' && $booking->payment_status === 'paid')
                                     <span class="badge bg-success-subtle text-success border border-success align-self-center">Paid</span>
                                 @endif

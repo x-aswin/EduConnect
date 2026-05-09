@@ -44,10 +44,10 @@
             <div class="col-md-7">
                 <div class="mb-4">
                     <h5 class="fw-bold mb-1">{{ $enrollment->course->title ?? 'Course Title' }}</h5>
-                    <small class="text-secondary"><i class="bi bi-building me-1"></i> {{ $enrollment->course->college?->user?->name ?? 'College' }}</small>
-                    <div class="mt-2">
+                    <small class="text-secondary"><i class="bi bi-building me-1"></i> {{ $enrollment->course->college->institution_name ?? 'College' }}</small>
+                    {{-- <div class="mt-2">
                         <span class="badge bg-primary bg-opacity-10 text-primary">Student Only</span>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <div class="row g-3 mb-4">

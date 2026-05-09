@@ -122,6 +122,7 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::post('/bookings/{enrollment}/participants', [FirmCourseController::class, 'storeParticipant'])->name('booking.participants.store');
         Route::patch('/bookings/{enrollment}/participants/{participant}', [FirmCourseController::class, 'updateParticipant'])->name('booking.participants.update');
         Route::delete('/bookings/{enrollment}/participants/{participant}', [FirmCourseController::class, 'destroyParticipant'])->name('booking.participants.destroy');
+        Route::get('/bookings/{enrollment}/payment', [FirmCourseController::class, 'payment'])->name('bookings.payment');
         Route::post('/bookings/{enrollment}/pay', [FirmCourseController::class, 'processPayment'])->name('booking.pay');
         Route::delete('/bookings/{enrollment}', [FirmCourseController::class, 'destroy'])->name('bookings.destroy');
         // // Payment view and processing for a student's enrollment

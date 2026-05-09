@@ -327,6 +327,29 @@ class CourseController extends Controller
     }
 
     /**
+     * Show the firm payment page once the booking is approved.
+     */
+    public function payment(Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user || $enrollment->user_id !== $user->id || $enrollment->type !== 'firm') {
+            abort(403);
+        }
+
+        if ($enrollment->status !== 'confirmed') {
+            return back()->with('error', 'Booking is not approved yet.');
+        }
+
+        if ($enrollment->payment_status === 'paid') {
+            return back()->with('info', 'Payment is already completed or not required.');
+        }
+
+        $enrollment->loadMissing(['course.college.user', 'participants']);
+
+        return view('firm.payment', ['enrollment' => $enrollment]);
+    }
+
+    /**
      * Process a simulated payment and mark enrollment as paid.
      */
     public function processPayment(Request $request, Enrollment $enrollment)
