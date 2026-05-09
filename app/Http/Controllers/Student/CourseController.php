@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Course;
 use App\Models\Enrollment;
 use Illuminate\Http\Request;
@@ -14,14 +15,51 @@ class CourseController extends Controller
     /**
      * Display a listing of student-available courses.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::with(['college', 'category'])
+        $query = Course::with(['college.user', 'category'])
             ->where('course_type', 'student_only')
-            ->where('status', 'active')
-            ->latest()
-            ->get()
-            ->map(function (Course $course) {
+            ->where('status', 'active');
+
+        if ($request->filled('q')) {
+            $keyword = trim((string) $request->q);
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', '%' . $keyword . '%')
+                    ->orWhere('description', 'like', '%' . $keyword . '%')
+                    ->orWhere('venue', 'like', '%' . $keyword . '%')
+                    ->orWhereHas('college', function ($collegeQuery) use ($keyword) {
+                        $collegeQuery->where('institution_name', 'like', '%' . $keyword . '%')
+                            ->orWhereHas('user', function ($userQuery) use ($keyword) {
+                                $userQuery->where('name', 'like', '%' . $keyword . '%');
+                            });
+                    })
+                    ->orWhereHas('category', function ($categoryQuery) use ($keyword) {
+                        $categoryQuery->where('name', 'like', '%' . $keyword . '%');
+                    });
+            });
+        }
+
+        if ($request->filled('category')) {
+            $categoryName = trim((string) $request->category);
+            $query->whereHas('category', function ($categoryQuery) use ($categoryName) {
+                $categoryQuery->where('name', $categoryName);
+            });
+        }
+
+        $sort = $request->get('sort', 'newest');
+        if ($sort === 'price_asc') {
+            $query->orderBy('price', 'asc')->orderBy('created_at', 'desc');
+        } elseif ($sort === 'start_soon') {
+            $query->orderBy('start_date', 'asc')->orderBy('created_at', 'desc');
+        } else {
+            $query->latest();
+            $sort = 'newest';
+        }
+
+        $courses = $query
+            ->paginate(9)
+            ->withQueryString()
+            ->through(function (Course $course) {
                 $gradients = [
                     'linear-gradient(135deg, #d1fae5, #a7f3d0)',
                     'linear-gradient(135deg, #fce7f3, #fbcfe8)',
@@ -64,7 +102,12 @@ class CourseController extends Controller
                 ];
             });
 
-        return view('student.browse-course', compact('courses'));
+        $categories = Category::query()
+            ->orderBy('name')
+            ->pluck('name')
+            ->values();
+
+        return view('student.browse-course', compact('courses', 'categories', 'sort'));
     }
 
     /**
