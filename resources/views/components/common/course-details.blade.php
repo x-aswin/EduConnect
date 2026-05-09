@@ -1,5 +1,6 @@
+{{-- resources/views/components/common/course-details.blade.php --}}
+@props(['course', 'type' => 'student'])
 
-@props(['course'])
 @php
     $totalSeats = (int) ($course->total_seats ?? 0);
     $availableSeats = (int) ($course->available_seats ?? 0);
@@ -29,13 +30,14 @@
 @endphp
 
 <div class="container py-4">
-    <div class="course-header mb-4">
+    {{-- Course Header --}}
+    <div class="course-header mb-4 ">
         <div class="row g-0">
-            <div class="col-md-5">
+            <div class="col-md-5 course-image-col">
                 @if(!empty($course->course_image))
-                    <img src="{{ asset('storage/' . ltrim($course->course_image, '/')) }}" alt="{{ $course->title ?? 'Course' }}" style="width: 100%; height: 100%; object-fit: cover; min-height: 220px;">
+                    <img src="{{ asset('storage/' . ltrim($course->course_image, '/')) }}" alt="{{ $course->title ?? 'Course' }}" class="course-detail-image">
                 @else
-                    <div class="d-flex align-items-center justify-content-center h-100" style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe); min-height: 220px;">
+                    <div class="d-flex align-items-center justify-content-center h-100 course-image-placeholder">
                         <i class="bi bi-code-slash fs-1 text-primary"></i>
                     </div>
                 @endif
@@ -49,40 +51,44 @@
                 <p class="text-secondary mb-1">
                     <i class="bi bi-building me-1"></i> {{ $course->college?->institution_name ?? $course->college?->user?->name ?? 'College' }}
                     <span class="mx-2">|</span>
-                    <i class="bi bi-geo-alt me-1"></i> {{ $course->venue ?? 'TBA' }}
+                    @if($type === 'firm')
+                        <i class="bi bi-geo-alt me-1"></i> Venue set by you
+                    @else
+                        <i class="bi bi-geo-alt me-1"></i> {{ $course->venue ?? 'TBA' }}
+                    @endif
                 </p>
                 <div class="small text-muted mb-3">
-                    <i class="bi bi-calendar3 me-1"></i> {{ $startDisplay }}
-                    @if(!empty($endDisplay))
-                        – {{ $endDisplay }}
-                    @endif
-                    @if(!empty($course->time_slot))
+                    <i class="bi bi-calendar3 me-1"></i>
+                    @if($type === 'firm')
+                        Date set by you
                         <span class="mx-2">|</span>
-                        <i class="bi bi-clock me-1"></i> {{ $course->time_slot }}
+                        <i class="bi bi-clock me-1"></i> Time slot set by you
+                    @else
+                        {{ $startDisplay }}
+                        @if(!empty($endDisplay)) – {{ $endDisplay }} @endif
+                        @if(!empty($course->time_slot))
+                            <span class="mx-2">|</span>
+                            <i class="bi bi-clock me-1"></i> {{ $course->time_slot }}
+                        @endif
                     @endif
                 </div>
 
-                @php
-                    $enrollmentStatus = null;
-                    if(auth()->check()){
-                        $enrollment = \App\Models\Enrollment::where('user_id', auth()->id())
-                            ->where('course_id', $course->id)
-                            ->first();
-                        $enrollmentStatus = $enrollment?->status;
-                    }
-                @endphp
-
                 @auth
                     @if(auth()->user()->role === 'student')
-                        @if($enrollmentStatus === 'confirmed')
+                        @php
+                            $enrollment = \App\Models\Enrollment::where('user_id', auth()->id())
+                                ->where('course_id', $course->id)
+                                ->first();
+                        @endphp
+                        @if($enrollment && $enrollment->status === 'confirmed')
                             <button type="button" class="btn btn-success rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
                                 <i class="bi bi-check-circle me-2"></i> Enrolled
                             </button>
-                        @elseif($enrollmentStatus === 'pending')
+                        @elseif($enrollment && $enrollment->status === 'pending')
                             <button type="button" class="btn btn-warning rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
                                 <i class="bi bi-hourglass-split me-2"></i> Waiting for Approval
                             </button>
-                        @elseif($enrollmentStatus === 'rejected')
+                        @elseif($enrollment && $enrollment->status === 'rejected')
                             <button type="button" class="btn btn-danger rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
                                 <i class="bi bi-x-circle me-2"></i> Request Rejected
                             </button>
@@ -94,6 +100,11 @@
                                 </button>
                             </form>
                         @endif
+
+                    @elseif(auth()->user()->role === 'firm')
+                        <button type="button" class="btn btn-primary rounded-pill px-5 py-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#firmBookingModal">
+                            <i class="bi bi-building me-2"></i> Book for Firm
+                        </button>
                     @endif
                 @else
                     <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill px-5 py-3 fw-semibold">
@@ -104,6 +115,7 @@
         </div>
     </div>
 
+    {{-- Two‑column layout --}}
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
@@ -160,10 +172,15 @@
                     @endif
                 @endauth
 
-                <div class="d-flex justify-content-between small text-muted mb-3">
+                <div class="d-flex justify-content-between small text-muted mb-1">
                     <span><i class="bi bi-tag-fill"></i> Price</span>
-                    <span class="fw-bold text-primary fs-5">{{ ((float) ($course->price ?? 0) <= 0) ? 'Free' : '₹' . number_format((float) $course->price, 0) }}</span>
+                    <span class="fw-bold text-primary fs-5">
+                        {{ ((float) ($course->price ?? 0) <= 0) ? 'Free' : '₹' . number_format((float) $course->price, 0) }}
+                    </span>
                 </div>
+                @if($type === 'firm' && ((float) ($course->price ?? 0) > 0))
+                    <p class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i> Price is per participant</p>
+                @endif
                 <hr>
                 @auth
                     @if(auth()->user()->role === 'student')
@@ -202,13 +219,6 @@
                     </div>
                 </div>
             @endif
-
-            {{-- @if(!empty($course->venue))
-                <div class="card border-0 shadow-sm rounded-4 p-3 bg-light">
-                    <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-                    <strong>Venue:</strong> {{ $course->venue }}
-                </div>
-            @endif --}}
         </div>
     </div>
 </div>
@@ -220,6 +230,30 @@
         border-radius: 2rem;
         overflow: hidden;
         box-shadow: 0 12px 28px rgba(0,0,0,0.03);
+    }
+    /* Force image to cover like landscape even if portrait */
+    .course-image-col {
+        height: 240px;
+        position: relative;
+        overflow: hidden;
+    }
+    .course-detail-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+    }
+    .course-image-placeholder {
+        height: 100%;
+        background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    }
+    @media (max-width: 767.98px) {
+        .course-image-col {
+            height: 220px;
+        }
     }
     .section-accordion .accordion-button {
         font-weight: 600;
