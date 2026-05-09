@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\Category;
 use App\Models\Enrollment;
+use App\Models\FirmParticipant;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class CourseController extends Controller
@@ -131,23 +133,46 @@ class CourseController extends Controller
         $validated = $request->validate([
             'requested_venue'    => 'required|string|max:255',
             'proposed_schedule'  => 'required|date',
-            'participant_count'  => 'required|integer|min:1',
+            'participant_count'  => 'nullable|integer|min:1',
+            'participants'       => 'nullable|array',
+            'participants.*.name' => 'required_with:participants|string|max:255',
+            'participants.*.contact_info' => 'nullable|string|max:255',
             'college_note'       => 'nullable|string|max:500',
         ]);
 
-        // Create a new enrollment record
-        $enrollment = Enrollment::create([
-            'course_id'         => $course->id,
-            'user_id'           => $user->id,
-            'type'              => 'firm',
-            'status'            => 'pending',
-            'requested_venue'   => $validated['requested_venue'],
-            'proposed_schedule' => $validated['proposed_schedule'],
-            'participant_count' => $validated['participant_count'],
-            'total_amount'      => $course->price * $validated['participant_count'],
-            'payment_status'    => 'na', // or 'pending' depending on your logic
-            'college_note'      => $validated['college_note'] ?? null,
-        ]);
+        $submittedParticipants = $request->input('participants', []);
+        $submittedCount = is_array($submittedParticipants) ? count($submittedParticipants) : 0;
+        $requestedCount = isset($validated['participant_count']) ? (int) $validated['participant_count'] : 0;
+        $finalCount = $submittedCount > 0 ? $submittedCount : max($requestedCount, 1);
+
+        $unitPrice = (float) ($course->price ?? 0);
+        $totalAmount = $unitPrice * $finalCount;
+
+        DB::transaction(function () use ($course, $user, $validated, $finalCount, $totalAmount, $submittedParticipants) {
+            $enrollment = Enrollment::create([
+                'course_id'         => $course->id,
+                'user_id'           => $user->id,
+                'type'              => 'firm',
+                'status'            => 'pending',
+                'requested_venue'   => $validated['requested_venue'],
+                'proposed_schedule' => $validated['proposed_schedule'],
+                'participant_count' => $finalCount,
+                'total_amount'      => $totalAmount,
+                'payment_status'    => 'na',
+                'college_note'      => $validated['college_note'] ?? null,
+            ]);
+
+            if (is_array($submittedParticipants) && count($submittedParticipants) > 0) {
+                foreach ($submittedParticipants as $p) {
+                    if (empty($p['name'])) continue;
+                    FirmParticipant::create([
+                        'enrollment_id' => $enrollment->id,
+                        'name' => $p['name'],
+                        'contact_info' => $p['contact_info'] ?? null,
+                    ]);
+                }
+            }
+        });
 
         return redirect()->route('firm.bookings')
             ->with('success', 'Booking request submitted successfully.');
