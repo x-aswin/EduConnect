@@ -92,8 +92,10 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         Route::delete('/my-enrollments/{enrollment}', [StudentCourseController::class, 'destroy'])
             ->name('my.enrollments.destroy');
 
-        Route::get('/complete-profile', [StudentProfileController::class, 'edit'])->name('complete.profile.edit');
-        Route::patch('/complete-profile', [StudentProfileController::class, 'update'])->name('complete.profile.update');
+        Route::get('/complete-profile', [StudentProfileController::class, 'CompleteEdit'])->name('complete.profile.edit');
+        Route::patch('/complete-profile', [StudentProfileController::class, 'CompleteUpdate'])->name('complete.profile.update');
+        Route::get('/profile', [StudentProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
 
     });
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

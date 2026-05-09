@@ -51,8 +51,9 @@
                             <!-- Mentor Info -->
                             @if($enrollment->course->mentor)
                                 <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
-                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #4f46e5); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem; font-weight: 600;">
-                                        {{ strtoupper(substr($enrollment->course->mentor->user->name ?? 'M', 0, 1)) }}
+                                    <div >
+                                        {{-- {{ strtoupper(substr($enrollment->course->mentor->user->name ?? 'M', 0, 1)) }} --}}
+                                        <img src="{{ asset('storage/' . $enrollment->course->mentor->photo) }}" alt="Profile Photo" id="profilePhotoPreview" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #4f46e5); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem; font-weight: 600;">
                                     </div>
                                     <div>
                                         <small class="text-secondary d-block">Mentor</small>

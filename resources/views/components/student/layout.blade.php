@@ -165,9 +165,9 @@
         <!-- Student profile dropdown -->
         <div class="dropdown">
           <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="studentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <div class="avatar-circle me-2 d-none d-md-flex">
-              {{ strtoupper(collect(explode(' ', auth()->user()?->name ?? 'U'))->filter()->map(fn ($part) => substr($part, 0, 1))->take(2)->implode('')) }}
-            </div>
+            {{-- <div class="avatar-circle me-2 d-none d-md-flex"> --}}
+              <img src="{{ asset('storage/' . auth()->user()->student->photo) }}" alt="Profile Photo" id="profilePhotoPreview" class="avatar-circle me-2 d-none d-md-flex">
+            {{-- </div> --}}
             <div class="d-none d-lg-block text-start lh-sm">
               <span class="d-block fw-semibold" style="font-size: 0.95rem;">{{ auth()->user()?->name ?? 'Guest' }}</span>
               <span class="d-block small text-secondary" style="font-size: 0.75rem;">
@@ -176,9 +176,9 @@
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle"></i> Profile</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Account Settings</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check"></i> Privacy</a></li>
+            <li><a class="dropdown-item" href="{{ route('student.profile.edit') }}"><i class="bi bi-person-circle"></i> Profile</a></li>
+            {{-- <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Account Settings</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check"></i> Privacy</a></li> --}}
             <li><hr class="dropdown-divider"></li>
             <li>
               <form method="POST" action="{{ route('logout') }}">
