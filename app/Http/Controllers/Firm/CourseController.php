@@ -102,7 +102,7 @@ class CourseController extends Controller
             });
 
         $categories = Category::query()
-            ->orderBy('name')
+            ->orderBy('name', 'asc')
             ->pluck('name')
             ->values();
 
@@ -206,6 +206,45 @@ class CourseController extends Controller
     }
 
     /**
+     * Update a pending booking before college approval.
+     */
+    public function updateBooking(Request $request, Enrollment $enrollment)
+    {
+        $user = Auth::user();
+        if (!$user || $enrollment->user_id !== $user->id || $enrollment->type !== 'firm') {
+            abort(403);
+        }
+
+        if ($enrollment->status !== 'pending') {
+            return back()->with('error', 'This booking can only be edited before approval.');
+        }
+
+        $validated = $request->validate([
+            'requested_venue' => 'required|string|max:255',
+            'proposed_schedule' => 'required|date',
+            'college_note' => 'nullable|string|max:500',
+            'participants' => 'nullable|array',
+            'participants.*.name' => 'required_with:participants|string|max:255',
+            'participants.*.contact_info' => 'nullable|string|max:255',
+        ]);
+
+        DB::transaction(function () use ($enrollment, $validated, $request) {
+            $participantCount = $enrollment->participants()->count();
+
+            $enrollment->update([
+                'requested_venue' => $validated['requested_venue'],
+                'proposed_schedule' => $validated['proposed_schedule'],
+                'college_note' => $validated['college_note'] ?? null,
+                'participant_count' => max($participantCount, 1),
+                'total_amount' => (float) ($enrollment->course->price ?? 0) * max($participantCount, 1),
+            ]);
+        });
+
+        return redirect()->route('firm.bookings.show', ['enrollment' => $enrollment, 'mode' => 'edit'])
+            ->with('success', 'Booking updated successfully.');
+    }
+
+    /**
      * Store a participant for an enrollment.
      */
     public function storeParticipant(Request $request, Enrollment $enrollment)
@@ -247,7 +286,7 @@ class CourseController extends Controller
             abort(404);
         }
 
-        $participant->delete();
+        FirmParticipant::query()->whereKey($participant->id)->delete();
 
         $enrollment->refresh();
         $enrollment->participant_count = $enrollment->participants()->count();
@@ -255,6 +294,36 @@ class CourseController extends Controller
         $enrollment->save();
 
         return redirect()->route('firm.bookings.show', $enrollment)->with('success', 'Participant removed.');
+    }
+
+    /**
+     * Update a participant entry while booking is still pending.
+     */
+    public function updateParticipant(Request $request, Enrollment $enrollment, FirmParticipant $participant)
+    {
+        $user = Auth::user();
+        if (!$user || $enrollment->user_id !== $user->id || $enrollment->type !== 'firm') {
+            abort(403);
+        }
+        if ($participant->enrollment_id !== $enrollment->id) {
+            abort(404);
+        }
+        if ($enrollment->status !== 'pending') {
+            return back()->with('error', 'Participant editing is only available before approval.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'contact_info' => 'nullable|string|max:255',
+        ]);
+
+        $participant->update([
+            'name' => $validated['name'],
+            'contact_info' => $validated['contact_info'] ?? null,
+        ]);
+
+        return redirect()->route('firm.bookings.show', ['enrollment' => $enrollment, 'mode' => 'edit'])
+            ->with('success', 'Participant updated successfully.');
     }
 
     /**
@@ -296,12 +365,12 @@ class CourseController extends Controller
             return back()->with('error', 'The booking was already approved or rejected; cannot remove.');
         }
 
-        $deleted = Enrollment::where([
-            ['id', $enrollment->id],
-            ['user_id', $user->id],
-            ['type', 'firm'],
-            ['status', 'pending'],
-        ])->delete();
+        $deleted = Enrollment::query()
+            ->where('id', $enrollment->id)
+            ->where('user_id', $user->id)
+            ->where('type', 'firm')
+            ->where('status', 'pending')
+            ->delete();
 
         if (!$deleted) return back()->with('error', 'Unable to remove this booking.');
         return redirect()->route('firm.bookings.index')->with('success', 'Booking removed.');

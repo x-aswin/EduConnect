@@ -256,18 +256,22 @@
                                                             <h5 class="modal-title">Edit Participant</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                         </div>
-                                                        <form method="POST" action="#">
+                                                        <form method="POST" action="{{ route('firm.booking.participants.update', [$enrollment, $participant]) }}">
                                                             @csrf
+                                                            @method('PATCH')
                                                             <div class="modal-body">
                                                                 <div class="mb-3">
                                                                     <label class="form-label">Full Name</label>
-                                                                    <input type="text" class="form-control" value="{{ $participant->name }}" readonly>
+                                                                    <input type="text" name="name" class="form-control" value="{{ $participant->name }}" required>
                                                                 </div>
                                                                 <div class="mb-3">
                                                                     <label class="form-label">Contact Info</label>
-                                                                    <input type="text" class="form-control" value="{{ $participant->contact_info }}" readonly>
+                                                                    <input type="text" name="contact_info" class="form-control" value="{{ $participant->contact_info }}">
                                                                 </div>
-                                                                <div class="text-muted small">Inline edit can be added here if needed; current flow supports add/remove while pending.</div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-primary">Save Changes</button>
                                                             </div>
                                                         </form>
                                                     </div>
@@ -290,39 +294,73 @@
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                     <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Booking Summary</h5>
-                    <div class="small text-muted mb-2">Course</div>
-                    <h6 class="fw-bold">{{ $enrollment->course->title }}</h6>
-                    <div class="small text-muted mt-3">College</div>
-                    <div>{{ $enrollment->course->college?->institution_name ?? 'N/A' }}</div>
-                    <div class="small text-muted mt-3">Requested Venue</div>
-                    <div>{{ $enrollment->requested_venue ?? 'N/A' }}</div>
-                    <div class="small text-muted mt-3">Proposed Schedule</div>
-                    <div>{{ $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('M d, Y h:i A') : 'N/A' }}</div>
-                    <div class="small text-muted mt-3">Payment</div>
-                    <div>
-                        @if($enrollment->status === 'confirmed' && $enrollment->payment_status === 'pending')
-                            Pending
-                        @elseif($enrollment->status === 'confirmed' && $enrollment->payment_status === 'paid')
-                            Paid
-                        @else
-                            N/A
-                        @endif
-                    </div>
-
-                    <div class="mt-4 d-flex gap-2">
-                        @if($enrollment->status === 'confirmed' && $enrollment->payment_status === 'pending')
-                            <form method="POST" action="{{ route('firm.booking.pay', $enrollment) }}">
-                                @csrf
-                                <button class="btn btn-primary">Pay ₹ {{ number_format((float) $enrollment->total_amount, 2) }}</button>
-                            </form>
-                        @elseif($enrollment->status === 'pending')
-                            @if(($mode ?? 'view') === 'edit')
-                                <span class="badge bg-warning-subtle text-warning border border-warning align-self-center">Editing enabled</span>
+                    @if($enrollment->status === 'pending' && ($mode ?? 'view') === 'edit')
+                        <form method="POST" action="{{ route('firm.bookings.update', $enrollment) }}">
+                            @csrf
+                            @method('PATCH')
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Course</label>
+                                <input type="text" class="form-control" value="{{ $enrollment->course->title }}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">College</label>
+                                <input type="text" class="form-control" value="{{ $enrollment->course->college?->institution_name ?? 'N/A' }}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Requested Venue</label>
+                                <input type="text" name="requested_venue" class="form-control" value="{{ old('requested_venue', $enrollment->requested_venue) }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Proposed Schedule</label>
+                                <input type="datetime-local" name="proposed_schedule" class="form-control" value="{{ old('proposed_schedule', $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('Y-m-d\TH:i') : '') }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Message</label>
+                                <textarea name="college_note" class="form-control" rows="3" placeholder="Optional message to the college">{{ old('college_note', $enrollment->college_note) }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Participants</label>
+                                <input type="text" class="form-control" value="{{ $participants->count() }}" disabled>
+                            </div>
+                            <div class="small text-muted mb-3">Edit participant names using the pencil icon in the list; add/remove is still available while pending.</div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary rounded-pill">
+                                    <i class="bi bi-save me-1"></i> Save Booking Changes
+                                </button>
+                                <a href="{{ route('firm.bookings.show', ['enrollment' => $enrollment, 'mode' => 'view']) }}" class="btn btn-outline-secondary rounded-pill">Cancel</a>
+                            </div>
+                        </form>
+                    @else
+                        <div class="small text-muted mb-2">Course</div>
+                        <h6 class="fw-bold">{{ $enrollment->course->title }}</h6>
+                        <div class="small text-muted mt-3">College</div>
+                        <div>{{ $enrollment->course->college?->institution_name ?? 'N/A' }}</div>
+                        <div class="small text-muted mt-3">Requested Venue</div>
+                        <div>{{ $enrollment->requested_venue ?? 'N/A' }}</div>
+                        <div class="small text-muted mt-3">Proposed Schedule</div>
+                        <div>{{ $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('M d, Y h:i A') : 'N/A' }}</div>
+                        <div class="small text-muted mt-3">Payment</div>
+                        <div>
+                            @if($enrollment->status === 'confirmed' && $enrollment->payment_status === 'pending')
+                                Pending
+                            @elseif($enrollment->status === 'confirmed' && $enrollment->payment_status === 'paid')
+                                Paid
                             @else
-                                <a href="{{ route('firm.bookings.show', ['enrollment' => $enrollment, 'mode' => 'edit']) }}" class="btn btn-outline-warning">Edit Participants</a>
+                                N/A
                             @endif
-                        @endif
-                    </div>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-2">
+                            @if($enrollment->status === 'confirmed' && $enrollment->payment_status === 'pending')
+                                <form method="POST" action="{{ route('firm.booking.pay', $enrollment) }}">
+                                    @csrf
+                                    <button class="btn btn-primary">Pay ₹ {{ number_format((float) $enrollment->total_amount, 2) }}</button>
+                                </form>
+                            @elseif($enrollment->status === 'pending')
+                                <a href="{{ route('firm.bookings.show', ['enrollment' => $enrollment, 'mode' => 'edit']) }}" class="btn btn-outline-warning">Edit Booking</a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
