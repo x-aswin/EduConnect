@@ -15,10 +15,14 @@ use App\Http\Controllers\College\CourseController as CollegeCourseController;
 use App\Http\Controllers\College\MentorController as CollegeMentorController;
 use App\Http\Controllers\College\EnrollmentController as CollegeEnrollmentController;
 
-use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
+
+use App\Http\Controllers\Firm\DashboardController as FirmDashboardController;
+
+use App\Http\Controllers\ProfileController;
 use App\Models\College;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -96,6 +100,39 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         Route::patch('/complete-profile', [StudentProfileController::class, 'CompleteUpdate'])->name('complete.profile.update');
         Route::get('/profile', [StudentProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
+
+    });
+     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+
+Route::middleware(['auth', 'role:firm'])->group(function () {
+    Route::prefix('firm')->name('firm.')->group(function () {
+        Route::get('/dashboard', [FirmDashboardController::class, 'index'])->name('dashboard');
+        // Route::get('/explore', [StudentCourseController::class, 'index'])->name('explore.index');
+        // Route::get('/courses/{slug}', [StudentCourseController::class, 'show'])->name('course.show');
+
+        // // Student enrollment (creates an enrollment request)
+        // Route::post('/courses/{course}/enroll', [StudentCourseController::class, 'enroll'])
+        //     ->name('course.enroll');
+
+        // // List student's enrollments
+        // Route::get('/my-enrollments', [StudentCourseController::class, 'myEnrollments'])
+        //     ->name('my.enrollments');
+        // // Payment view and processing for a student's enrollment
+        // Route::get('/enrollments/{enrollment}/payment', [StudentCourseController::class, 'payment'])
+        //     ->name('enrollment.payment');
+        // Route::post('/enrollments/{enrollment}/pay', [StudentCourseController::class, 'processPayment'])
+        //     ->name('enrollment.pay');
+        // Route::delete('/my-enrollments/{enrollment}', [StudentCourseController::class, 'destroy'])
+        //     ->name('my.enrollments.destroy');
+
+        // Route::get('/complete-profile', [StudentProfileController::class, 'CompleteEdit'])->name('complete.profile.edit');
+        // Route::patch('/complete-profile', [StudentProfileController::class, 'CompleteUpdate'])->name('complete.profile.update');
+        // Route::get('/profile', [StudentProfileController::class, 'edit'])->name('profile.edit');
+        // Route::patch('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
 
     });
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
