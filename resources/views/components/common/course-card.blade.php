@@ -141,7 +141,7 @@
                     <i class="bi bi-box-arrow-in-right"></i> View Details
                 </a>
             @elseif($type === 'mentor')
-                <a href="#" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
+                <a href="{{ route('mentor.coursedetails', ['slug' => $course['slug'] ?? '']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
                     <i class="bi bi-pencil-square"></i> View Details
                 </a>
             @elseif($type === 'firm')

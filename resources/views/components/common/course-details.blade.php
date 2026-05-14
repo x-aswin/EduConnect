@@ -157,40 +157,96 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                <h5 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary me-2"></i>Enrollment</h5>
-
-                @auth
-                    @if(auth()->user()->role === 'student')
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-secondary">Seats filled</span>
-                            <span class="fw-semibold">{{ $seatsFilled }} / {{ $totalSeats }}</span>
+            @if($type === 'mentor')
+                @php
+                    $enrolledStudents = $course->enrollments
+                        ->where('type', 'student')
+                        ->where('status', 'confirmed')
+                        ->map(function ($enrollment) {
+                            return [
+                                'id' => $enrollment->user->id,
+                                'name' => $enrollment->user->name,
+                                'email' => $enrollment->user->email,
+                                'enrollment_id' => $enrollment->id,
+                            ];
+                        })
+                        ->values();
+                @endphp
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary me-2"></i>Enrolled Students ({{ $enrolledStudents->count() }})</h5>
+                    
+                    @if($enrolledStudents->count() > 0)
+                        <div class="list-group list-group-flush">
+                            @foreach($enrolledStudents as $student)
+                                @php
+                                    $chat = \App\Models\Chat::where('mentor_id', auth()->user()->mentor?->id)
+                                        ->where('student_id', $student['id'])
+                                        ->first();
+                                    $chatStatus = $chat ? ($chat->status === 'active' ? 'active' : 'pending') : 'none';
+                                @endphp
+                                <div class="list-group-item border-0 px-0 py-3 d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1 min-w-0">
+                                        <p class="fw-semibold mb-1 text-truncate">{{ $student['name'] }}</p>
+                                        <small class="text-muted text-truncate d-block">{{ $student['email'] }}</small>
+                                    </div>
+                                    <div class="ms-2 flex-shrink-0">
+                                        @if($chatStatus === 'active')
+                                            <a href="" class="btn btn-sm btn-primary rounded-pill">
+                                                <i class="bi bi-chat-left-text me-1"></i> Open Chat
+                                            </a>
+                                        @elseif($chatStatus === 'pending')
+                                            <button type="button" class="btn btn-sm btn-warning rounded-pill" disabled>
+                                                <i class="bi bi-hourglass-split me-1"></i> Pending
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" disabled>
+                                                <i class="bi bi-dash me-1"></i> No Request
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                        <div class="progress mb-3" style="height: 10px; border-radius: 10px;">
-                            <div class="progress-bar bg-{{ $seatPercent > 80 ? 'danger' : ($seatPercent > 50 ? 'warning' : 'primary') }}" role="progressbar" style="width: {{ $seatPercent }}%;" aria-valuenow="{{ $seatPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+                    @else
+                        <p class="text-muted text-center py-3 mb-0"><i class="bi bi-inbox me-2"></i> No enrolled students yet</p>
                     @endif
-                @endauth
-
-                <div class="d-flex justify-content-between small text-muted mb-1">
-                    <span><i class="bi bi-tag-fill"></i> Price</span>
-                    <span class="fw-bold text-primary fs-5">
-                        {{ ((float) ($course->price ?? 0) <= 0) ? 'Free' : '₹' . number_format((float) $course->price, 0) }}
-                    </span>
                 </div>
-                @if($type === 'firm' && ((float) ($course->price ?? 0) > 0))
-                    <p class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i> Price is per participant</p>
-                @endif
-                <hr>
-                @auth
-                    @if(auth()->user()->role === 'student')
-                        <div class="d-flex justify-content-between small">
-                            <span>Certification</span>
-                            <span class="text-success fw-semibold"><i class="bi bi-patch-check-fill"></i> {{ !empty($course->is_certified) ? 'Yes' : 'No' }}</span>
-                        </div>
+            @else
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary me-2"></i>Enrollment</h5>
+
+                    @auth
+                        @if(auth()->user()->role === 'student')
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-secondary">Seats filled</span>
+                                <span class="fw-semibold">{{ $seatsFilled }} / {{ $totalSeats }}</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 10px; border-radius: 10px;">
+                                <div class="progress-bar bg-{{ $seatPercent > 80 ? 'danger' : ($seatPercent > 50 ? 'warning' : 'primary') }}" role="progressbar" style="width: {{ $seatPercent }}%;" aria-valuenow="{{ $seatPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        @endif
+                    @endauth
+
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span><i class="bi bi-tag-fill"></i> Price</span>
+                        <span class="fw-bold text-primary fs-5">
+                            {{ ((float) ($course->price ?? 0) <= 0) ? 'Free' : '₹' . number_format((float) $course->price, 0) }}
+                        </span>
+                    </div>
+                    @if($type === 'firm' && ((float) ($course->price ?? 0) > 0))
+                        <p class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i> Price is per participant</p>
                     @endif
-                @endauth
-            </div>
+                    <hr>
+                    @auth
+                        @if(auth()->user()->role === 'student')
+                            <div class="d-flex justify-content-between small">
+                                <span>Certification</span>
+                                <span class="text-success fw-semibold"><i class="bi bi-patch-check-fill"></i> {{ !empty($course->is_certified) ? 'Yes' : 'No' }}</span>
+                            </div>
+                        @endif
+                    @endauth
+                </div>
+            @endif
 
             @if($mentor)
                 <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
