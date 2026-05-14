@@ -109,4 +109,14 @@ class CourseController extends Controller
 
         return view('mentor.browse-course', compact('courses', 'categories', 'statuses', 'sort'));
     }
+    public function details(string $slug)
+    {
+        $course = Course::with(['college', 'category', 'enrollment'])
+            ->where('slug', $slug)
+            ->where('status', 'active')
+            ->where('mentor_id', auth()->user()->mentor?->id)
+            ->firstOrFail();
+
+        return view('student.course-details', ['course' => $course]);
+    }
 }
