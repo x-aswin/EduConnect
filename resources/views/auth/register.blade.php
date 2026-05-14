@@ -46,7 +46,7 @@
             <option value="student">Student</option>
             <option value="college">College/Institution</option>
             <option value="firm">Firm/Company</option>
-            <option value="mentor">Mentor/Expert</option>
+            {{-- <option value="mentor">Mentor/Expert</option> --}}
         </select>
         <x-input-error :messages="$errors->get('role')" class="mt-2" />
         </div>
