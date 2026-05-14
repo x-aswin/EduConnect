@@ -23,6 +23,9 @@ use App\Http\Controllers\Student\CourseController as StudentCourseController;
 use App\Http\Controllers\Firm\DashboardController as FirmDashboardController;
 use App\Http\Controllers\Firm\CourseController as FirmCourseController;
 
+
+use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
+
 use App\Http\Controllers\ProfileController;
 use App\Models\College;
 use Illuminate\Support\Facades\Auth;
@@ -131,6 +134,19 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::patch('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeUpdate'])->name('complete.profile.update');
         Route::get('/profile', [\App\Http\Controllers\Firm\ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [\App\Http\Controllers\Firm\ProfileController::class, 'update'])->name('profile.update');
+
+    });
+     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'role:mentor'])->group(function () {
+    Route::prefix('mentor')->name('mentor.')->group(function () {
+        Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
+
+        // Route::get('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'edit'])->name('profile.edit');
+        // Route::patch('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'update'])->name('profile.update');
 
     });
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
