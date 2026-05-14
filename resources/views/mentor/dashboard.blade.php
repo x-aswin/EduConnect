@@ -56,10 +56,10 @@
             </p>
         </div>
         <div class="mt-3 mt-md-0">
-            <a href="{{ route('mentor.courses') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
                 <i class="bi bi-journal-bookmark-fill me-1"></i> My Courses
             </a>
-            <a href="{{ route('mentor.chat.requests') }}" class="btn btn-outline-primary rounded-pill px-4 py-2 ms-2">
+            <a href="#" class="btn btn-outline-primary rounded-pill px-4 py-2 ms-2">
                 <i class="bi bi-chat-dots-fill"></i> Requests (3)
             </a>
         </div>
@@ -120,7 +120,7 @@
     <!-- Assigned Courses (hardcoded) -->
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h2 class="section-title"><i class="bi bi-journal-bookmark-fill text-primary me-2"></i>My Courses</h2>
-        <a href="{{ route('mentor.courses') }}" class="text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
+        <a href="#" class="text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
     </div>
     <div class="row g-4 mb-5">
         <!-- Course Card 1 -->
@@ -179,7 +179,7 @@
     <!-- Pending Mentorship Requests (hardcoded) -->
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h2 class="section-title"><i class="bi bi-chat-dots-fill text-warning me-2"></i>Pending Requests</h2>
-        <a href="{{ route('mentor.chat.requests') }}" class="text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
+        <a href="#" class="text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
     </div>
     <div class="row g-3 mb-4">
         <div class="col-md-6 col-lg-4">
