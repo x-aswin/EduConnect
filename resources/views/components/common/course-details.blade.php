@@ -249,9 +249,21 @@
             @endif
 
             @if($mentor && $type !== 'mentor')
+                @php
+                    $mentorChat = null;
+                    $chatStatus = 'none';
+                    if(auth()->check() && auth()->user()->role === 'student') {
+                        $mentorChat = \App\Models\Chat::where('mentor_id', $mentor->id)
+                            ->where('student_id', auth()->id())
+                            ->first();
+                        if($mentorChat) {
+                            $chatStatus = $mentorChat->status;
+                        }
+                    }
+                @endphp
                 <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                     <h5 class="fw-bold mb-3"><i class="bi bi-person-badge-fill text-primary me-2"></i>Your Mentor</h5>
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
                             @if(!empty($mentor->photo))
                                 <img src="{{ asset('storage/' . ltrim($mentor->photo, '/')) }}" class="rounded-circle" width="64" height="64" style="object-fit: cover;">
@@ -261,7 +273,7 @@
                                 </div>
                             @endif
                         </div>
-                        <div class="ms-3">
+                        <div class="ms-3 flex-grow-1">
                             <h6 class="fw-bold mb-0">{{ $mentor->user->name ?? 'Mentor' }}</h6>
                             <small class="text-muted">{{ $mentor->qualification ?? '' }}</small>
                             <div class="mt-1 small">
@@ -273,6 +285,28 @@
                             </div>
                         </div>
                     </div>
+                    
+                    @auth
+                        @if(auth()->user()->role === 'student')
+                            @if($chatStatus === 'none')
+                                <form action="{{ route('student.mentor.request') }}" method="POST" class="d-grid">
+                                    @csrf
+                                    <input type="hidden" name="mentor_id" value="{{ $mentor->id }}">
+                                    <button type="submit" class="btn btn-primary rounded-pill py-2 fw-semibold">
+                                        <i class="bi bi-hand-thumbs-up me-2"></i> Request Mentor
+                                    </button>
+                                </form>
+                            @elseif($chatStatus === 'pending')
+                                <button type="button" class="btn btn-warning rounded-pill py-2 fw-semibold w-100" disabled>
+                                    <i class="bi bi-hourglass-split me-2"></i> View Request Status
+                                </button>
+                            @elseif($chatStatus === 'active')
+                                <a href="{{ route('mentor.chats.show', $mentorChat->id) }}" class="btn btn-success rounded-pill py-2 fw-semibold d-block text-center">
+                                    <i class="bi bi-chat-left-text me-2"></i> Open Chat
+                                </a>
+                            @endif
+                        @endif
+                    @endauth
                 </div>
             @endif
             <x-common.college-details-card :college="$course->college" />

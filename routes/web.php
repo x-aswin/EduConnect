@@ -19,6 +19,7 @@ use App\Http\Controllers\College\EnrollmentController as CollegeEnrollmentContro
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\CourseController as StudentCourseController;
+use App\Http\Controllers\Student\ChatController as StudentChatController;
 
 use App\Http\Controllers\Firm\DashboardController as FirmDashboardController;
 use App\Http\Controllers\Firm\CourseController as FirmCourseController;
@@ -106,6 +107,8 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         Route::get('/profile', [StudentProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
 
+        // Mentor request
+        Route::post('/mentor/request', [StudentChatController::class, 'requestMentor'])->name('mentor.request');
     });
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
      Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
