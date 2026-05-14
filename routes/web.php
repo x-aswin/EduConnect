@@ -125,20 +125,8 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::get('/bookings/{enrollment}/payment', [FirmCourseController::class, 'payment'])->name('bookings.payment');
         Route::post('/bookings/{enrollment}/pay', [FirmCourseController::class, 'processPayment'])->name('booking.pay');
         Route::delete('/bookings/{enrollment}', [FirmCourseController::class, 'destroy'])->name('bookings.destroy');
-        // // Payment view and processing for a student's enrollment
-        // Route::get('/enrollments/{enrollment}/payment', [StudentCourseController::class, 'payment'])
-        //     ->name('enrollment.payment');
-        // Route::post('/enrollments/{enrollment}/pay', [StudentCourseController::class, 'processPayment'])
-        //     ->name('enrollment.pay');
-        // Route::delete('/my-enrollments/{enrollment}', [StudentCourseController::class, 'destroy'])
-        //     ->name('my.enrollments.destroy');
 
-        // Route::get('/complete-profile', [StudentProfileController::class, 'CompleteEdit'])->name('complete.profile.edit');
-        // Route::patch('/complete-profile', [StudentProfileController::class, 'CompleteUpdate'])->name('complete.profile.update');
-        // Route::get('/profile', [StudentProfileController::class, 'edit'])->name('profile.edit');
-        // Route::patch('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
-
-        // Firm profile management (custom pages, do not use Breeze defaults)
+        // Firm profile management ()
         Route::get('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeEdit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeUpdate'])->name('complete.profile.update');
         Route::get('/profile', [\App\Http\Controllers\Firm\ProfileController::class, 'edit'])->name('profile.edit');
