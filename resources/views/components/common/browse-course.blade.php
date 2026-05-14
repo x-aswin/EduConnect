@@ -1,5 +1,5 @@
 {{-- resources/views/components/common/explore-courses.blade.php --}}
-@props(['courses', 'type', 'categories' => [], 'sort' => 'newest'])
+@props(['courses', 'type', 'categories' => [], 'statuses' => [], 'sort' => 'newest'])
 
 @push('styles')
 <style>
@@ -56,16 +56,26 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <label class="form-label fw-semibold small text-secondary">Category</label>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ request()->fullUrlWithQuery(['category' => null, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('category') ? 'bg-light text-secondary' : 'bg-primary bg-opacity-10 text-primary active-filter' }}">All</a>
-                    @foreach($categories as $category)
-                        <a href="{{ request()->fullUrlWithQuery(['category' => $category, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('category') === $category ? 'bg-primary bg-opacity-10 text-primary active-filter' : 'bg-light text-secondary' }}">{{ $category }}</a>
-                    @endforeach
-                </div>
+                @if($type === 'mentor')
+                    <label class="form-label fw-semibold small text-secondary">Status</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ request()->fullUrlWithQuery(['status' => null, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('status') ? 'bg-light text-secondary' : 'bg-primary bg-opacity-10 text-primary active-filter' }}">All</a>
+                        @foreach($statuses as $status)
+                            <a href="{{ request()->fullUrlWithQuery(['status' => $status, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('status') === $status ? 'bg-primary bg-opacity-10 text-primary active-filter' : 'bg-light text-secondary' }}">{{ ucfirst($status) }}</a>
+                        @endforeach
+                    </div>
+                @else
+                    <label class="form-label fw-semibold small text-secondary">Category</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ request()->fullUrlWithQuery(['category' => null, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('category') ? 'bg-light text-secondary' : 'bg-primary bg-opacity-10 text-primary active-filter' }}">All</a>
+                        @foreach($categories as $category)
+                            <a href="{{ request()->fullUrlWithQuery(['category' => $category, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('category') === $category ? 'bg-primary bg-opacity-10 text-primary active-filter' : 'bg-light text-secondary' }}">{{ $category }}</a>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
-            {{-- Only show sort for student (firm/mentor courses don't have a price sort) --}}
+            {{-- Only show sort for student and mentor (firm courses don't need it) --}}
             @if ($type === 'student')
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-secondary">Sort</label>
@@ -81,8 +91,13 @@
                     <span class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i> Venue & schedule proposed by you</span>
                 </div>
             @elseif ($type === 'mentor')
-                {{-- Mentor courses: no sort needed --}}
-                <div class="col-md-3"></div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-secondary">Sort</label>
+                    <select name="sort" class="form-select rounded-pill py-2 border-0 shadow-sm bg-light">
+                        <option value="newest" {{ ($sort ?? 'newest') === 'newest' ? 'selected' : '' }}>Sort by: Newest</option>
+                        <option value="start_soon" {{ ($sort ?? 'newest') === 'start_soon' ? 'selected' : '' }}>Sort by: Start Date</option>
+                    </select>
+                </div>
             @else
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-secondary">Enrollment type</label>

@@ -40,10 +40,13 @@ class CourseController extends Controller
             });
         }
 
+        if ($request->filled('status')) {
+            $status = trim((string) $request->status);
+            $query->where('status', $status);
+        }
+
         $sort = $request->get('sort', 'newest');
-        if ($sort === 'price_asc') {
-            $query->orderBy('price', 'asc')->orderBy('created_at', 'desc');
-        } elseif ($sort === 'start_soon') {
+        if ($sort === 'start_soon') {
             $query->orderBy('start_date', 'asc')->orderBy('created_at', 'desc');
         } else {
             $query->latest();
@@ -102,6 +105,8 @@ class CourseController extends Controller
             ->pluck('name')
             ->values();
 
-        return view('mentor.browse-course', compact('courses', 'categories', 'sort'));
+        $statuses = ['active', 'inactive'];
+
+        return view('mentor.browse-course', compact('courses', 'categories', 'statuses', 'sort'));
     }
 }
