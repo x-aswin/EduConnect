@@ -287,23 +287,41 @@
                     
                     @auth
                         @if(auth()->user()->role === 'student')
-                            @if($chatStatus === 'none')
-                                <form action="{{ route('student.mentor.request') }}" method="POST" class="d-grid">
-                                    @csrf
-                                    <input type="hidden" name="mentor_id" value="{{ $mentor->id }}">
-                                    <input type="hidden" name="course_id" value="{{ $course->id }}">
-                                    <button type="submit" class="btn btn-primary rounded-pill py-2 fw-semibold">
-                                        <i class="bi bi-hand-thumbs-up me-2"></i> Request Mentor
-                                    </button>
-                                </form>
-                            @elseif($chatStatus === 'pending')
-                                <button type="button" class="btn btn-warning rounded-pill py-2 fw-semibold w-100" disabled>
-                                    <i class="bi bi-hourglass-split me-2"></i> View Request Status
+                            @php
+                                $enrollment = \App\Models\Enrollment::where('user_id', auth()->id())
+                                    ->where('course_id', $course->id)
+                                    ->first();
+                                $isEnrolledConfirmed = $enrollment && $enrollment->status === 'confirmed';
+                                $hasMentorAssigned = !empty($course->mentor_id);
+                            @endphp
+
+                            @if(! $hasMentorAssigned)
+                                <button type="button" class="btn btn-secondary rounded-pill py-2 fw-semibold w-100" disabled>
+                                    <i class="bi bi-person-x me-2"></i> Mentor Not Assigned
                                 </button>
-                            @elseif($chatStatus === 'active')
-                                <a href="{{ route('mentor.chats.show', $mentorChat->id) }}" class="btn btn-success rounded-pill py-2 fw-semibold d-block text-center">
-                                    <i class="bi bi-chat-left-text me-2"></i> Open Chat
-                                </a>
+                            @elseif(! $isEnrolledConfirmed)
+                                <button type="button" class="btn btn-warning rounded-pill py-2 fw-semibold w-100" disabled>
+                                    <i class="bi bi-hourglass-split me-2"></i> Enroll & Confirm to Request
+                                </button>
+                            @else
+                                @if($chatStatus === 'none')
+                                    <form action="{{ route('student.mentor.request') }}" method="POST" class="d-grid">
+                                        @csrf
+                                        <input type="hidden" name="mentor_id" value="{{ $mentor->id }}">
+                                        <input type="hidden" name="course_id" value="{{ $course->id }}">
+                                        <button type="submit" class="btn btn-primary rounded-pill py-2 fw-semibold">
+                                            <i class="bi bi-hand-thumbs-up me-2"></i> Request Mentor
+                                        </button>
+                                    </form>
+                                @elseif($chatStatus === 'pending')
+                                    <button type="button" class="btn btn-warning rounded-pill py-2 fw-semibold w-100" disabled>
+                                        <i class="bi bi-hourglass-split me-2"></i> View Request Status
+                                    </button>
+                                @elseif($chatStatus === 'active')
+                                    <a href="{{ route('mentor.chats.show', $mentorChat->id) }}" class="btn btn-success rounded-pill py-2 fw-semibold d-block text-center">
+                                        <i class="bi bi-chat-left-text me-2"></i> Open Chat
+                                    </a>
+                                @endif
                             @endif
                         @endif
                     @endauth
