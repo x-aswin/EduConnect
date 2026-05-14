@@ -248,7 +248,7 @@
                 </div>
             @endif
 
-            @if($mentor)
+            @if($mentor && $type !== 'mentor')
                 <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                     <h5 class="fw-bold mb-3"><i class="bi bi-person-badge-fill text-primary me-2"></i>Your Mentor</h5>
                     <div class="d-flex align-items-center">
