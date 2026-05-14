@@ -292,6 +292,7 @@
                                 <form action="{{ route('student.mentor.request') }}" method="POST" class="d-grid">
                                     @csrf
                                     <input type="hidden" name="mentor_id" value="{{ $mentor->id }}">
+                                    <input type="hidden" name="course_id" value="{{ $course->id }}">
                                     <button type="submit" class="btn btn-primary rounded-pill py-2 fw-semibold">
                                         <i class="bi bi-hand-thumbs-up me-2"></i> Request Mentor
                                     </button>
