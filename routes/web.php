@@ -108,7 +108,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         Route::patch('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
 
         // Mentor request
-        Route::post('/mentor/request', [StudentChatController::class, 'requestMentor'])->name('mentor.request');
+        Route::post('/mentor-request', [StudentChatController::class, 'requestMentor'])->name('mentor.request');
     });
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
      Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

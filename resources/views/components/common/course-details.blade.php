@@ -252,14 +252,13 @@
                 @php
                     $mentorChat = null;
                     $chatStatus = 'none';
-                    if(auth()->check() && auth()->user()->role === 'student') {
-                        $mentorChat = \App\Models\Chat::where('mentor_id', $mentor->id)
+                    
+                        $mentorChat = \App\Models\Chat::where('mentor_id', $mentor->user->id)
                             ->where('student_id', auth()->id())
                             ->first();
                         if($mentorChat) {
                             $chatStatus = $mentorChat->status;
                         }
-                    }
                 @endphp
                 <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                     <h5 class="fw-bold mb-3"><i class="bi bi-person-badge-fill text-primary me-2"></i>Your Mentor</h5>
