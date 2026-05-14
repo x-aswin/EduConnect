@@ -25,6 +25,7 @@ use App\Http\Controllers\Firm\CourseController as FirmCourseController;
 
 
 use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
+use App\Http\Controllers\Mentor\CourseController as MentorCourseController;
 
 use App\Http\Controllers\ProfileController;
 use App\Models\College;
@@ -144,6 +145,7 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
 Route::middleware(['auth', 'role:mentor'])->group(function () {
     Route::prefix('mentor')->name('mentor.')->group(function () {
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/mycourses', [MentorCourseController::class, 'browse'])->name('mycourses');
 
         // Route::get('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'edit'])->name('profile.edit');
         // Route::patch('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'update'])->name('profile.update');

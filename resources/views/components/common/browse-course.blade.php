@@ -19,15 +19,23 @@
 @endpush
 
 <div class="container py-4">
-    <!-- Page heading (dynamic for firm) -->
+    <!-- Page heading (dynamic for firm/mentor) -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div>
             <h1 class="fw-bold mb-1">
-                <i class="bi bi-compass me-2 text-primary"></i>
-                Explore Offline Courses
+                <i class="bi {{ $type === 'mentor' ? 'bi-journal-bookmark-fill' : 'bi-compass' }} me-2 text-primary"></i>
+                @if($type === 'mentor')
+                    My Assigned Courses
+                @elseif($type === 'firm')
+                    Explore Offline Courses
+                @else
+                    Explore Offline Courses
+                @endif
             </h1>
             <p class="text-secondary mb-0">
-                @if($type === 'firm')
+                @if($type === 'mentor')
+                    Manage your mentorship courses and track student enrollment.
+                @elseif($type === 'firm')
                     Browse courses available for your organisation. Book group training and propose your own venue & schedule.
                 @else
                     Discover skill‑building programs from top colleges.
@@ -57,7 +65,7 @@
                 </div>
             </div>
 
-            {{-- Only show sort for student (firm courses don't have a start date, venue set by college) --}}
+            {{-- Only show sort for student (firm/mentor courses don't have a price sort) --}}
             @if ($type === 'student')
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-secondary">Sort</label>
@@ -72,6 +80,9 @@
                 <div class="col-md-3 d-flex align-items-end">
                     <span class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i> Venue & schedule proposed by you</span>
                 </div>
+            @elseif ($type === 'mentor')
+                {{-- Mentor courses: no sort needed --}}
+                <div class="col-md-3"></div>
             @else
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-secondary">Enrollment type</label>
@@ -90,12 +101,19 @@
         </form>
     </div>
 
-    {{-- Optional: Firm info banner --}}
+    {{-- Optional: Firm/Mentor info banner --}}
     @if($type === 'firm')
         <div class="alert alert-info border-0 rounded-4 d-flex align-items-center" role="alert">
             <i class="bi bi-building me-2 fs-5"></i>
             <div>
-                <strong>For Organisations:</strong> You’ll propose your preferred venue, date, and participant list when you book a course.
+                <strong>For Organisations:</strong> You'll propose your preferred venue, date, and participant list when you book a course.
+            </div>
+        </div>
+    @elseif($type === 'mentor')
+        <div class="alert alert-success border-0 rounded-4 d-flex align-items-center" role="alert">
+            <i class="bi bi-person-workspace me-2 fs-5"></i>
+            <div>
+                <strong>Mentor Courses:</strong> View your assigned courses, track student enrollment, and manage course details.
             </div>
         </div>
     @endif

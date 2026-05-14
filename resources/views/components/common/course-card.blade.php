@@ -38,6 +38,13 @@
                     <span class="badge bg-warning bg-opacity-10 text-warning">Firm Only</span>
                 @endif
 
+                {{-- Status badge for mentor --}}
+                @if($type === 'mentor' && !empty($course['status']))
+                    <span class="badge {{ ($course['status'] === 'active') ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning' }}">
+                        {{ ucfirst($course['status']) }}
+                    </span>
+                @endif
+
                 @if(!empty($course['category']))
                     @php
                         $catBadgeClass = 'bg-light text-secondary';
@@ -55,8 +62,8 @@
             <h5 class="fw-bold card-title">{{ $course['title'] }}</h5>
             <p class="small text-secondary mb-1"><i class="bi bi-building me-1"></i> {{ $course['college'] ?? 'Unknown College' }}</p>
 
-            {{-- Venue & date: only for students (or when type is not firm) --}}
-            @if($type === 'student' || !$type)
+            {{-- Venue & date: for students and mentors --}}
+            @if($type === 'student' || $type === 'mentor' || !$type)
                 <p class="small text-secondary mb-2">
                     <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] ?? 'TBA' }} ·
                     <i class="bi bi-calendar3 ms-2"></i> Starts {{ $course['start_date'] ?? 'TBA' }}
@@ -68,11 +75,16 @@
                 </p>
             @endif
 
-            {{-- Price --}}
+            {{-- Price & seat info --}}
             <div class="d-flex justify-content-between align-items-center mt-auto">
-                <span class="fw-bold text-primary fs-5">{{ $course['price'] ?? 'Free' }}</span>
+                {{-- Price (not shown for mentor) --}}
+                @if($type !== 'mentor')
+                    <span class="fw-bold text-primary fs-5">{{ $course['price'] ?? 'Free' }}</span>
+                @else
+                    <div></div>
+                @endif
 
-                {{-- Seat info: only for students --}}
+                {{-- Seat & enrollment info --}}
                 @if($type === 'student')
                     @php
                         $totalSeats = (int) ($course['seats_total'] ?? 0);
@@ -85,6 +97,19 @@
                         </span>
                     @else
                         <span class="small text-secondary"><i class="bi bi-person"></i> Seats: N/A</span>
+                    @endif
+                @elseif($type === 'mentor')
+                    @php
+                        $totalSeats = (int) ($course['seats_total'] ?? 0);
+                        $availableSeats = (int) ($course['seats_available'] ?? 0);
+                        $enrolled = max(0, $totalSeats - $availableSeats);
+                    @endphp
+                    @if($totalSeats > 0)
+                        <span class="small text-secondary">
+                            <i class="bi bi-people"></i> {{ $enrolled }} enrolled
+                        </span>
+                    @else
+                        <span class="small text-secondary"><i class="bi bi-people"></i> Enrolled: N/A</span>
                     @endif
                 @elseif($type === 'firm' || !$type)
                     {{-- Firm & guest: no seat count --}}
@@ -106,7 +131,7 @@
                     <div class="progress-bar bg-{{ $percent > 80 ? 'danger' : ($percent > 50 ? 'warning' : 'primary') }}" style="width: {{ $percent }}%"></div>
                 </div>
             @else
-                {{-- Firm / guest: keep spacing consistent --}}
+                {{-- Other types: keep spacing consistent --}}
                 <div class="mb-3"></div>
             @endif
 
@@ -114,6 +139,10 @@
             @if($type === 'student')
                 <a href="{{ route('student.course.show', ['slug' => $course['slug'] ?? '']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
                     <i class="bi bi-box-arrow-in-right"></i> View Details
+                </a>
+            @elseif($type === 'mentor')
+                <a href="#" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">
+                    <i class="bi bi-pencil-square"></i> View Details
                 </a>
             @elseif($type === 'firm')
                 <a href="{{ route('firm.course.show', ['slug' => $course['slug'] ?? '']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold mt-auto">

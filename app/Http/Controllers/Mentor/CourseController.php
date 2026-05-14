@@ -10,10 +10,10 @@ use Carbon\Carbon;
 
 class CourseController extends Controller
 {
-    public function index(Request $request)
+    public function browse(Request $request)
     {
         $query = Course::with(['college.user', 'category'])
-            ->where('mentor_id', auth()->user()->mentor?->id());
+            ->where('mentor_id', auth()->user()->mentor?->id);
 
         if ($request->filled('q')) {
             $keyword = trim((string) $request->q);
@@ -92,6 +92,7 @@ class CourseController extends Controller
                     'seats_total' => (int) ($course->total_seats ?? 0),
                     'seats_available' => (int) ($course->available_seats ?? 0),
                     'type' => $course->course_type,
+                    'status' => $course->status ?? 'active',
                     ...$visuals,
                 ];
             });
@@ -101,6 +102,6 @@ class CourseController extends Controller
             ->pluck('name')
             ->values();
 
-        return view('firm.browse-course', compact('courses', 'categories', 'sort'));
+        return view('mentor.browse-course', compact('courses', 'categories', 'sort'));
     }
 }
