@@ -109,12 +109,9 @@
                                             <i class="bi bi-chat-square-text-fill me-1"></i> Open Chat
                                         </a>
                                     @else
-                                        <form action="{{ route('student.chat.re-request', $request) }}" method="POST" class="flex-grow-1">
-                                            @csrf
-                                            <button type="submit" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold">
-                                                <i class="bi bi-arrow-repeat me-1"></i> Re‑request
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-light rounded-pill w-100 py-2 fw-semibold" disabled>
+                                            Request Declined
+                                        </button>
                                     @endif
                                 </div>
                             </div>

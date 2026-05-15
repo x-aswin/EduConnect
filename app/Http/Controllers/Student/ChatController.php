@@ -157,19 +157,5 @@ class ChatController extends Controller
         return back()->with('success', 'Request cancelled.');
     }
 
-    public function reRequest(Chat $chat)
-    {
-        if ($chat->student_id !== Auth::id()) {
-            abort(403);
-        }
-
-        if ($chat->status !== 'declined') {
-            return back()->with('error', 'You can only re-request after a decline.');
-        }
-
-        $chat->update(['status' => 'pending']);
-
-        return back()->with('success', 'Request sent again.');
-    }
 }
 
