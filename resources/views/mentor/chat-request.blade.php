@@ -65,17 +65,17 @@
                     <!-- Student info header -->
                     <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
-                            @if($request->student?->photo)
-                                <img src="{{ asset('storage/' . $request->student->photo) }}" class="rounded-circle" width="48" height="48" style="object-fit: cover;">
+                            @if($request->studentProfile?->photo)
+                                <img src="{{ asset('storage/' . $request->studentProfile->photo) }}" class="rounded-circle" width="48" height="48" style="object-fit: cover;">
                             @else
                                 <div class="avatar-circle" style="width:48px;height:48px;font-size:1rem;">
-                                    {{ strtoupper(substr($request->student?->user?->name ?? 'S', 0, 1)) }}
+                                    {{ strtoupper(substr($request->student?->name ?? 'S', 0, 1)) }}
                                 </div>
                             @endif
                         </div>
                         <div class="ms-3">
-                            <h6 class="fw-bold mb-0">{{ $request->student?->user?->name ?? 'Student' }}</h6>
-                            <small class="text-muted">{{ $request->student?->current_qualification ?? 'Student' }}</small>
+                            <h6 class="fw-bold mb-0">{{ $request->student?->name ?? 'Student' }}</h6>
+                            <small class="text-muted">{{ $request->studentProfile?->current_qualification ?? 'Student' }}</small>
                         </div>
                         <div class="ms-auto">
                             @if($request->status === 'pending')
@@ -113,24 +113,29 @@
                     <!-- Action buttons -->
                     <div class="mt-auto d-flex gap-2">
                         @if($request->status === 'pending')
-                            <form action="{{ route('mentor.chat.accept', $request) }}" method="POST" class="flex-grow-1">
+                            <form action="{{ route('mentor.chat.accept', $request->id) }}" method="POST" class="flex-grow-1">
                                 @csrf
                                 <button type="submit" class="btn btn-success rounded-pill w-100 py-2 fw-semibold">
                                     <i class="bi bi-check-circle me-1"></i> Accept
                                 </button>
                             </form>
-                            <form action="{{ route('mentor.chat.decline', $request) }}" method="POST" class="flex-grow-1">
+                            <form action="{{ route('mentor.chat.decline', $request->id) }}" method="POST" class="flex-grow-1">
                                 @csrf
                                 <button type="submit" class="btn btn-outline-danger rounded-pill w-100 py-2 fw-semibold">
                                     <i class="bi bi-x-circle me-1"></i> Decline
                                 </button>
                             </form>
+
                         @elseif($request->status === 'accepted')
-                            <a href="{{ route('mentor.chat.show', $request) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold">
+                            <a href="{{ route('mentor.chat.show', $request->id) }}" 
+                            class="btn btn-primary rounded-pill w-100 py-2 fw-semibold">
                                 <i class="bi bi-chat-square-text-fill me-1"></i> Open Chat
                             </a>
+
                         @else
-                            <button class="btn btn-light rounded-pill w-100 py-2 fw-semibold" disabled>Request Declined</button>
+                            <button class="btn btn-light rounded-pill w-100 py-2 fw-semibold" disabled>
+                                Request Declined
+                            </button>
                         @endif
                     </div>
                 </div>

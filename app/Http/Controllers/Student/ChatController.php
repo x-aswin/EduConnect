@@ -63,4 +63,5 @@ class ChatController extends Controller
 
         return redirect()->back()->with('success', 'Mentor request sent successfully!');
     }
+    
 }

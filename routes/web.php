@@ -27,6 +27,7 @@ use App\Http\Controllers\Firm\CourseController as FirmCourseController;
 
 use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
 use App\Http\Controllers\Mentor\CourseController as MentorCourseController;
+use App\Http\Controllers\Mentor\ChatController as MentorChatController;
 
 use App\Http\Controllers\ProfileController;
 use App\Models\College;
@@ -150,6 +151,12 @@ Route::middleware(['auth', 'role:mentor'])->group(function () {
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
         Route::get('/mycourses', [MentorCourseController::class, 'browse'])->name('mycourses');
         Route::get('/course/{slug}', [MentorCourseController::class, 'details'])->name('coursedetails');
+        Route::get('/chat-requests', [MentorChatController::class, 'requests'])->name('chat.requests');
+
+        Route::post('/chat/{chat}/accept',  [MentorChatController::class, 'accept'])->name('chat.accept');
+        Route::post('/chat/{chat}/decline', [MentorChatController::class, 'decline'])->name('chat.decline');
+        Route::get('/chat/{chat}',          [MentorChatController::class, 'show'])->name('chat.show');
+        Route::post('/chat/{chat}/message', [MentorChatController::class, 'sendMessage'])->name('chat.send');
 
         // Route::get('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'edit'])->name('profile.edit');
         // Route::patch('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'update'])->name('profile.update');
