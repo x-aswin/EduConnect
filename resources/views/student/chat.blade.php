@@ -7,11 +7,7 @@
     <style>
         /* Floating tab bar */
         .floating-tab-bar {
-            position: fixed;
-            top: 88px; /* below the main navbar */
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
+            position: static;
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -20,11 +16,15 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.05);
             display: flex;
             justify-content: center;
+            margin: 1rem auto 2rem;
             width: min(300px, calc(100% - 2rem));
             max-width: 300px;
         }
         .floating-tab-bar .btn-tab {
             flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 50px;
             font-weight: 600;
             border: none;
@@ -32,6 +32,14 @@
             color: #64748b;
             padding: 0.6rem 1rem;
             transition: all 0.2s;
+            text-decoration: none;
+        }
+        .floating-tab-bar .btn-tab:hover,
+        .floating-tab-bar .btn-tab:focus,
+        .floating-tab-bar .btn-tab:active {
+            text-decoration: none;
+            color: inherit;
+            outline: none;
         }
         .floating-tab-bar .btn-tab.active {
             background: #2563eb;
@@ -53,7 +61,6 @@
     @endpush
 
     <div class="container py-4">
-        <div style="height: 76px;"></div>
         <!-- Floating Tab Bar -->
         <div class="floating-tab-bar" id="chatTabs">
             <a href="{{ route('student.chat.show', ['q' => 'requests']) }}" class="btn-tab {{ $activeTab === 'requests' ? 'active' : '' }}" id="tab-requests">
