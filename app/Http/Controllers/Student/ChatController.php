@@ -69,7 +69,7 @@ class ChatController extends Controller
 
     public function show(?Chat $chat = null)
     {
-        $activeTab = request('q', $chat ? 'live-chat' : 'requests');
+        $activeTab = request('q', 'live-chat');
 
         $requests = Chat::with([
                 'mentor',

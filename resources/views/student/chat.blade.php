@@ -1,7 +1,7 @@
 {{-- resources/views/student/chat.blade.php --}}
 <x-student.layout title="Mentorship - EduConnect" active="chat">
     @php
-        $activeTab = $activeTab ?? 'requests';
+        $activeTab = $activeTab ?? 'live-chat';
     @endphp
     @push('styles')
     <style>
