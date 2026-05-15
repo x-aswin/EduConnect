@@ -101,22 +101,22 @@
             <div class="collapse navbar-collapse" id="mentorNavbar">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
                     <li class="nav-item">
-                        <a class="nav-link {{ $active === 'dashboard' ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ $active === 'dashboard' ? 'active' : '' }}" href="{{ route('mentor.dashboard') }}">
                             <i class="bi bi-speedometer2 me-1 d-inline-block d-lg-none d-xl-inline"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ $active === 'courses' ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ $active === 'courses' ? 'active' : '' }}" href="{{ route('mentor.mycourses') }}">
                             <i class="bi bi-journal-bookmark-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> My Courses
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ $active === 'requests' ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ $active === 'requests' ? 'active' : '' }}" href="{{ route('mentor.chat.requests') }}">
                             <i class="bi bi-chat-dots-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Mentorship Requests
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ $active === 'chats' ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ $active === 'chats' ? 'active' : '' }}" href="{{ route('mentor.chat.show') }}">
                             <i class="bi bi-chat-square-text-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Live Chats
                         </a>
                     </li>
