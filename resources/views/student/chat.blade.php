@@ -1,11 +1,16 @@
 {{-- resources/views/student/chat.blade.php --}}
 <x-student.layout title="Mentorship - EduConnect" active="chat">
+    @php
+        $activeTab = $activeTab ?? 'requests';
+    @endphp
     @push('styles')
     <style>
         /* Floating tab bar */
         .floating-tab-bar {
-            position: sticky;
-            top: 80px; /* below the main navbar */
+            position: fixed;
+            top: 88px; /* below the main navbar */
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 100;
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -15,7 +20,7 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.05);
             display: flex;
             justify-content: center;
-            margin: 0 auto 2rem;
+            width: min(300px, calc(100% - 2rem));
             max-width: 300px;
         }
         .floating-tab-bar .btn-tab {
@@ -48,18 +53,19 @@
     @endpush
 
     <div class="container py-4">
+        <div style="height: 76px;"></div>
         <!-- Floating Tab Bar -->
         <div class="floating-tab-bar" id="chatTabs">
-            <button class="btn-tab active" onclick="switchTab('requests')" id="tab-requests">
+            <a href="{{ route('student.chat.show', ['q' => 'requests']) }}" class="btn-tab {{ $activeTab === 'requests' ? 'active' : '' }}" id="tab-requests">
                 <i class="bi bi-list-check me-1"></i> Requests
-            </button>
-            <button class="btn-tab" onclick="switchTab('live-chat')" id="tab-live-chat">
+            </a>
+            <a href="{{ route('student.chat.show', array_filter(['chat' => $selectedChat?->id, 'q' => 'live-chat'])) }}" class="btn-tab {{ $activeTab === 'live-chat' ? 'active' : '' }}" id="tab-live-chat">
                 <i class="bi bi-chat-dots me-1"></i> Live Chat
-            </button>
+            </a>
         </div>
 
         {{-- ======================== REQUESTS PANEL ======================== --}}
-        <div id="panel-requests" class="tab-panel">
+        <div id="panel-requests" class="tab-panel" style="display: {{ $activeTab === 'requests' ? 'block' : 'none' }};">
             <h2 class="fw-bold mb-4"><i class="bi bi-hourglass-split text-warning me-2"></i>My Mentorship Requests</h2>
             @if($requests->isEmpty())
                 <div class="alert alert-light border rounded-4 text-center py-5">
@@ -99,7 +105,7 @@
                                             </button>
                                         </form>
                                     @elseif($request->status === 'accepted')
-                                        <a href="{{ route('student.chat.show', $request) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold">
+                                        <a href="{{ route('student.chat.show', ['chat' => $request, 'q' => 'live-chat']) }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold">
                                             <i class="bi bi-chat-square-text-fill me-1"></i> Open Chat
                                         </a>
                                     @else
@@ -119,8 +125,8 @@
         </div>
 
         {{-- ======================== LIVE CHAT PANEL ======================== --}}
-        <div id="panel-live-chat" class="tab-panel" style="display: none;">
-            @if($Chats->isEmpty())
+        <div id="panel-live-chat" class="tab-panel" style="display: {{ $activeTab === 'live-chat' ? 'block' : 'none' }};">
+            @if($chats->isEmpty())
                 <div class="alert alert-light border rounded-4 text-center py-5">
                     <i class="bi bi-chat-dots fs-1 text-primary"></i>
                     <h5 class="fw-bold mt-2">No Active Chats</h5>
@@ -130,24 +136,10 @@
                <x-common.chat
                 :chats="$chats"
                 :selected-chat="$selectedChat"
-                role="mentor"
+                role="student"
                 :courses="$courses"
             />
             @endif
         </div>
     </div>
-
-    @push('scripts')
-    <script>
-        function switchTab(tab) {
-            // Hide all panels
-            document.querySelectorAll('.tab-panel').forEach(el => el.style.display = 'none');
-            // Show selected
-            document.getElementById('panel-' + tab).style.display = 'block';
-            // Update active button
-            document.querySelectorAll('#chatTabs .btn-tab').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-        }
-    </script>
-    @endpush
 </x-student.layout>

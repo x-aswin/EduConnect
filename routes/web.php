@@ -110,6 +110,12 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 
         // Mentor request
         Route::post('/mentor-request', [StudentChatController::class, 'requestMentor'])->name('mentor.request');
+
+        // Student chat
+        Route::get('/chat/{chat?}', [StudentChatController::class, 'show'])->name('chat.show');
+        Route::post('/chat/{chat}/message', [StudentChatController::class, 'sendMessage'])->name('chat.send');
+        Route::delete('/chat/{chat}/cancel', [StudentChatController::class, 'cancelRequest'])->name('chat.cancel');
+        Route::post('/chat/{chat}/re-request', [StudentChatController::class, 'reRequest'])->name('chat.re-request');
     });
      Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
      Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

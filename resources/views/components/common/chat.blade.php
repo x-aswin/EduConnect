@@ -208,7 +208,7 @@
                         $activeClass = (isset($selectedChat) && $selectedChat->id === $chat->id) ? 'active-chat' : '';
                         $unreadClass = $unreadCount > 0 ? 'unread' : '';
                     @endphp
-                    <a href="{{ $role === 'student' ? route('student.chat.show', $chat) : route('mentor.chat.show', $chat) }}" class="chat-contact {{ $activeClass }} {{ $unreadClass }}">
+                    <a href="{{ $role === 'student' ? route('student.chat.show', ['chat' => $chat, 'q' => 'live-chat']) : route('mentor.chat.show', $chat) }}" class="chat-contact {{ $activeClass }} {{ $unreadClass }}">
                         @if($otherProfile)
                             <img src="{{ asset('storage/' . $otherProfile) }}" class="avatar" alt="{{ $otherName }}">
                         @else
