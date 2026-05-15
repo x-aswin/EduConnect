@@ -267,7 +267,7 @@
                             @if($collegeName) · {{ $collegeName }} @endif
                         </small>
                     </div>
-                    <a href="{{ $role === 'student' ? route('student.chat.requests') : route('mentor.chat.requests') }}" class="btn btn-light rounded-pill ms-auto">
+                    <a href="{{ $role === 'student' ? route('student.chat.show') : route('mentor.chat.show') }}" class="btn btn-light rounded-pill ms-auto">
                         <i class="bi bi-arrow-left me-1"></i> Back
                     </a>
                 </div>

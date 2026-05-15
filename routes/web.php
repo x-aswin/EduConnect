@@ -155,7 +155,7 @@ Route::middleware(['auth', 'role:mentor'])->group(function () {
 
         Route::post('/chat/{chat}/accept',  [MentorChatController::class, 'accept'])->name('chat.accept');
         Route::post('/chat/{chat}/decline', [MentorChatController::class, 'decline'])->name('chat.decline');
-        Route::get('/chat/{chat}',          [MentorChatController::class, 'show'])->name('chat.show');
+        Route::get('/chat/{chat?}',          [MentorChatController::class, 'show'])->name('chat.show');
         Route::post('/chat/{chat}/message', [MentorChatController::class, 'sendMessage'])->name('chat.send');
 
         // Route::get('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'edit'])->name('profile.edit');

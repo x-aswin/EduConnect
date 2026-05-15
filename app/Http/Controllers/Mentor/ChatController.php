@@ -67,29 +67,13 @@ class ChatController extends Controller
         return back()->with('success', 'Request declined.');
     }
 
-    public function show(Chat $chat)
+    public function show(?Chat $chat = null)
     {
-        // Only this mentor can view this chat
-        if ($chat->mentor_id !== Auth::id()) {
-            abort(403);
-        }
-
-        // Only accepted chats can be opened
-        if ($chat->status !== 'accepted') {
-            return redirect()->route('mentor.chat.requests')
-                            ->with('error', 'This chat is not active yet.');
-        }
-
         $mentorProfile = Auth::user()->mentor;
 
-        $chat->load([
-            'student.student',
-            'course.college',
-            'messages.sender',
-        ]);
-
         $chats = Chat::with([
-                'student.student',
+                'student',
+                'studentProfile',
                 'course.college',
             ])
             ->where('mentor_id', Auth::id())
@@ -97,25 +81,35 @@ class ChatController extends Controller
             ->latest()
             ->get();
 
-        $courses = Course::query()
-            ->where('mentor_id', '=', $mentorProfile->id, 'and')
+        $courses = Course::where('mentor_id', $mentorProfile->id)
             ->withCount('enrollments')
             ->get();
 
-        // Mark all student messages as read
-        $chat->messages()
-            ->where('sender_id', $chat->student_id)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+        // Only do this if a chat was selected
+        if ($chat) {
+            if ($chat->mentor_id !== Auth::id()) abort(403);
+
+            if ($chat->status !== 'accepted') {
+                return redirect()->route('mentor.chat.show')
+                                ->with('error', 'This chat is not active yet.');
+            }
+
+            $chat->load(['course.college', 'messages.sender']);
+
+            $chat->messages()
+                ->where('sender_id', $chat->student_id)
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
+        }
 
         return view('mentor.chat-show', [
-            'chat' => $chat,
-            'chats' => $chats,
-            'selectedChat' => $chat,
-            'courses' => $courses,
-            'role' => 'mentor',
+            'chats'        => $chats,
+            'selectedChat' => $chat,  // null when no chat selected
+            'courses'      => $courses,
+            'role'         => 'mentor',
         ]);
     }
+    
 
     public function sendMessage(Request $request, Chat $chat)
     {
