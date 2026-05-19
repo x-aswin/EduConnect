@@ -46,9 +46,9 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($request->role === 'student') {
-        \App\Models\Student::create([
-            'user_id' => $user->id,
-        ]);
+        // \App\Models\Student::create([
+        //     'user_id' => $user->id,
+        // ]);
         } elseif ($request->role === 'college') {
             //only creating in user table, college table have not null on some values
             // \App\Models\College::create([
@@ -56,14 +56,14 @@ class RegisteredUserController extends Controller
             //     'institution_name' => $request->name,
             // ]);
         } elseif ($request->role === 'firm') {
-            \App\Models\Firm::create([
-                'user_id' => $user->id,
-                'org_name' => $request->name,
-            ]);
+            // \App\Models\Firm::create([
+            //     'user_id' => $user->id,
+            //     'org_name' => $request->name,
+            // ]);
         } elseif ($request->role === 'mentor') {
-            \App\Models\Mentor::create([
-                'user_id' => $user->id,
-            ]);
+            // \App\Models\Mentor::create([
+            //     'user_id' => $user->id,
+            // ]);
         }
 
         event(new Registered($user));
@@ -78,7 +78,7 @@ class RegisteredUserController extends Controller
         } elseif ($user->role === 'firm') {
             return redirect()->route('firm.complete.profile.edit');
         } elseif ($user->role === 'mentor') {
-            return redirect()->route('mentor.complete.profile.edit');
+            return redirect()->route('/')->with('error', 'Profile incomplete!');
         }else {
         return redirect(route('dashboard', absolute: false));
         }

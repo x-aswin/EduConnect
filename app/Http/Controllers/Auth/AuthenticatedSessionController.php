@@ -29,18 +29,35 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-      // redirect based on role
-     return match($user->role) {
-        'admin'   => redirect()->route('admin.dashboard'),
-        'college' => redirect()->route('college.dashboard'),
-        'mentor'  => redirect()->route('mentor.dashboard'),
-        'student' => redirect()->route('student.dashboard'),
-        'firm'    => redirect()->route('firm.dashboard'),
-        default   => redirect('/'),
-    };
 
+        $profileExists = match ($user->role) {
+            'student' => $user->student()->exists(),
+            'mentor' => $user->mentor()->exists(),
+            'college' => $user->college()->exists(),
+            'firm' => $user->firm()->exists(),
+            'admin' => true,
+            default => false,
+        };
+        if (!$profileExists) {
+            Auth::logout();
+            return match ($user->role) {
+            'college' => redirect()->route('college.complete.profile.edit'),
+            'student' => redirect()->route('student.complete.profile.edit'),
+            'firm' => redirect()->route('firm.complete.profile.edit'),
+            'mentor' => redirect()->route('/')->with('error', 'Profile incomplete!'),
+            default => redirect('/'),
+        };
+        }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Redirect based on role.
+        return match ($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'college' => redirect()->route('college.dashboard'),
+            'mentor' => redirect()->route('mentor.dashboard'),
+            'student' => redirect()->route('student.dashboard'),
+            'firm' => redirect()->route('firm.dashboard'),
+            default => redirect('/'),
+        };
     }
 
     /**

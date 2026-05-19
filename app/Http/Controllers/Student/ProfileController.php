@@ -79,6 +79,7 @@ class ProfileController extends Controller
 
         if (! $student) {
             $student = new Student([
+                'user_id' => Auth::id(),
                 'phone' => null,
                 'dob' => null,
                 'gender' => null,
