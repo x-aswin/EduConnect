@@ -18,6 +18,7 @@
     <!-- Stat Cards -->
     <div class="row g-4 mb-5">
         <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.students.index') }}" class="text-decoration-none">
             <div class="stat-card">
                 <div class="stat-icon bg-primary-subtle text-primary">
                     <i class="fas fa-users"></i>
@@ -27,8 +28,10 @@
                     <p class="stat-label">Total Students</p>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.colleges.index') }}" class="text-decoration-none">
             <div class="stat-card">
                 <div class="stat-icon bg-success-subtle text-success">
                     <i class="fas fa-university"></i>
@@ -39,8 +42,10 @@
                     <small class="text-warning">{{ $pendingColleges }} pending</small>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.firms.index') }}" class="text-decoration-none">
             <div class="stat-card">
                 <div class="stat-icon bg-info-subtle text-info">
                     <i class="fas fa-building"></i>
@@ -51,8 +56,10 @@
                     <small class="text-warning">{{ $pendingFirms }} pending</small>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.mentors.index') }}" class="text-decoration-none">
             <div class="stat-card">
                 <div class="stat-icon bg-warning-subtle text-warning">
                     <i class="fas fa-chalkboard-user"></i>
@@ -62,8 +69,10 @@
                     <p class="stat-label">Mentors</p>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.courses.index') }}" class="text-decoration-none">
             <div class="stat-card">
                 <div class="stat-icon bg-danger-subtle text-danger">
                     <i class="fas fa-book-open"></i>
@@ -73,28 +82,34 @@
                     <p class="stat-label">Total Courses</p>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.categories.index') }}" class="text-decoration-none">
             <div class="stat-card">
                 <div class="stat-icon bg-secondary-subtle text-secondary">
                     <i class="fas fa-tags"></i>
                 </div>
                 <div class="stat-details">
-                    <h3 class="stat-value">24</h3>
+                    <h3 class="stat-value">{{ $totalCategories }}</h3>
                     <p class="stat-label">Categories</p>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-xl-3 col-md-6">
+            <a href="{{ route('admin.enrollments.index') }}" class="text-decoration-none">
             <div class="stat-card">
                 <div class="stat-icon bg-primary-subtle text-primary">
                     <i class="fas fa-clipboard-list"></i>
                 </div>
                 <div class="stat-details">
-                    <h3 class="stat-value">128</h3>
+                    <h3 class="stat-value">{{ $totalEnrollments }}</h3>
                     <p class="stat-label">Enrollments</p>
+                    <small class="text-warning">{{ $pendingEnrollments }} pending</small>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-xl-3 col-md-6">
             <div class="stat-card">
@@ -102,7 +117,7 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-details">
-                    <h3 class="stat-value">1,240</h3>
+                    <h3 class="stat-value">{{ $totalUsers }}</h3>
                     <p class="stat-label">Total Users</p>
                 </div>
             </div>
@@ -143,14 +158,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    // Sample pending data – replace with actual query if needed
-                                    $pendingList = App\Models\User::whereIn('role', ['college', 'firm'])
-                                        ->where('status', 'pending')
-                                        ->orderBy('created_at', 'desc')
-                                        ->take(5)
-                                        ->get();
-                                @endphp
                                 @forelse($pendingList as $item)
                                 <tr>
                                     <td class="fw-semibold">{{ $item->name }}</td>
@@ -180,7 +187,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0 text-end">
-                    {{-- <a href="#" class="text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a> --}}
+                    <a href="{{ route('admin.enrollments.index') }}" class="text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
         </div>
@@ -189,6 +196,7 @@
     <!-- Recent Enrollments Table (Optional) -->
     <div class="row mt-4">
         <div class="col-12">
+            <a href="{{ route('admin.enrollments.index') }}" class="text-decoration-none">
             <div class="card">
                 <div class="card-header bg-white border-bottom-0 pt-3">
                     <h5 class="card-title mb-0">Recent Enrollments</h5>
@@ -207,13 +215,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    // Sample recent enrollments – replace with actual model
-                                    $recentEnrollments = App\Models\Enrollment::with(['user', 'course.college'])
-                                        ->orderBy('created_at', 'desc')
-                                        ->take(5)
-                                        ->get();
-                                @endphp
                                 @forelse($recentEnrollments as $enrollment)
                                 <tr>
                                     <td>{{ $enrollment->user?->name ?? 'N/A' }}</td>
@@ -240,12 +241,13 @@
                     </div>
                 </div>
             </div>
+            </a>
         </div>
     </div>
 </div>
 
+@push('styles')
 <style>
-    /* Additional dashboard-specific styles*/
     .dashboard-container {
         max-width: 1400px;
         margin: 0 auto;
@@ -343,11 +345,13 @@
         }
     }
 </style>
+@endpush
 
+@push('scripts')
 <!-- Chart.js CDN - include once in master layout or here -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    // Sample chart data – replace with dynamic values from backend if needed
+    // Actual enrollment data from backend
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('enrollmentChart').getContext('2d');
         new Chart(ctx, {
@@ -356,7 +360,7 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
                     label: 'Student Enrollments',
-                    data: [12, 19, 15, 27, 24, 30],
+                    data: {{ json_encode($studentData) }},
                     borderColor: '#0d6efd',
                     backgroundColor: 'rgba(13, 110, 253, 0.05)',
                     tension: 0.3,
@@ -367,7 +371,7 @@
                     pointHoverRadius: 6
                 }, {
                     label: 'Firm Bulk Enrollments',
-                    data: [5, 8, 12, 18, 22, 28],
+                    data: {{ json_encode($firmData) }},
                     borderColor: '#20c997',
                     backgroundColor: 'rgba(32, 201, 151, 0.05)',
                     tension: 0.3,
@@ -407,6 +411,6 @@
         });
     });
 </script>
-
+@endpush
 
 </x-admin.layout>
