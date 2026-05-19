@@ -30,24 +30,23 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        $profileExists = match ($user->role) {
-            'student' => $user->student()->exists(),
-            'mentor' => $user->mentor()->exists(),
-            'college' => $user->college()->exists(),
-            'firm' => $user->firm()->exists(),
-            'admin' => true,
-            default => false,
-        };
-        if (!$profileExists) {
-            Auth::logout();
-            return match ($user->role) {
-            'college' => redirect()->route('college.complete.profile.edit'),
-            'student' => redirect()->route('student.complete.profile.edit'),
-            'firm' => redirect()->route('firm.complete.profile.edit'),
-            'mentor' => redirect()->route('/')->with('error', 'Profile incomplete!'),
-            default => redirect('/'),
-        };
-        }
+        // $profileExists = match ($user->role) {
+        //     'student' => $user->student()->exists(),
+        //     'mentor' => $user->mentor()->exists(),
+        //     'college' => $user->college()->exists(),
+        //     'firm' => $user->firm()->exists(),
+        //     'admin' => true,
+        //     default => false,
+        // };
+        // if (!$profileExists) {
+        //     return match ($user->role) {
+        //         'college' => redirect()->route('college.complete.profile.edit'),
+        //         'student' => redirect()->route('student.complete.profile.edit'),
+        //         'firm' => redirect()->route('firm.complete.profile.edit'),
+        //         'mentor' => redirect('/')->with('error', 'Profile incomplete!'),
+        //         default => redirect('/'),
+        //     };
+        // }
 
         // Redirect based on role.
         return match ($user->role) {

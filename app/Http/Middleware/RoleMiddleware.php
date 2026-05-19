@@ -31,6 +31,24 @@ class RoleMiddleware
                 ->withErrors(['email' => 'Your account has been blocked. Please contact support.']);
         }
 
+        $profileExists = match ($user->role) {
+            'student' => $user->student()->exists(),
+            'mentor' => $user->mentor()->exists(),
+            'college' => $user->college()->exists(),
+            'firm' => $user->firm()->exists(),
+            'admin' => true,
+            default => false,
+        };
+        if (!$profileExists) {
+            return match ($user->role) {
+                'college' => redirect()->route('college.complete.profile.edit'),
+                'student' => redirect()->route('student.complete.profile.edit'),
+                'firm' => redirect()->route('firm.complete.profile.edit'),
+                'mentor' => redirect('/')->with('error', 'Profile incomplete!'),
+                default => redirect('/'),
+            };
+        }
+
         // required role check
         if ($user->role !== $role) {
             // Redirect them to their own dashboard
