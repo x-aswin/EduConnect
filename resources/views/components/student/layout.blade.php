@@ -138,9 +138,9 @@
           <a class="nav-link {{ $active === 'myenrollments' ? 'active' : '' }}" href="{{ route('student.my.enrollments') }}"><i class="bi bi-journal-check me-1 d-inline-block d-lg-none d-xl-inline"></i> My Enrollments</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#"><i class="bi bi-chat-dots-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Mentorship</a>
+          <a class="nav-link {{ $active === 'chat' ? 'active' : '' }}" href="{{ route('student.chat.show') }}"><i class="bi bi-chat-dots-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Mentorship</a>
         </li>
-        <li class="nav-item dropdown d-none d-lg-block">
+        {{-- <li class="nav-item dropdown d-none d-lg-block">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-stars me-1"></i> Learning
           </a>
@@ -150,7 +150,7 @@
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-person-lines-fill"></i> My Mentors</a></li>
           </ul>
-        </li>
+        </li> --}}
       </ul>
 
       <div class="d-flex align-items-center ms-lg-3">
