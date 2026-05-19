@@ -105,6 +105,11 @@ body {
                         <i class="bi bi-clipboard-check me-2"></i> Manage Enrollments
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link py-3 {{ $active === 'reports' ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
+                        <i class="bi bi-graph-up me-2"></i> Analytics
+                    </a>
+                </li>
                 <hr class="text-secondary">
                 <li class="nav-item">
                     <form method="POST" action="{{ route('logout') }}">

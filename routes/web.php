@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MentorController as AdminMentorController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 
 use App\Http\Controllers\College\DashboardController as CollegeDashboardController;
 use App\Http\Controllers\College\ProfileController as CollegeProfileController;
@@ -56,6 +57,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::resource('/categories', AdminCategoryController::class)->names('categories');
         Route::resource('/courses', AdminCourseController::class)->names('courses');
         Route::resource('/enrollments', AdminEnrollmentController::class)->names('enrollments');
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
