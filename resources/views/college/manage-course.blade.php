@@ -574,6 +574,12 @@
 
         bindAllSectionRows();
         renumberSections();
+
+
+            const params = new URLSearchParams(window.location.search);
+    if (params.get('open') === 'add') {
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('addCourseModal')).show();
+}
     });
 </script>
 
