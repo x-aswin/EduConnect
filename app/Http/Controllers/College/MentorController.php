@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\College;
 use App\Models\Mentor;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +18,10 @@ class MentorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
-        $mentors = Mentor::with(['user', 'college.user'])
-            ->where('college_id', $college->id)
-            ->latest()
-            ->get();
+        $mentors = $this->filteredMentorsQuery($request, $college->id)->get();
 
         return view('college.manage-mentor', compact('mentors', 'college'));
     }
@@ -84,13 +82,10 @@ class MentorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
-        $mentors = Mentor::with(['user', 'college.user'])
-            ->where('college_id', $college->id)
-            ->latest()
-            ->get();
+        $mentors = $this->filteredMentorsQuery($request, $college->id)->get();
         $editMentor = Mentor::with(['user', 'college.user'])
             ->where('college_id', $college->id)
             ->findOrFail($id);
@@ -105,10 +100,7 @@ class MentorController extends Controller
     public function edit(Request $request, string $id)
     {
         $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
-        $mentors = Mentor::with(['user', 'college.user'])
-            ->where('college_id', $college->id)
-            ->latest()
-            ->get();
+        $mentors = $this->filteredMentorsQuery($request, $college->id)->get();
         $isDeleteMode = $request->query('mode') === 'delete';
 
         if (!$isDeleteMode) {
@@ -205,5 +197,94 @@ class MentorController extends Controller
         });
 
         return redirect()->route('college.mentors.index')->with('success', 'Mentor and associated account deleted successfully!');
+    }
+
+    private function filteredMentorsQuery(Request $request, int $collegeId): Builder
+    {
+        $query = Mentor::with(['user', 'college.user'])
+            ->where('college_id', $collegeId)
+            ->whereHas('user');
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function (Builder $builder) use ($search) {
+                $builder->where('expertise', 'like', "%{$search}%")
+                    ->orWhere('qualification', 'like', "%{$search}%")
+                    ->orWhere('bio', 'like', "%{$search}%")
+                    ->orWhereHas('user', function (Builder $userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $status = $request->input('status');
+        if (in_array($status, ['active', 'pending', 'blocked'], true)) {
+            $query->whereHas('user', function (Builder $builder) use ($status) {
+                $builder->where('status', $status);
+            });
+        }
+
+        $expertise = trim((string) $request->input('expertise', ''));
+        if ($expertise !== '') {
+            $query->where('expertise', 'like', "%{$expertise}%");
+        }
+
+        $this->applyDateFilter($query, $request);
+
+        $sort = $request->input('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->oldest();
+        } elseif ($sort === 'name_asc') {
+            $query->join('users as mentor_users', 'mentors.user_id', '=', 'mentor_users.id')
+                ->orderBy('mentor_users.name')
+                ->select('mentors.*');
+        } elseif ($sort === 'name_desc') {
+            $query->join('users as mentor_users', 'mentors.user_id', '=', 'mentor_users.id')
+                ->orderByDesc('mentor_users.name')
+                ->select('mentors.*');
+        } else {
+            $query->latest();
+        }
+
+        return $query;
+    }
+
+    private function applyDateFilter(Builder $query, Request $request): void
+    {
+        $dateFilter = $request->input('date_filter', 'all');
+
+        if ($dateFilter === 'today') {
+            $query->whereDate('created_at', now()->toDateString());
+            return;
+        }
+
+        if ($dateFilter === 'last_7') {
+            $query->whereDate('created_at', '>=', now()->subDays(7)->toDateString());
+            return;
+        }
+
+        if ($dateFilter === 'last_30') {
+            $query->whereDate('created_at', '>=', now()->subDays(30)->toDateString());
+            return;
+        }
+
+        if ($dateFilter === 'last_90') {
+            $query->whereDate('created_at', '>=', now()->subDays(90)->toDateString());
+            return;
+        }
+
+        if ($dateFilter === 'custom') {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            if ($startDate) {
+                $query->whereDate('created_at', '>=', $startDate);
+            }
+
+            if ($endDate) {
+                $query->whereDate('created_at', '<=', $endDate);
+            }
+        }
     }
 }
