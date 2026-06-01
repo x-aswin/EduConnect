@@ -192,7 +192,7 @@ class EnrollmentController extends Controller
             }
         });
 
-        return redirect()->route('college.enrollments.index')->with('success', 'Enrollment added successfully!');
+        return redirect()->route('college.enrollments.index', $this->indexQuery($request))->with('success', 'Enrollment added successfully!');
     }
 
     /**
@@ -357,13 +357,13 @@ class EnrollmentController extends Controller
             }
         });
 
-        return redirect()->route('college.enrollments.index')->with('success', 'Enrollment updated successfully!');
+        return redirect()->route('college.enrollments.index', $this->indexQuery($request))->with('success', 'Enrollment updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         $college = College::where('user_id', Auth::id())->firstOrFail();
 
@@ -375,6 +375,24 @@ class EnrollmentController extends Controller
             $enrollment->delete();
         });
 
-        return redirect()->route('college.enrollments.index')->with('success', 'Enrollment deleted successfully!');
+        return redirect()->route('college.enrollments.index', $this->indexQuery($request))->with('success', 'Enrollment deleted successfully!');
+    }
+
+    private function indexQuery(Request $request): array
+    {
+        return collect($request->only([
+            'search',
+            'course_id',
+            'status',
+            'payment_status',
+            'sort',
+            'date_filter',
+            'start_date',
+            'end_date',
+        ]))
+            ->filter(function ($value) {
+                return $value !== null && $value !== '';
+            })
+            ->toArray();
     }
 }

@@ -3,6 +3,8 @@
 @php
     $isEdit = isset($editEnrollment) && !isset($viewOnly);
     $isView = isset($editEnrollment) && isset($viewOnly);
+    $queryParams = collect(request()->query())->except('mode')->toArray();
+    $indexUrl = route('college.enrollments.index', $queryParams);
     $totalCount = $enrollments->count();
     $studentCount = $enrollments->where('type', 'student')->count();
     $firmCount = $enrollments->where('type', 'firm')->count();
@@ -210,17 +212,17 @@
 
                                 <div class="d-flex justify-content-end mt-3">
                                     <div class="btn-group action-group gap-2" role="group">
-                                        <a href="{{ route('college.enrollments.show', $enrollment->id) }}">
+                                        <a href="{{ route('college.enrollments.show', array_merge([$enrollment->id], $queryParams)) }}">
                                             <button class="btn btn-sm btn-outline-primary" title="View Enrollment">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                         </a>
-                                        <a href="{{ route('college.enrollments.edit', $enrollment->id) }}">
+                                        <a href="{{ route('college.enrollments.edit', array_merge([$enrollment->id], $queryParams)) }}">
                                             <button class="btn btn-sm btn-outline-warning" title="Edit Enrollment">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                         </a>
-                                        <a href="{{ route('college.enrollments.edit', [$enrollment->id, 'mode' => 'delete']) }}">
+                                        <a href="{{ route('college.enrollments.edit', array_merge([$enrollment->id], $queryParams, ['mode' => 'delete'])) }}">
                                             <button class="btn btn-sm btn-outline-danger" title="Delete Enrollment">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -285,17 +287,17 @@
 
                                 <div class="d-flex justify-content-end mt-3">
                                     <div class="btn-group action-group gap-2" role="group">
-                                        <a href="{{ route('college.enrollments.show', $enrollment->id) }}">
+                                        <a href="{{ route('college.enrollments.show', array_merge([$enrollment->id], $queryParams)) }}">
                                             <button class="btn btn-sm btn-outline-primary" title="View Enrollment">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                         </a>
-                                        <a href="{{ route('college.enrollments.edit', $enrollment->id) }}">
+                                        <a href="{{ route('college.enrollments.edit', array_merge([$enrollment->id], $queryParams)) }}">
                                             <button class="btn btn-sm btn-outline-warning" title="Edit Enrollment">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                         </a>
-                                        <a href="{{ route('college.enrollments.edit', [$enrollment->id, 'mode' => 'delete']) }}">
+                                        <a href="{{ route('college.enrollments.edit', array_merge([$enrollment->id], $queryParams, ['mode' => 'delete'])) }}">
                                             <button class="btn btn-sm btn-outline-danger" title="Delete Enrollment">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -318,7 +320,7 @@
                 <h5 class="modal-title">Add New Enrollment</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('college.enrollments.store') }}" method="POST">
+            <form action="{{ route('college.enrollments.store', $queryParams) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="row g-3">
@@ -488,7 +490,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ isset($editEnrollment) ? route('college.enrollments.update', $editEnrollment->id) : '#' }}" method="POST">
+            <form action="{{ isset($editEnrollment) ? route('college.enrollments.update', array_merge([$editEnrollment->id], $queryParams)) : '#' }}" method="POST">
                 @csrf
                 @if(isset($editEnrollment))
                     @method('PATCH')
@@ -634,7 +636,7 @@
 
                 <div class="modal-footer">
                     @if(isset($editEnrollment))
-                        <a href="{{ route('college.enrollments.index') }}" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ $indexUrl }}" class="btn btn-secondary">Cancel</a>
                     @else
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     @endif
@@ -654,7 +656,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Delete Enrollment</h5>
-                    <a href="{{ route('college.enrollments.index') }}" class="btn-close btn-close-white"></a>
+                    <a href="{{ $indexUrl }}" class="btn-close btn-close-white"></a>
                 </div>
                 <div class="modal-body text-center">
                     <p>
@@ -665,7 +667,7 @@
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <form action="{{ route('college.enrollments.destroy', $deleteEnrollment->id) }}" method="POST">
+                    <form action="{{ route('college.enrollments.destroy', array_merge([$deleteEnrollment->id], $queryParams)) }}" method="POST">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Confirm Delete</button>
@@ -682,7 +684,7 @@
             const deleteModal = document.getElementById('deleteModal');
             deleteModal.addEventListener('hidden.bs.modal', function () {
                 if (window.location.pathname.includes('/edit')) {
-                    window.location.href = "{{ route('college.enrollments.index') }}";
+                    window.location.href = "{{ $indexUrl }}";
                 }
             });
         });
@@ -713,7 +715,7 @@
 
             modalElement.addEventListener('hidden.bs.modal', function () {
                 if (window.location.pathname.includes('/edit') || window.location.pathname.match(/\d+$/)) {
-                    window.location.href = "{{ route('college.enrollments.index') }}";
+                    window.location.href = "{{ $indexUrl }}";
                 }
             });
         });
