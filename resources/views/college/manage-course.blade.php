@@ -1,20 +1,11 @@
 <x-college.layout active="courses">
-  <!-- Page header with greeting & quick stats -->
-<div class="page-header flex-wrap">
-    <div>
-      <h1 class="h3 fw-bold mb-1">Manage Your Courses</h1>
-      <p class="welcome-tag mb-0">
-        <i class="bi bi-journal-text me-1"></i> 
-        Create, edit, and organize your offline courses to provide the best learning experience for your students.
-      </p>
-    </div>
-</div>
-
 
 @php
     $isEdit = isset($editCourse) && !isset($viewOnly);
     $isView = isset($editCourse) && isset($viewOnly);
     $isCreate = !isset($editCourse);
+    $queryParams = collect(request()->query())->except('mode')->toArray();
+    $indexUrl = route('college.courses.index', $queryParams);
 
     $oldSections = old('sections');
     if (is_array($oldSections)) {
@@ -38,87 +29,243 @@
             'content' => '',
         ]];
     }
+
+    $totalCount = $courses->count();
+    $activeCount = $courses->filter(fn ($course) => ($course->status ?? 'inactive') === 'active')->count();
+    $studentCount = $courses->filter(fn ($course) => ($course->course_type ?? '') === 'student_only')->count();
+    $firmCount = $courses->filter(fn ($course) => ($course->course_type ?? '') === 'firm_only')->count();
 @endphp
 
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
-    <i class="bi bi-plus-lg"></i> Add New Course
-</button>
-
-<div class="card mt-4 shadow-sm">
-    <div class="card-header bg-white py-3">
-        <h6 class="mb-0 fw-bold">Registered Courses</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Title</th>
-                        {{-- <th>College</th> --}}
-                        <th>Mentor</th>
-                        <th>Category</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($courses as $course)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ $course->course_image ? asset('storage/' . $course->course_image) : 'https://ui-avatars.com/api/?name=' . urlencode($course->title ?? 'Course') }}"
-                                         class="rounded me-2" width="42" height="42" style="object-fit: cover;" alt="Course Image">
-                                    {{ $course->title ?? 'Untitled Course' }}
-                                </div>
-                            </td>
-                            {{-- <td>{{ $course->college->institution_name ?? 'N/A' }}</td> --}}
-                            <td>{{ $course->mentor->user->name ?? 'Not Assigned' }}</td>
-                            <td>{{ $course->category->name ?? 'N/A' }}</td>
-                            <td>
-                                <span class="badge bg-info-subtle text-info border border-info">
-                                    {{ $course->course_type === 'student_only' ? 'Student Only' : 'Firm Only' }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($course->status === 'active')
-                                    <span class="badge bg-success-subtle text-success border border-success">Active</span>
-                                @else
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary">Inactive</span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group shadow-sm gap-1">
-                                    <a href="{{ route('college.courses.show', $course->id) }}">
-                                        <button class="btn btn-sm btn-outline-primary" title="View Course">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </a>
-                                    <a href="{{ route('college.courses.edit', $course->id) }}">
-                                        <button class="btn btn-sm btn-outline-warning" title="Edit Course">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                    </a>
-                                    <a href="{{ route('college.courses.edit', [$course->id, 'mode' => 'delete']) }}">
-                                        <button class="btn btn-sm btn-outline-danger" title="Delete Course">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
-                                No courses yet. Click "Add New Course" to begin.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+<div class="course-hero p-4 p-md-5 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <h3 class="fw-bold mb-1 text-white">Course Workspace</h3>
+            <p class="mb-0 text-white-50">Create, edit, and organize your offline training programs for students and corporate firms.</p>
         </div>
+        <button type="button" class="btn btn-light fw-semibold" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+            <i class="bi bi-plus-lg"></i> Add New Course
+        </button>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-6 col-md-3">
+            <div class="hero-stat p-3 rounded-3">
+                <div class="text-white-50 small">Total Courses</div>
+                <div class="text-white fw-bold fs-4">{{ $totalCount }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="hero-stat p-3 rounded-3">
+                <div class="text-white-50 small">Active</div>
+                <div class="text-white fw-bold fs-4">{{ $activeCount }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="hero-stat p-3 rounded-3">
+                <div class="text-white-50 small">Student Only</div>
+                <div class="text-white fw-bold fs-4">{{ $studentCount }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="hero-stat p-3 rounded-3">
+                <div class="text-white-50 small">Firm Only</div>
+                <div class="text-white fw-bold fs-4">{{ $firmCount }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4 border-0 filter-studio">
+    <div class="card-body p-4 p-md-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div>
+                <h6 class="mb-0 fw-bold">Filter Workspace</h6>
+                <p class="mb-0 small text-muted">Refine courses by type, category, status, and search keywords.</p>
+            </div>
+            <span class="filter-chip"><i class="bi bi-sliders me-1"></i> Precision Filters</span>
+        </div>
+        <form method="GET" action="{{ route('college.courses.index') }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-semibold small text-uppercase mb-1">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control filter-control" placeholder="Title, mentor, category, venue...">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-semibold small text-uppercase mb-1">Category</label>
+                    <select name="category_id_filter" class="form-select filter-control">
+                        <option value="">All Categories</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ request('category_id_filter') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label text-muted fw-semibold small text-uppercase mb-1">Type</label>
+                    <select name="course_type_filter" class="form-select filter-control">
+                        <option value="">All Types</option>
+                        <option value="student_only" {{ request('course_type_filter') === 'student_only' ? 'selected' : '' }}>Student Only</option>
+                        <option value="firm_only" {{ request('course_type_filter') === 'firm_only' ? 'selected' : '' }}>Firm Only</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label text-muted fw-semibold small text-uppercase mb-1">Status</label>
+                    <select name="status_filter" class="form-select filter-control">
+                        <option value="">All Statuses</option>
+                        <option value="active" {{ request('status_filter') === 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ request('status_filter') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label text-muted fw-semibold small text-uppercase mb-1">Sort</label>
+                    <select name="sort" class="form-select filter-control">
+                        <option value="latest" {{ request('sort', 'latest') === 'latest' ? 'selected' : '' }}>Most Recent</option>
+                        <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                        <option value="price_asc" {{ request('sort') === 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>
+                        <option value="price_desc" {{ request('sort') === 'price_desc' ? 'selected' : '' }}>Price: High to Low</option>
+                        <option value="seats_desc" {{ request('sort') === 'seats_desc' ? 'selected' : '' }}>Seats: High to Low</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex flex-wrap gap-2 pt-1">
+                    <button type="submit" class="btn btn-primary px-4 filter-btn-primary">
+                        <i class="bi bi-funnel"></i> Apply Filters
+                    </button>
+                    <a href="{{ route('college.courses.index') }}" class="btn btn-outline-secondary filter-btn-reset">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4 shadow-sm border-0 course-hub">
+    <div class="card-header course-hub-header py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h6 class="mb-0 fw-bold">Manage Courses</h6>
+            <p class="mb-0 small text-muted">Browse your course catalog, enrollment capacities, and active schedules.</p>
+        </div>
+        <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">{{ $courses->count() }} Found</span>
+    </div>
+    <div class="card-body p-4 p-md-4">
+        @if($courses->isEmpty())
+            <div class="text-center py-5">
+                <div class="empty-state-icon mb-2"><i class="bi bi-search"></i></div>
+                <h6 class="fw-bold mb-1">No courses match the current filters</h6>
+                <p class="text-muted mb-3">Try resetting filters or adding a new course.</p>
+                <a href="{{ route('college.courses.index') }}" class="btn btn-outline-secondary me-2">Reset Filters</a>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                    <i class="bi bi-plus-lg"></i> Add New Course
+                </button>
+            </div>
+        @else
+            <div class="row g-4">
+                @foreach($courses as $course)
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="course-card h-100 d-flex flex-column">
+                            <div class="course-card-image-wrapper position-relative">
+                                <img src="{{ $course->course_image ? asset('storage/' . $course->course_image) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600&auto=format&fit=crop' }}" 
+                                     class="course-card-image" alt="{{ $course->title }}">
+                                
+                                <div class="course-card-badges position-absolute top-0 start-0 p-3 d-flex flex-column gap-2">
+                                    <span class="badge bg-blur text-white shadow-sm border border-white-50">
+                                        {{ $course->course_type === 'student_only' ? '🎓 Student' : '🏢 Firm' }}
+                                    </span>
+                                    @if($course->is_certified)
+                                        <span class="badge bg-success-blur text-white shadow-sm border border-success-50">
+                                            🏆 Certified
+                                        </span>
+                                    @endif
+                                </div>
+                                
+                                <div class="position-absolute top-0 end-0 p-3">
+                                    @if($course->status === 'active')
+                                        <span class="badge bg-success shadow-sm">Active</span>
+                                    @else
+                                        <span class="badge bg-secondary shadow-sm">Inactive</span>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <div class="course-card-body p-4 d-flex flex-column flex-grow-1">
+                                <div class="text-primary small fw-semibold mb-1 text-uppercase tracking-wider">
+                                    {{ $course->category->name ?? 'Uncategorized' }}
+                                </div>
+                                <h5 class="fw-bold course-card-title mb-2 text-dark text-truncate" title="{{ $course->title }}">{{ $course->title }}</h5>
+                                <p class="text-muted small course-card-desc mb-3 flex-grow-1">
+                                    {{ \Illuminate\Support\Str::limit($course->description, 120, '...') ?: 'No description provided.' }}
+                                </p>
+                                
+                                <hr class="my-3 text-muted opacity-25">
+                                
+                                <div class="course-card-details d-grid gap-2 mb-3">
+                                    <div class="d-flex align-items-center text-secondary small">
+                                        <i class="bi bi-person-badge me-2 text-primary"></i>
+                                        <span class="text-truncate">
+                                            <strong>Mentor:</strong> {{ $course->mentor->user->name ?? 'Not Assigned' }}
+                                        </span>
+                                    </div>
+                                    
+                                    @if($course->course_type === 'student_only')
+                                        <div class="d-flex align-items-center text-secondary small">
+                                            <i class="bi bi-people me-2 text-primary"></i>
+                                            <span>
+                                                <strong>Seats:</strong> {{ $course->available_seats }} / {{ $course->total_seats }}
+                                            </span>
+                                        </div>
+                                        <div class="d-flex align-items-center text-secondary small">
+                                            <i class="bi bi-calendar-event me-2 text-primary"></i>
+                                            <span class="text-truncate">
+                                                <strong>Schedule:</strong> {{ $course->start_date ? \Carbon\Carbon::parse($course->start_date)->format('M d') : 'TBD' }} - {{ $course->end_date ? \Carbon\Carbon::parse($course->end_date)->format('M d') : 'TBD' }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="d-flex align-items-center text-secondary small">
+                                            <i class="bi bi-info-circle me-2 text-primary"></i>
+                                            <span>Logistics set by booking firm</span>
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="d-flex align-items-center text-secondary small">
+                                        <i class="bi bi-geo-alt me-2 text-primary"></i>
+                                        <span class="text-truncate">
+                                            <strong>Venue:</strong> {{ $course->venue ?: 'TBD' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top">
+                                    <div class="course-card-price">
+                                        <span class="text-muted small d-block" style="font-size: 0.72rem;">Price</span>
+                                        <div class="fw-bold text-dark fs-6">
+                                            @if($course->price > 0)
+                                                ₹{{ number_format($course->price, 2) }}
+                                            @else
+                                                <span class="text-success fw-bold">Free</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="btn-group action-group gap-1">
+                                        <a href="{{ route('college.courses.show', array_merge([$course->id], $queryParams)) }}" class="btn btn-sm btn-outline-primary" title="View Course">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('college.courses.edit', array_merge([$course->id], $queryParams)) }}" class="btn btn-sm btn-outline-warning" title="Edit Course">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{{ route('college.courses.edit', array_merge([$course->id], $queryParams, ['mode' => 'delete'])) }}" class="btn btn-sm btn-outline-danger" title="Delete Course">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 </div>
 
@@ -130,7 +277,7 @@
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <form action="{{ isset($editCourse) ? route('college.courses.update', $editCourse->id) : route('college.courses.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ isset($editCourse) ? route('college.courses.update', array_merge([$editCourse->id], $queryParams)) : route('college.courses.store', $queryParams) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @if(isset($editCourse))
                 @method('PATCH')
@@ -366,7 +513,7 @@
 
             <div class="modal-footer">
                 @if(isset($editCourse))
-                    <a href="{{ route('college.courses.index') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ $indexUrl }}" class="btn btn-secondary">Cancel</a>
                 @else
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 @endif
@@ -387,13 +534,13 @@
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Delete Course</h5>
-                    <a href="{{ route('college.courses.index') }}" class="btn-close btn-close-white"></a>
+                    <a href="{{ $indexUrl }}" class="btn-close btn-close-white"></a>
                 </div>
                 <div class="modal-body text-center">
                     <p>Delete <strong>{{ $deleteCourse->title ?? 'Unknown Course' }}</strong>?</p>
                 </div>
                 <div class="modal-footer">
-                    <form action="{{ route('college.courses.destroy', $deleteCourse->id) }}" method="POST">
+                    <form action="{{ route('college.courses.destroy', array_merge([$deleteCourse->id], $queryParams)) }}" method="POST">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-danger">Confirm Delete</button>
                     </form>
@@ -409,7 +556,7 @@
             var myModalDelete = document.getElementById('deleteModal');
             myModalDelete.addEventListener('hidden.bs.modal', function () {
                 if (window.location.pathname.includes('/edit')) {
-                    window.location.href = "{{ route('college.courses.index') }}";
+                    window.location.href = "{{ $indexUrl }}";
                 }
             });
         });
@@ -436,7 +583,7 @@
             var myModalElement = document.getElementById('addCourseModal');
             myModalElement.addEventListener('hidden.bs.modal', function () {
                 if (window.location.pathname.includes('/edit') || window.location.pathname.match(/\d+$/)) {
-                    window.location.href = "{{ route('college.courses.index') }}";
+                    window.location.href = "{{ $indexUrl }}";
                 }
             });
         });
@@ -583,5 +730,147 @@
     });
 </script>
 
+<style>
+    .course-hero {
+        border-radius: 1.25rem;
+        background: linear-gradient(130deg, #4f46e5 0%, #6366f1 55%, #a855f7 100%);
+        box-shadow: 0 14px 35px rgba(79, 70, 229, 0.26);
+    }
+
+    .hero-stat {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(4px);
+    }
+
+    .filter-studio {
+        border-radius: 1.1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        box-shadow: 0 10px 22px rgba(16, 24, 40, 0.08);
+    }
+
+    .filter-chip {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #4f46e5;
+        background: #e0e7ff;
+        border: 1px solid #c7d2fe;
+        border-radius: 999px;
+        padding: 0.38rem 0.72rem;
+    }
+
+    .filter-control {
+        border-radius: 0.72rem;
+        border-color: #d0d5dd;
+    }
+
+    .filter-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.16);
+    }
+
+    .filter-btn-primary,
+    .filter-btn-reset {
+        border-radius: 0.72rem;
+        font-weight: 600;
+    }
+
+    .course-hub {
+        border-radius: 1.1rem;
+        overflow: hidden;
+    }
+
+    .course-hub-header {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        border-bottom: 1px solid #e4e7ec;
+    }
+
+    .course-card {
+        background: #ffffff;
+        border: 1px solid #eaecf0;
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 24px -4px rgba(16, 24, 40, 0.08), 0 8px 8px -4px rgba(16, 24, 40, 0.03);
+        border-color: #d0d5dd;
+    }
+
+    .course-card-image-wrapper {
+        height: 180px;
+        overflow: hidden;
+        background: #f2f4f7;
+    }
+
+    .course-card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .course-card:hover .course-card-image {
+        transform: scale(1.05);
+    }
+
+    .bg-blur {
+        backdrop-filter: blur(8px);
+        background: rgba(15, 23, 42, 0.6);
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+
+    .bg-success-blur {
+        backdrop-filter: blur(8px);
+        background: rgba(22, 163, 74, 0.6);
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+
+    .course-card-title {
+        font-size: 1.15rem;
+        line-height: 1.4;
+    }
+
+    .course-card-desc {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+        height: 4.5em;
+    }
+
+    .course-card-details {
+        font-size: 0.85rem;
+    }
+
+    .action-group .btn {
+        border-radius: 0.65rem;
+    }
+
+    .empty-state-icon {
+        width: 52px;
+        height: 52px;
+        margin-inline: auto;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #2563eb;
+        display: grid;
+        place-items: center;
+        font-size: 1.15rem;
+    }
+
+    @media (max-width: 768px) {
+        .course-card-image-wrapper {
+            height: 150px;
+        }
+    }
+</style>
 
 </x-college.layout>

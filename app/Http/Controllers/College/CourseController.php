@@ -18,13 +18,10 @@ class CourseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
-        $courses = Course::with(['college.user', 'mentor.user', 'category'])
-            ->where('college_id', $college->id)
-            ->latest()
-            ->get();
+        $courses = $this->filteredCoursesQuery($request, $college->id)->get();
         $mentors = Mentor::with(['user', 'college'])
             ->where('college_id', $college->id)
             ->latest()
@@ -115,13 +112,10 @@ class CourseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
-        $courses = Course::with(['college.user', 'mentor.user', 'category'])
-            ->where('college_id', $college->id)
-            ->latest()
-            ->get();
+        $courses = $this->filteredCoursesQuery($request, $college->id)->get();
         $mentors = Mentor::with(['user', 'college'])
             ->where('college_id', $college->id)
             ->latest()
@@ -130,20 +124,16 @@ class CourseController extends Controller
         $editCourse = Course::with(['college.user', 'mentor.user', 'category'])->findOrFail($id);
         $viewOnly = true;
 
-        return view('college.manage-course', compact('courses', 'mentors', 'categories', 'editCourse', 'viewOnly'));
+        return view('college.manage-course', compact('courses', 'college', 'mentors', 'categories', 'editCourse', 'viewOnly'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Request $request,string $id)
+    public function edit(Request $request, string $id)
     {
         $college = College::with('user')->where('user_id', Auth::id())->firstOrFail();
-        $colleges = College::with('user')->latest()->get();
-        $courses = Course::with(['college.user', 'mentor.user', 'category'])
-            ->where('college_id', $college->id)
-            ->latest()
-            ->get();
+        $courses = $this->filteredCoursesQuery($request, $college->id)->get();
         $mentors = Mentor::with(['user', 'college'])
             ->where('college_id', $college->id)
             ->latest()
@@ -153,11 +143,11 @@ class CourseController extends Controller
 
         if (!$isDeleteMode) {
             $editCourse = Course::with(['college.user', 'mentor.user', 'category'])->findOrFail($id);
-            return view('college.manage-course', compact('courses', 'mentors', 'categories', 'editCourse'));
+            return view('college.manage-course', compact('courses', 'college', 'mentors', 'categories', 'editCourse'));
         }
 
         $deleteCourse = Course::with(['college.user', 'mentor.user', 'category'])->findOrFail($id);
-        return view('college.manage-course', compact('courses', 'mentors', 'categories', 'deleteCourse', 'isDeleteMode'));
+        return view('college.manage-course', compact('courses', 'college', 'mentors', 'categories', 'deleteCourse', 'isDeleteMode'));
     }
 
     /**
@@ -294,5 +284,56 @@ class CourseController extends Controller
         $course->sections()
             ->when(!empty($keptIds), fn ($query) => $query->whereNotIn('id', $keptIds), fn ($query) => $query)
             ->delete();
+    }
+
+    private function filteredCoursesQuery(Request $request, int $collegeId)
+    {
+        $query = Course::with(['college.user', 'mentor.user', 'category'])
+            ->where('college_id', $collegeId);
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('venue', 'like', "%{$search}%")
+                    ->orWhereHas('mentor.user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('category', function ($cq) use ($search) {
+                        $cq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $courseType = $request->input('course_type_filter');
+        if (in_array($courseType, ['student_only', 'firm_only'], true)) {
+            $query->where('course_type', $courseType);
+        }
+
+        $categoryId = $request->input('category_id_filter');
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        $status = $request->input('status_filter');
+        if (in_array($status, ['active', 'inactive'], true)) {
+            $query->where('status', $status);
+        }
+
+        $sort = $request->input('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->oldest();
+        } elseif ($sort === 'price_asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sort === 'price_desc') {
+            $query->orderBy('price', 'desc');
+        } elseif ($sort === 'seats_desc') {
+            $query->orderBy('total_seats', 'desc');
+        } else {
+            $query->latest();
+        }
+
+        return $query;
     }
 }
