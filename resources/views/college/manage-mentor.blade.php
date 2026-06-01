@@ -62,9 +62,9 @@
         </div>
         <form method="GET" action="{{ route('college.mentors.index') }}">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <label class="form-label text-muted fw-semibold small text-uppercase mb-1">Search</label>
-                    <input type="text" name="search" value="{{ request('search') }}" class="form-control filter-control" placeholder="Name, email, qualification">
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control filter-control" placeholder="Name, email, expertise, qualification">
                 </div>
 
                 <div class="col-md-2">
@@ -75,11 +75,6 @@
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>Blocked</option>
                     </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label text-muted fw-semibold small text-uppercase mb-1">Expertise</label>
-                    <input type="text" name="expertise" value="{{ request('expertise') }}" class="form-control filter-control" placeholder="Laravel, AI, Data Science">
                 </div>
 
                 <div class="col-md-2">

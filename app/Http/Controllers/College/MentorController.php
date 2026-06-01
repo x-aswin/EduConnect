@@ -225,11 +225,6 @@ class MentorController extends Controller
             });
         }
 
-        $expertise = trim((string) $request->input('expertise', ''));
-        if ($expertise !== '') {
-            $query->where('expertise', 'like', "%{$expertise}%");
-        }
-
         $this->applyDateFilter($query, $request);
 
         $sort = $request->input('sort', 'latest');
