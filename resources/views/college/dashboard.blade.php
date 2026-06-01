@@ -12,7 +12,7 @@
       <a href="{{ route('college.courses.index', ['open' => 'add']) }}" class="btn btn-outline-primary rounded-pill px-4 me-2">
         <i class="bi bi-plus-lg"></i> New Course
       </a>
-      <a href="#" class="btn btn-primary rounded-pill px-4">
+      <a href="{{ route('college.reports.index') }}" class="btn btn-primary rounded-pill px-4">
         <i class="bi bi-download"></i> Report
       </a>
     </div>

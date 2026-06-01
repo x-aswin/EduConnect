@@ -76,6 +76,7 @@ Route::middleware(['auth','role:college'])->group(function(){
         Route::resource('/courses', CollegeCourseController::class)->names('courses');
         Route::resource('/mentors', CollegeMentorController::class)->names('mentors');
         Route::resource('/enrollments', CollegeEnrollmentController::class)->names('enrollments');
+        Route::get('/reports', [\App\Http\Controllers\College\ReportController::class, 'index'])->name('reports.index');
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
