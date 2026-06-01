@@ -16,16 +16,65 @@ class EnrollmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $college = College::where('user_id', Auth::id())->firstOrFail();
 
-        $enrollments = Enrollment::with(['user', 'course.college', 'participants'])
+        $enrollmentQuery = Enrollment::with(['user', 'course.college', 'participants'])
             ->whereHas('course', function ($query) use ($college) {
                 $query->where('college_id', $college->id);
-            })
-            ->latest()
-            ->get();
+            });
+
+        if ($request->filled('course_id')) {
+            $enrollmentQuery->where('course_id', $request->integer('course_id'));
+        }
+
+        if ($request->filled('status') && in_array($request->status, ['pending', 'confirmed', 'rejected'], true)) {
+            $enrollmentQuery->where('status', $request->status);
+        }
+
+        if ($request->filled('payment_status') && in_array($request->payment_status, ['na', 'pending', 'paid'], true)) {
+            $enrollmentQuery->where('payment_status', $request->payment_status);
+        }
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->search);
+            $enrollmentQuery->where(function ($query) use ($search) {
+                $query->whereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('email', 'like', '%' . $search . '%');
+                })->orWhereHas('course', function ($courseQuery) use ($search) {
+                    $courseQuery->where('title', 'like', '%' . $search . '%');
+                });
+            });
+        }
+
+        $dateFilter = $request->get('date_filter', 'all');
+        if ($dateFilter === 'today') {
+            $enrollmentQuery->whereDate('created_at', now()->toDateString());
+        } elseif ($dateFilter === 'last_7') {
+            $enrollmentQuery->where('created_at', '>=', now()->subDays(7)->startOfDay());
+        } elseif ($dateFilter === 'last_30') {
+            $enrollmentQuery->where('created_at', '>=', now()->subDays(30)->startOfDay());
+        } elseif ($dateFilter === 'last_90') {
+            $enrollmentQuery->where('created_at', '>=', now()->subDays(90)->startOfDay());
+        } elseif ($dateFilter === 'custom') {
+            if ($request->filled('start_date')) {
+                $enrollmentQuery->whereDate('created_at', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $enrollmentQuery->whereDate('created_at', '<=', $request->end_date);
+            }
+        }
+
+        $sort = $request->get('sort', 'latest');
+        if ($sort === 'oldest') {
+            $enrollmentQuery->orderBy('created_at', 'asc');
+        } else {
+            $enrollmentQuery->orderBy('created_at', 'desc');
+        }
+
+        $enrollments = $enrollmentQuery->get();
 
         $users = User::whereIn('role', ['student', 'firm'])
             ->orderBy('name')
@@ -61,6 +110,7 @@ class EnrollmentController extends Controller
             'payment_status' => 'required|in:pending,paid,na',
             'requested_venue' => 'nullable|string|max:255',
             'proposed_schedule' => 'nullable|date',
+            'college_note' => 'nullable|string|max:1000',
             'participants' => 'nullable|array',
             'participants.*.name' => 'nullable|string|max:255',
             'participants.*.contact_info' => 'nullable|string|max:255',
@@ -125,6 +175,7 @@ class EnrollmentController extends Controller
                 'payment_status' => $validated['payment_status'],
                 'requested_venue' => $validated['requested_venue'] ?? null,
                 'proposed_schedule' => $validated['proposed_schedule'] ?? null,
+                'college_note' => $enrollmentType === 'firm' ? ($validated['college_note'] ?? null) : null,
                 'participant_count' => $participantCount,
                 'total_amount' => $calculatedTotalAmount,
             ]);
@@ -238,6 +289,7 @@ class EnrollmentController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:pending,confirmed,rejected',
             'payment_status' => 'required|in:pending,paid,na',
+            'college_note' => 'nullable|string|max:1000',
             'participants' => 'nullable|array',
             'participants.*.name' => 'nullable|string|max:255',
             'participants.*.contact_info' => 'nullable|string|max:255',
@@ -294,6 +346,7 @@ class EnrollmentController extends Controller
             $enrollment->update([
                 'status' => $validated['status'],
                 'payment_status' => $validated['payment_status'],
+                'college_note' => $enrollment->type === 'firm' ? ($validated['college_note'] ?? null) : null,
                 'participant_count' => $participantCount,
                 'total_amount' => $totalAmount,
             ]);
