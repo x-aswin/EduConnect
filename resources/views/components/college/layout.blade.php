@@ -27,9 +27,21 @@
       background-color: #eef2ff;
       color: #2563eb;
     }
+    .navbar-nav .nav-link i {
+      width: 1.15rem;
+      min-width: 1.15rem;
+      text-align: center;
+      font-size: 1rem;
+      line-height: 1;
+      flex: 0 0 1.15rem;
+    }
     .navbar-nav .nav-link.active {
-      background-color: #2563eb;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: white !important;
+      box-shadow: 0 10px 18px -14px rgba(37, 99, 235, 0.8);
+    }
+    .navbar-nav .nav-link.active i {
+      color: inherit;
     }
     .dropdown-menu {
       border: none;
@@ -116,32 +128,32 @@
       <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item">
           <a class="nav-link {{ $active === 'dashboard' ? 'active' : '' }}" aria-current="page" href="{{ route('college.dashboard') }}">
-            <i class="bi bi-speedometer2 me-1 d-inline-block d-lg-none d-xl-inline"></i> Dashboard
+            <i class="bi bi-speedometer2 me-1"></i> Dashboard
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {{ $active === 'courses' ? 'active' : '' }}" href="{{ route('college.courses.index') }}">
-            <i class="bi bi-journal-bookmark-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Courses
+            <i class="bi bi-journal-bookmark-fill me-1"></i> Courses
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {{ $active === 'mentors' ? 'active' : '' }}" href="{{ route('college.mentors.index') }}">
-            <i class="bi bi-people-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Mentors
+            <i class="bi bi-people-fill me-1"></i> Mentors
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {{ $active === 'enrollments' ? 'active' : '' }}" href="{{ route('college.enrollments.index') }}">
-            <i class="bi bi-person-lines-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Enrollments
+            <i class="bi bi-person-lines-fill me-1"></i> Enrollments
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {{ $active === 'reports' ? 'active' : '' }}" href="{{ route('college.reports.index') }}">
-            <i class="bi bi-bar-chart-line me-1 d-inline-block d-lg-none d-xl-inline"></i> Analytics
+            <i class="bi bi-bar-chart-line me-1"></i> Analytics
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {{ $active === 'profile' ? 'active' : '' }}" href="{{ route('college.profile.edit') }}">
-            <i class="bi bi-gear me-1 d-inline-block d-lg-none d-xl-inline"></i> Profile
+            <i class="bi bi-gear me-1"></i> Profile
           </a>
         </li>
         {{-- <!-- Additional quick action: Mentor management shortcut (optional) -->

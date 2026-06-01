@@ -5,6 +5,21 @@
     $isView = isset($editEnrollment) && isset($viewOnly);
     $queryParams = collect(request()->query())->except('mode')->toArray();
     $indexUrl = route('college.enrollments.index', $queryParams);
+    $newFirmParticipants = old('participants', [['name' => '', 'contact_info' => '']]);
+    if (count($newFirmParticipants) === 0) {
+        $newFirmParticipants = [['name' => '', 'contact_info' => '']];
+    }
+    $editFirmParticipants = isset($editEnrollment)
+        ? old('participants', $editEnrollment->participants->map(function ($participant) {
+            return [
+                'name' => $participant->name,
+                'contact_info' => $participant->contact_info,
+            ];
+        })->all())
+        : [];
+    if (count($editFirmParticipants) === 0 && isset($editEnrollment)) {
+        $editFirmParticipants = [['name' => '', 'contact_info' => '']];
+    }
     $totalCount = $enrollments->count();
     $studentCount = $enrollments->where('type', 'student')->count();
     $firmCount = $enrollments->where('type', 'firm')->count();
@@ -355,14 +370,29 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-                                <option value="pending" {{ old('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="confirmed" {{ old('status') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                <option value="rejected" {{ old('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                            </select>
+                            @php($newStatus = old('status', 'pending'))
+                            <label class="form-label">Approval Decision</label>
+                            <div class="approval-panel @error('status') is-invalid @enderror">
+                                <input type="radio" class="btn-check" name="status" id="newStatusPending" value="pending" {{ $newStatus === 'pending' ? 'checked' : '' }} required>
+                                <label class="btn btn-outline-secondary approval-option" for="newStatusPending">
+                                    <span class="approval-dot pending"></span>
+                                    Pending Review
+                                </label>
+
+                                <input type="radio" class="btn-check" name="status" id="newStatusConfirmed" value="confirmed" {{ $newStatus === 'confirmed' ? 'checked' : '' }}>
+                                <label class="btn btn-outline-success approval-option" for="newStatusConfirmed">
+                                    <span class="approval-dot confirmed"></span>
+                                    Approve
+                                </label>
+
+                                <input type="radio" class="btn-check" name="status" id="newStatusRejected" value="rejected" {{ $newStatus === 'rejected' ? 'checked' : '' }}>
+                                <label class="btn btn-outline-danger approval-option" for="newStatusRejected">
+                                    <span class="approval-dot rejected"></span>
+                                    Reject
+                                </label>
+                            </div>
                             @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -427,15 +457,8 @@
                                 </button>
                             </div>
 
-                            @php
-                                $oldParticipants = old('participants', [['name' => '', 'contact_info' => '']]);
-                                if (count($oldParticipants) === 0) {
-                                    $oldParticipants = [['name' => '', 'contact_info' => '']];
-                                }
-                            @endphp
-
                             <div id="participants_container" class="d-grid gap-2">
-                                @foreach($oldParticipants as $index => $participant)
+                                @foreach($newFirmParticipants as $index => $participant)
                                     <div class="row g-2 participant-row" data-index="{{ $index }}">
                                         <div class="col-md-5">
                                             <input
@@ -557,20 +580,8 @@
                                             </button>
                                         </div>
 
-                                        @php
-                                            $editParticipants = old('participants', $editEnrollment->participants->map(function ($participant) {
-                                                return [
-                                                    'name' => $participant->name,
-                                                    'contact_info' => $participant->contact_info,
-                                                ];
-                                            })->all());
-                                            if (count($editParticipants) === 0) {
-                                                $editParticipants = [['name' => '', 'contact_info' => '']];
-                                            }
-                                        @endphp
-
                                         <div id="edit_participants_container" class="d-grid gap-2">
-                                            @foreach($editParticipants as $index => $participant)
+                                            @foreach($editFirmParticipants as $index => $participant)
                                                 <div class="row g-2 edit-participant-row" data-index="{{ $index }}">
                                                     <div class="col-md-5">
                                                         <input
@@ -608,14 +619,41 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Enrollment Status</label>
-                                <select name="status" class="form-select @error('status') is-invalid @enderror" {{ $isView ? 'disabled' : '' }}>
-                                    <option value="pending" {{ old('status', $editEnrollment->status ?? 'pending') === 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="confirmed" {{ old('status', $editEnrollment->status ?? '') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                    <option value="rejected" {{ old('status', $editEnrollment->status ?? '') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                                </select>
-                                @error('status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                @php($editStatus = old('status', $editEnrollment->status ?? 'pending'))
+                                @if($isView)
+                                    <div class="status-readonly status-{{ $editStatus }}">
+                                        @if($editStatus === 'confirmed')
+                                            <i class="bi bi-check-circle-fill me-1"></i> Approved
+                                        @elseif($editStatus === 'rejected')
+                                            <i class="bi bi-x-circle-fill me-1"></i> Rejected
+                                        @else
+                                            <i class="bi bi-hourglass-split me-1"></i> Pending Review
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="approval-panel @error('status') is-invalid @enderror">
+                                        <input type="radio" class="btn-check" name="status" id="editStatusPending" value="pending" {{ $editStatus === 'pending' ? 'checked' : '' }} required>
+                                        <label class="btn btn-outline-secondary approval-option" for="editStatusPending">
+                                            <span class="approval-dot pending"></span>
+                                            Pending Review
+                                        </label>
+
+                                        <input type="radio" class="btn-check" name="status" id="editStatusConfirmed" value="confirmed" {{ $editStatus === 'confirmed' ? 'checked' : '' }}>
+                                        <label class="btn btn-outline-success approval-option" for="editStatusConfirmed">
+                                            <span class="approval-dot confirmed"></span>
+                                            Approve
+                                        </label>
+
+                                        <input type="radio" class="btn-check" name="status" id="editStatusRejected" value="rejected" {{ $editStatus === 'rejected' ? 'checked' : '' }}>
+                                        <label class="btn btn-outline-danger approval-option" for="editStatusRejected">
+                                            <span class="approval-dot rejected"></span>
+                                            Reject
+                                        </label>
+                                    </div>
+                                    @error('status')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                @endif
                             </div>
 
                             <div class="col-md-6">
@@ -1046,6 +1084,102 @@
         font-weight: 600;
     }
 
+    .approval-panel {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border: 1px solid #dbe6f3;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #fbfdff 0%, #f3f8ff 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .approval-panel.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .approval-option {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 48px;
+        padding: 0.8rem 0.9rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+        white-space: nowrap;
+    }
+
+    .approval-option:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 18px -14px rgba(15, 47, 77, 0.35);
+    }
+
+    .btn-check:checked + .approval-option {
+        color: #fff;
+        box-shadow: 0 12px 18px -14px rgba(15, 47, 77, 0.55);
+    }
+
+    .btn-check:checked + .btn-outline-secondary.approval-option {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border-color: #495057;
+    }
+
+    .btn-check:checked + .btn-outline-success.approval-option {
+        background: linear-gradient(135deg, #2f9d5d 0%, #198754 100%);
+        border-color: #198754;
+    }
+
+    .btn-check:checked + .btn-outline-danger.approval-option {
+        background: linear-gradient(135deg, #d9534f 0%, #b02a37 100%);
+        border-color: #b02a37;
+    }
+
+    .approval-dot {
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 999px;
+        background: currentColor;
+        opacity: 0.9;
+        display: inline-block;
+        flex: 0 0 auto;
+    }
+
+    .approval-dot.pending { color: #6c757d; }
+    .approval-dot.confirmed { color: #198754; }
+    .approval-dot.rejected { color: #dc3545; }
+
+    .status-readonly {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.8rem 1rem;
+        border-radius: 14px;
+        font-weight: 600;
+        border: 1px solid #dbe6f3;
+        background: #f8fbff;
+    }
+
+    .status-readonly.status-confirmed {
+        color: #0f7a4d;
+        background: #edf9f2;
+        border-color: #c8ead8;
+    }
+
+    .status-readonly.status-rejected {
+        color: #a61d2f;
+        background: #fff1f3;
+        border-color: #f0c5ce;
+    }
+
+    .status-readonly.status-pending {
+        color: #7a5b00;
+        background: #fff9e8;
+        border-color: #f1dfad;
+    }
+
     .enrollment-hub {
         border-radius: 20px;
         overflow: hidden;
@@ -1133,6 +1267,10 @@
     @media (max-width: 768px) {
         .filter-studio .card-body {
             padding: 1rem !important;
+        }
+
+        .approval-panel {
+            grid-template-columns: 1fr;
         }
     }
 </style>
