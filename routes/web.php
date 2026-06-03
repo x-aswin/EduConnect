@@ -30,6 +30,8 @@ use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController
 use App\Http\Controllers\Mentor\CourseController as MentorCourseController;
 use App\Http\Controllers\Mentor\ChatController as MentorChatController;
 
+use App\Http\Controllers\Guest\LandingController as LandingController;
+
 use App\Http\Controllers\ProfileController;
 use App\Models\College;
 use Illuminate\Support\Facades\Auth;
@@ -38,14 +40,19 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/landing', [LandingController::class, 'index'])->name('landing');
 
 Route::get('/dashboard', function () {
-    if (Auth::user()->role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    }
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
+    $role = Auth::user()?->role;
+    return match ($role) {
+        'admin'   => redirect()->route('admin.dashboard'),
+        'student' => redirect()->route('student.dashboard'),
+        'firm'    => redirect()->route('firm.dashboard'),
+        'college' => redirect()->route('college.dashboard'),
+        default   => redirect()->route('landing'),
+    };
+})->name('dashboard');
+// ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
