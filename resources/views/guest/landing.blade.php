@@ -228,85 +228,137 @@
 </section>
 <!-- Section 3: Course Marketplace Preview -->
 <section class="py-xl bg-surface" id="courses">
-<div class="max-w-container-max mx-auto px-md">
-<div class="flex justify-between items-end mb-lg">
-<div>
-<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Explore Top Courses</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">Handpicked certifications from world-class institutions.</p>
-</div>
-<button class="text-primary font-label-md text-label-md flex items-center gap-xs hover:underline transition-all">
-                        View All Courses <span class="material-symbols-outlined text-[18px]">open_in_new</span>
-</button>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
-<!-- Course Card 1 -->
-<div class="group bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all">
-<div class="h-48 overflow-hidden relative">
-<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMNmKLkixwIoxceLHlaQe0FSgzlIP6FX9XIxAWmEBI5LNMrxAkJxtceCKa8JWNRdif10qestQgKmY9dlsUPYDbpYacMC5d3wEFtNymRZN_ljhOJScOnQgSZ7qR5__QIAUwtDP9GoCPQ8iCfovbzX1-Dqsm9nxtiusCcfYH_DLFQkWKb3-9orprvzpsAhcrSrh75jfj8qhrCGb-Gm35TRGwXBmREZC9BFVTLviHD4xSZffxIUhAACY8YLd0nOABrLSj3BaBESHKptEC"/>
-<div class="absolute top-4 left-4 bg-primary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm">
-                                Student Only
-                            </div><div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-primary font-label-sm text-label-sm">
-                                Tech Certification
+    <div class="max-w-container-max mx-auto px-md">
+        <div class="flex justify-between items-end mb-lg">
+            <div>
+                <h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Explore Top Courses</h2>
+                <p class="font-body-md text-body-md text-on-surface-variant">Handpicked certifications and organizational tracks from world-class institutions.</p>
+            </div>
+            <a href="{{ route('firm.explore.index') }}" class="text-primary font-label-md text-label-md flex items-center gap-xs hover:underline transition-all">
+                View All Courses <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+            @forelse($recommendedCourses as $course)
+                @if($course['type'] === 'student')
+                    <!-- STUDENT TRACK CARD PATTERN -->
+                    <div class="group bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 flex items-center justify-center relative overflow-hidden" style="background: {{ $course['gradient'] }}">
+                                <span class="material-symbols-outlined text-[52px] {{ $course['icon_color'] }} opacity-90">
+                                    {{ $course['icon'] }}
+                                </span>
+                                <div class="absolute top-4 left-4 bg-primary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm">
+                                    {{ $course['badge_label'] }}
+                                </div>
+                                @if(!empty($course['category_label']))
+                                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-primary font-label-sm text-label-sm">
+                                        {{ $course['category_label'] }}
+                                    </div>
+                                @endif
                             </div>
-</div>
-<div class="p-md">
-<h4 class="font-headline-md text-headline-md text-on-surface mb-xs">ASP.NET Core</h4>
-<p class="font-label-md text-label-md text-primary mb-md">Oxford IT Academy</p>
-<div class="flex items-center justify-between pt-md border-t border-outline-variant">
-<div class="flex items-center gap-xs text-on-surface-variant">
-<span class="material-symbols-outlined text-[20px]">location_on</span>
-<span class="font-label-md text-label-md">Main Campus</span>
-</div>
-<div class="font-headline-md text-headline-md text-primary">$499</div>
-</div>
-</div>
-</div>
-<!-- Course Card 2 -->
-<div class="group bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all">
-<div class="h-48 overflow-hidden relative">
-<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwGKt6rbnQejMzAByJ-r6Tq5Ew0WWwY11udIETICrksXOQD3e9B74tW9P3Xm0neSliA79qCcgHbqfFt1_rBzmm23W9GGzuU0QqEuIE8ApKd9WEWkfIDYR923xiUeDZZ71dkIBH0c7rBoWiU1Ea_txro4XsGmJfMBMv8T8gLkhHxBlWoUMvPfEdBwThLkFD5vb2vcXmHV7VKnU-N7wfCftKLf7t2JyPAjQJHwL58hAwWTkC9ntZasGSWbQslacUe2tskdmNdEP_1_ca"/>
-<div class="absolute top-4 left-4 bg-tertiary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm">
-                                Firm Only
-                            </div><div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-primary font-label-sm text-label-sm">
-                                Systems
+
+                            <div class="p-md">
+                                <h4 class="font-headline-md text-headline-md text-on-surface mb-xs">{{ $course['title'] }}</h4>
+                                <p class="font-label-md text-label-md text-primary mb-md">{{ $course['college_name'] }}</p>
+                                
+                                <div class="space-y-2 mb-md text-on-surface-variant font-label-md text-label-md">
+                                    <div class="flex items-center gap-xs">
+                                        <span class="material-symbols-outlined text-[20px]">location_on</span>
+                                        <span>{{ $course['venue'] }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-xs">
+                                        <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+                                        <span>Starts {{ $course['start_date'] }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-xs pt-md border-t border-outline-variant">
+                                    <div class="flex justify-between items-center text-[13px] font-label-md text-on-surface-variant mb-1">
+                                        <span class="flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[16px]">group</span>
+                                            {{ $course['seats_label'] }}
+                                        </span>
+                                        <span class="font-bold text-primary">{{ $course['progress'] }}% Filled</span>
+                                    </div>
+                                    <div class="w-full bg-surface-container-highest rounded-full h-2 overflow-hidden">
+                                        <div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: {{ $course['progress'] }}%"></div>
+                                    </div>
+                                </div>
                             </div>
-</div>
-<div class="p-md">
-<h4 class="font-headline-md text-headline-md text-on-surface mb-xs">Linux System Administration</h4>
-<p class="font-label-md text-label-md text-primary mb-md">Stanford Engineering</p>
-<div class="flex items-center justify-between pt-md border-t border-outline-variant">
-<div class="flex items-center gap-xs text-on-surface-variant">
-<span class="material-symbols-outlined text-[20px]">location_on</span>
-<span class="font-label-md text-label-md">Innovation Hub</span>
-</div>
-<div class="font-headline-md text-headline-md text-primary">$550</div>
-</div>
-</div>
-</div>
-<!-- Course Card 3 -->
-<div class="group bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all">
-<div class="h-48 overflow-hidden relative">
-<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAa9PfrjLhewVu4A_ERxO1Wv0vpOH3ZY7l1C9P6WRCuXeVu9N2_2axx3xJvsokmoNMjss6P-vKpNm-aitNnEMwfj3a_tTRaLbgLXB1dUv0SmoZiMuHZrjOXzzU6ilMGp7EukHDFjnRigKCeC4fNqdNE0kar21ejWTLfRO_C8AYt2IUQWTjsWccHPlfUBX22XrQmvK2knHgT-y49admY6GlHZNTfbJWVDYU1C742YARG2zw_XBX2VahZWfSd1Cmi-71udhOzUhAmxweb"/>
-<div class="absolute top-4 left-4 bg-primary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm">
-                                Student Only
-                            </div><div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-primary font-label-sm text-label-sm">
-                                Programming
+                        </div>
+
+                        <div class="px-md pb-md">
+                            <div class="flex items-center justify-between pt-md border-t border-outline-variant mb-md">
+                                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tuition Fee</span>
+                                <div class="font-headline-md text-headline-md text-primary font-bold">{{ $course['price_label'] }}</div>
                             </div>
-</div>
-<div class="p-md">
-<h4 class="font-headline-md text-headline-md text-on-surface mb-xs">Master C++</h4>
-<p class="font-label-md text-label-md text-primary mb-md">MIT Professional</p>
-<div class="flex items-center justify-between pt-md border-t border-outline-variant">
-<div class="flex items-center gap-xs text-on-surface-variant">
-<span class="material-symbols-outlined text-[20px]">location_on</span>
-<span class="font-label-md text-label-md">City Campus</span>
-</div>
-<div class="font-headline-md text-headline-md text-primary">$620</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+                            <a href="{{ $course['details_url'] }}" class="w-full bg-primary text-on-primary py-sm rounded-lg font-label-md text-label-md shadow-sm hover:bg-opacity-90 transition-all flex items-center justify-center gap-xs group-hover:bg-primary-container">
+                                View Details
+                                <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+                            </a>
+                        </div>
+                    </div>
+                @else
+                    <!-- CORPORATE FIRM TRACK CARD PATTERN -->
+                    <div class="group bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 flex items-center justify-center relative overflow-hidden" style="background: {{ $course['gradient'] }}">
+                                <span class="material-symbols-outlined text-[52px] {{ $course['icon_color'] }} opacity-90">
+                                    {{ $course['icon'] }}
+                                </span>
+                                <div class="absolute top-4 left-4 bg-tertiary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm">
+                                    {{ $course['badge_label'] }}
+                                </div>
+                                @if(!empty($course['category_label']))
+                                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-tertiary font-label-sm text-label-sm">
+                                        {{ $course['category_label'] }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="p-md">
+                                <h4 class="font-headline-md text-headline-md text-on-surface mb-xs">{{ $course['title'] }}</h4>
+                                <p class="font-label-md text-label-md text-tertiary mb-md">{{ $course['college_name'] }}</p>
+                                
+                                <div class="space-y-2 mb-md text-on-surface-variant font-label-md text-label-md">
+                                    <div class="flex items-center gap-xs">
+                                        <span class="material-symbols-outlined text-[20px]">location_on</span>
+                                        <span>{{ $course['venue'] }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-xs">
+                                        <span class="material-symbols-outlined text-[20px]">groups</span>
+                                        <span>{{ $course['seat_label'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-md pb-md">
+                            <div class="flex items-center justify-between pt-md border-t border-outline-variant mb-md">
+                                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Per Participant</span>
+                                <div class="font-headline-md text-headline-md text-tertiary font-bold">{{ $course['price_label'] }}</div>
+                            </div>
+                            <a href="{{ $course['book_url'] }}" class="w-full bg-tertiary text-on-primary py-sm rounded-lg font-label-md text-label-md shadow-sm hover:bg-opacity-90 transition-all flex items-center justify-center gap-xs group-hover:bg-tertiary-container">
+                                <span class="material-symbols-outlined text-[18px]">business</span>
+                                Book for Firm
+                            </a>
+                        </div>
+                    </div>
+                @endif
+            @empty
+                <!-- UNIFIED SINGLE EMPTY STATE FALLBACK -->
+                <div class="col-span-1 md:col-span-3 text-center py-xl px-md bg-white rounded-xl border border-outline-variant flex flex-col items-center justify-center">
+                    <div class="w-16 h-16 bg-surface-container-low text-outline rounded-full flex items-center justify-center mb-sm">
+                        <span class="material-symbols-outlined text-[32px]">school_disabled</span>
+                    </div>
+                    <h4 class="font-headline-md text-on-surface mb-xs">No active courses available</h4>
+                    <p class="text-on-surface-variant font-body-md max-w-md mx-auto mb-md">We are currently updating our scheduling system. Check back shortly to register.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
 </section>
 <!-- Section 4: Institutional Partners (New Detailed Section) -->
 <section class="py-[100px] border-y border-outline-variant bg-primary-fixed/20 py-xl" id="colleges">
