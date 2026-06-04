@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Course;
 use App\Models\Enrollment;
 use Carbon\Carbon;
@@ -75,6 +76,7 @@ class LandingController extends Controller
                 'details_url' => route('firm.course.show', $course->slug),
                 'book_url' => route('firm.course.show', $course->slug),
                 'badge_label' => 'Firm Only',
+                'start_date' => 'Decided by the Firm',
                 'category_label' => $course->category?->name,
                 'venue' => $course->venue ?? 'Chosen by the Firm',
                 'price_label' => ((float) $course->price <= 0) ? 'Free' : '₹' . number_format((float) $course->price, 0),
@@ -91,5 +93,132 @@ class LandingController extends Controller
     $recommendedCourses = $recommendedStudentCourses->concat($recommendedFirmCourses);
 
     return view('guest.landing', compact('recommendedCourses'));
+    }
+
+public function explore(Request $request){
+    // 1. Initialize Base Active Query Filter
+    $query = Course::with(['college.user', 'category'])
+        ->where('status', 'active');
+
+    // 2. Handle Segment/Track Switching Logic (Student Only vs Firm Only vs All)
+    if ($request->filled('track') && in_array($request->track, ['student', 'firm'])) {
+        $query->where('course_type', $request->track . '_only');
+    } else {
+        // Fallback or explicit 'all' / mixed state: only include public structural formats
+        $query->whereIn('course_type', ['student_only', 'firm_only']);
+    }
+
+    // 3. Search Keyphrase Constraint Logic
+    if ($request->filled('q')) {
+        $keyword = trim((string) $request->q);
+        $query->where(function ($q) use ($keyword) {
+            $q->where('title', 'like', '%' . $keyword . '%')
+                ->orWhere('description', 'like', '%' . $keyword . '%')
+                ->orWhere('venue', 'like', '%' . $keyword . '%')
+                ->orWhereHas('college', function ($collegeQuery) use ($keyword) {
+                    $collegeQuery->where('institution_name', 'like', '%' . $keyword . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($keyword) {
+                            $userQuery->where('name', 'like', '%' . $keyword . '%');
+                        });
+                })
+                ->orWhereHas('category', function ($categoryQuery) use ($keyword) {
+                    $categoryQuery->where('name', 'like', '%' . $keyword . '%');
+                });
+        });
+    }
+
+    // 4. Category Structural Filter
+    if ($request->filled('category')) {
+        $categoryName = trim((string) $request->category);
+        $query->whereHas('category', function ($categoryQuery) use ($categoryName) {
+            $categoryQuery->where('name', $categoryName);
+        });
+    }
+
+    // 5. Global Sort Criteria Processing
+    $sort = $request->get('sort', 'newest');
+    if ($sort === 'price_asc') {
+        $query->orderBy('price', 'asc')->orderBy('created_at', 'desc');
+    } elseif ($sort === 'start_soon') {
+        $query->orderBy('start_date', 'asc')->orderBy('created_at', 'desc');
+    } else {
+        $query->latest();
+        $sort = 'newest';
+    }
+
+    // 6. Paginate Data and Standardize Keys for the Combined Bootstrap Grid
+    $courses = $query
+        ->paginate(9)
+        ->withQueryString()
+        ->through(function (Course $course) {
+            $gradients = [
+                'linear-gradient(135deg, #d1fae5, #a7f3d0)',
+                'linear-gradient(135deg, #fce7f3, #fbcfe8)',
+                'linear-gradient(135deg, #fef3c7, #fde68a)',
+                'linear-gradient(135deg, #e0e7ff, #a5b4fc)',
+                'linear-gradient(135deg, #e0e7ff, #c7d2fe)',
+                'linear-gradient(135deg, #d1fae5, #6ee7b7)',
+            ];
+
+            $icons = [
+                'bi-shield-shaded', 'bi-graph-up-arrow', 'bi-palette2',
+                'bi-bar-chart-line', 'bi-code-slash', 'bi-camera-video',
+            ];
+
+            // Specific default overrides based on user context track
+            $isStudent = ($course->course_type === 'student_only');
+            
+            $iconColor = $isStudent ? 'text-primary' : 'text-success';
+            $icon = $isStudent ? 'bi-code-slash' : 'bi-building';
+            $gradient = $isStudent ? 'linear-gradient(135deg, #e0e7ff, #c7d2fe)' : 'linear-gradient(135deg, #e0e7ff, #a5b4fc)';
+
+            // Safe data variables for standard fields
+            $totalSeats = max(0, (int) ($course->total_seats ?? 0));
+            $availableSeats = max(0, (int) ($course->available_seats ?? 0));
+            $filledSeats = $totalSeats > 0 ? max(0, $totalSeats - $availableSeats) : 0;
+            $progress = $totalSeats > 0 ? (int) round(($filledSeats / $totalSeats) * 100) : 0;
+
+            return [
+                'id' => $course->id,
+                'slug' => $course->slug,
+                'title' => $course->title,
+                'type' => $isStudent ? 'student' : 'firm',
+                'badge_label' => $isStudent ? 'Student Only' : 'Firm Only',
+                'category_label' => $course->category?->name ?? null,
+                'college_name' => $course->college?->institution_name ?? $course->college?->user?->name ?? 'Unknown College',
+                'venue' => $course->venue ?? 'Venue TBA',
+                'start_date' => $course->start_date ? Carbon::parse($course->start_date)->format('M d, Y') : 'TBA',
+                'price_label' => ((float) $course->price <= 0) ? 'Free' : '₹' . number_format((float) $course->price, 0),
+                
+                // Student Context metrics
+                'seats_label' => $totalSeats > 0 ? $filledSeats . '/' . $totalSeats . ' spaces filled' : 'Seats TBA',
+                'progress' => $progress,
+                
+                // Firm Context metrics
+                'seat_label' => $availableSeats > 0 
+                    ? $availableSeats . ' seats left' 
+                    : ($totalSeats > 0 ? $totalSeats . ' seats' : 'Flexible group size'),
+                
+                // URLs Map Routing
+                'details_url' => route('student.course.show', $course->slug), // Public tracking view info
+                'book_url' => route('firm.course.show', $course->slug),       // Firm module interaction booking URL
+                
+                // UI Cosmetics Setup variables
+                'gradient' => $gradient,
+                'icon' => $icon,
+                'icon_color' => $iconColor,
+            ];
+        });
+
+    // 7. Pull Alphabetized Filtering Keynames
+    $categories = Category::query()
+        ->orderBy('name', 'asc')
+        ->pluck('name')
+        ->values();
+
+    return view('guest.explore', compact('courses', 'categories', 'sort'));
+
 }
+
 }
+
