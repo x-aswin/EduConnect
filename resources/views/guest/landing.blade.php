@@ -295,6 +295,7 @@
                                 <div class="font-headline-md text-headline-md text-primary font-bold">{{ $course['price_label'] }}</div>
                             </div>
                             <a href="{{ $course['details_url'] }}" class="w-full bg-primary text-on-primary py-sm rounded-lg font-label-md text-label-md shadow-sm hover:bg-opacity-90 transition-all flex items-center justify-center gap-xs group-hover:bg-primary-container">
+                                <span class="material-symbols-outlined text-[18px]">school</span>
                                 View Details
                                 <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
                             </a>
@@ -342,7 +343,8 @@
                             </div>
                             <a href="{{ $course['book_url'] }}" class="w-full bg-tertiary text-on-primary py-sm rounded-lg font-label-md text-label-md shadow-sm hover:bg-opacity-90 transition-all flex items-center justify-center gap-xs group-hover:bg-tertiary-container">
                                 <span class="material-symbols-outlined text-[18px]">business</span>
-                                Book for Firm
+                                View Details
+                                <span class="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
                             </a>
                         </div>
                     </div>

@@ -76,11 +76,11 @@ class LandingController extends Controller
                 'book_url' => route('firm.course.show', $course->slug),
                 'badge_label' => 'Firm Only',
                 'category_label' => $course->category?->name,
-                'venue' => $course->venue ?? 'Venue TBA',
+                'venue' => $course->venue ?? 'Chosen by the Firm',
                 'price_label' => ((float) $course->price <= 0) ? 'Free' : '₹' . number_format((float) $course->price, 0),
                 'seat_label' => $course->available_seats > 0
                     ? $course->available_seats . ' seats left'
-                    : ($course->total_seats > 0 ? $course->total_seats . ' seats' : 'Flexible group size'),
+                    : ($course->total_seats > 0 ? $course->total_seats . ' seats' : 'Flexible group size by Firm'),
                 'gradient' => $visual['gradient'],
                 'icon' => $visual['icon'],
                 'icon_color' => $visual['icon_color'],
