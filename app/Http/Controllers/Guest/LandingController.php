@@ -39,7 +39,7 @@ class LandingController extends Controller
                 'title' => $course->title,
                 'college_name' => $course->college->user->name ?? 'Partner Institution',
                 'details_url' => route('student.course.show', $course->slug),
-                'badge_label' => $course->mentor_id ? 'Mentored' : 'Student Only',
+                'badge_label' => 'Student Only',
                 'category_label' => $course->category?->name,
                 'venue' => $course->venue ?? 'Venue TBA',
                 'start_date' => $startDate?->format('M d') ?? 'TBA',
