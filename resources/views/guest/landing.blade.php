@@ -227,6 +227,7 @@
 </div>
 </section>
 <!-- Section 3: Course Marketplace Preview -->
+<!-- Section 3: Course Marketplace Preview -->
 <section class="py-xl bg-surface" id="courses">
     <div class="max-w-container-max mx-auto px-md">
         <div class="flex justify-between items-end mb-lg">
@@ -234,7 +235,7 @@
                 <h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Explore Top Courses</h2>
                 <p class="font-body-md text-body-md text-on-surface-variant">Handpicked certifications and organizational tracks from world-class institutions.</p>
             </div>
-            <a href="{{ route('firm.explore.index') }}" class="text-primary font-label-md text-label-md flex items-center gap-xs hover:underline transition-all">
+            <a href="{{ route('explore') }}" class="text-primary font-label-md text-label-md flex items-center gap-xs hover:underline transition-all">
                 View All Courses <span class="material-symbols-outlined text-[18px]">open_in_new</span>
             </a>
         </div>
@@ -245,15 +246,24 @@
                     <!-- STUDENT TRACK CARD PATTERN -->
                     <div class="group bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all flex flex-col justify-between">
                         <div>
-                            <div class="h-48 flex items-center justify-center relative overflow-hidden" style="background: {{ $course['gradient'] }}">
-                                <span class="material-symbols-outlined text-[52px] {{ $course['icon_color'] }} opacity-90">
-                                    {{ $course['icon'] }}
-                                </span>
-                                <div class="absolute top-4 left-4 bg-primary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm">
+                            <!-- Card Header Container with Managed Background Gradient -->
+                            <div class="h-48 w-full relative overflow-hidden flex items-center justify-center" style="background: {{ $course['gradient'] }}">
+                                @if($course['has_real_image'])
+                                    <img src="{{ $course['image_url'] }}" 
+                                         alt="{{ $course['title'] }}" 
+                                         class="w-full h-full absolute top-0 left-0 object-cover object-center z-10">
+                                @else
+                                    <span class="material-symbols-outlined text-[52px] {{ $course['icon_color'] }} opacity-90 z-10">
+                                        {{ $course['icon'] }}
+                                    </span>
+                                @endif
+
+                                <!-- Badges cleanly positioned on top using high z-index -->
+                                <div class="absolute top-4 left-4 bg-primary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm z-20">
                                     {{ $course['badge_label'] }}
                                 </div>
                                 @if(!empty($course['category_label']))
-                                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-primary font-label-sm text-label-sm">
+                                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-primary font-label-sm text-label-sm z-20">
                                         {{ $course['category_label'] }}
                                     </div>
                                 @endif
@@ -305,15 +315,23 @@
                     <!-- CORPORATE FIRM TRACK CARD PATTERN -->
                     <div class="group bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all flex flex-col justify-between">
                         <div>
-                            <div class="h-48 flex items-center justify-center relative overflow-hidden" style="background: {{ $course['gradient'] }}">
-                                <span class="material-symbols-outlined text-[52px] {{ $course['icon_color'] }} opacity-90">
-                                    {{ $course['icon'] }}
-                                </span>
-                                <div class="absolute top-4 left-4 bg-tertiary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm">
+                            <!-- Card Header Container with Managed Background Gradient -->
+                            <div class="h-48 w-full relative overflow-hidden flex items-center justify-center" style="background: {{ $course['gradient'] }}">
+                                @if($course['has_real_image'])
+                                    <img src="{{ $course['image_url'] }}" 
+                                         alt="{{ $course['title'] }}" 
+                                         class="w-full h-full absolute top-0 left-0 object-cover object-center z-10">
+                                @else
+                                    <span class="material-symbols-outlined text-[52px] {{ $course['icon_color'] }} opacity-90 z-10">
+                                        {{ $course['icon'] }}
+                                    </span>
+                                @endif
+
+                                <div class="absolute top-4 left-4 bg-tertiary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm shadow-sm z-20">
                                     {{ $course['badge_label'] }}
                                 </div>
                                 @if(!empty($course['category_label']))
-                                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-tertiary font-label-sm text-label-sm">
+                                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-sm py-1 rounded-full text-tertiary font-label-sm text-label-sm z-20">
                                         {{ $course['category_label'] }}
                                     </div>
                                 @endif

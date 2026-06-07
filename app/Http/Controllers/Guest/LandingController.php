@@ -34,10 +34,13 @@ class LandingController extends Controller
                 ['gradient' => 'linear-gradient(135deg, #fce7f3, #fbcfe8)', 'icon' => 'trending_up', 'icon_color' => 'text-danger'],
             ];
             $visual = $visuals[$index % count($visuals)];
-
+            $imagePath = $course->course_image ?? $course->college?->photo ?? null;
+            $imageUrl = $imagePath ? asset('storage/' . ltrim($imagePath, '/')) : asset('images/default-course.png');
             return [
                 'type' => 'student',
                 'title' => $course->title,
+                'image_url' => $imageUrl,
+                'has_real_image' => !empty($imagePath), // Boolean flag to help conditional rendering in Blade
                 'college_name' => $course->college->user->name ?? 'Partner Institution',
                 'details_url' => route('student.course.show', $course->slug),
                 'badge_label' => 'Student Only',
@@ -68,10 +71,13 @@ class LandingController extends Controller
                 ['gradient' => 'linear-gradient(135deg, #d1fae5, #6ee7b7)', 'icon' => 'video_cam', 'icon_color' => 'text-success'],
             ];
             $visual = $visuals[$index % count($visuals)];
-
+            $imagePath = $course->course_image ?? $course->college?->photo ?? null;
+            $imageUrl = $imagePath ? asset('storage/' . ltrim($imagePath, '/')) : asset('images/default-course.png');
             return [
                 'type' => 'firm',
                 'title' => $course->title,
+                'image_url' => $imageUrl,
+                'has_real_image' => !empty($imagePath), // Boolean flag to help conditional rendering in Blade
                 'college_name' => $course->college->user->name ?? 'Partner Institution',
                 'details_url' => route('firm.course.show', $course->slug),
                 'book_url' => route('firm.course.show', $course->slug),
@@ -93,7 +99,7 @@ class LandingController extends Controller
     $recommendedCourses = $recommendedStudentCourses->concat($recommendedFirmCourses);
 
     return view('guest.landing', compact('recommendedCourses'));
-    }
+}
 
 public function explore(Request $request){
     // 1. Initialize Base Active Query Filter
