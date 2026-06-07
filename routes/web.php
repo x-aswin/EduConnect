@@ -41,6 +41,7 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+// Route::get('/landingbootstrap', [LandingController::class, 'bootstrap'])->name('landingbootstrap');
 Route::get('/explore', [LandingController::class, 'explore'])->name('explore');
 
 Route::get('/dashboard', function () {

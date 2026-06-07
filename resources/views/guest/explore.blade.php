@@ -1,4 +1,4 @@
-<x-base.layout title="Explore Courses - EduConnect">
+<x-guest.layout title="Explore Courses - EduConnect" active="explore">
     @push('styles')
     <style>
         :root {
@@ -42,23 +42,7 @@
     </style>
     @endpush
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top py-3 shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-primary d-flex align-items-center" href="/">
-                <i class="bi bi-compass-fill me-2"></i>EduConnect
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav align-items-center gap-2 mt-3 mt-lg-0">
-                    <li class="nav-item"><a class="nav-link px-3" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 active fw-semibold text-primary" href="{{ url()->current() }}">Browse Courses</a></li>
-                    <li class="nav-item ms-lg-2"><a class="btn btn-outline-primary rounded-pill px-4" href="/login">Sign In</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    {{-- No <nav> here – it's provided by the guest layout --}}
 
     <div class="container py-5">
         
@@ -73,9 +57,9 @@
             </div>
         </div>
 
+        <!-- Search / Filters -->
         <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 mb-4 bg-white">
             <form method="GET" action="{{ url()->current() }}" class="row g-3 align-items-end">
-                
                 <div class="col-md-5">
                     <label class="form-label fw-semibold small text-secondary">Search courses</label>
                     <div class="input-group">
@@ -83,7 +67,6 @@
                         <input type="text" name="q" value="{{ request('q') }}" class="form-control bg-light border-0 rounded-end-4" placeholder="e.g., Python, web development...">
                     </div>
                 </div>
-                
                 <div class="col-md-4">
                     <label class="form-label fw-semibold small text-secondary">Category</label>
                     <div class="d-flex flex-wrap gap-2">
@@ -93,7 +76,6 @@
                         @endforeach
                     </div>
                 </div>
-
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-secondary">Audience Segment</label>
                     <select name="track" onchange="this.form.submit()" class="form-select rounded-pill py-2 border-0 shadow-sm bg-light">
@@ -102,7 +84,6 @@
                         <option value="firm" {{ request('track') === 'firm' ? 'selected' : '' }}>Corporate Group Format</option>
                     </select>
                 </div>
-
                 <div class="col-12 d-flex justify-content-end gap-2 mt-2">
                     <a href="{{ url()->current() }}" class="btn btn-light rounded-pill px-4">Reset</a>
                     <button type="submit" class="btn btn-primary rounded-pill px-4">Apply Filters</button>
@@ -110,6 +91,7 @@
             </form>
         </div>
 
+        <!-- Info cards -->
         <div class="row g-3 mb-5">
             <div class="col-md-6">
                 <div class="p-3 bg-primary bg-opacity-10 border-0 text-primary rounded-4 h-100 d-flex align-items-start">
@@ -131,8 +113,10 @@
             </div>
         </div>
 
+        <!-- Course Cards -->
         <div class="row g-4">
             @forelse($courses as $course)
+                {{-- student card --}}
                 @if(($course['type'] ?? 'student') === 'student')
                     <div class="col-md-4">
                         <div class="course-card p-0 h-100 rounded-4 overflow-hidden d-flex flex-column justify-content-between">
@@ -151,14 +135,12 @@
                                 <div class="p-3 pb-0">
                                     <h5 class="fw-bold text-dark mb-1">{{ $course['title'] }}</h5>
                                     <p class="small text-primary mb-3 fw-medium">{{ $course['college_name'] ?? 'Partner Institution' }}</p>
-                                    
                                     <p class="small text-secondary mb-2 d-flex align-items-center gap-1">
                                         <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }}
                                     </p>
                                     <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
                                         <i class="bi bi-calendar-event me-1"></i> Starts: {{ $course['start_date'] ?? 'TBA' }}
                                     </p>
-
                                     <div class="pt-2 border-top border-light-subtle">
                                         <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 12px;">
                                             <span class="text-secondary"><i class="bi bi-people me-1"></i> {{ $course['seats_label'] ?? 'Seats Availability' }}</span>
@@ -182,6 +164,7 @@
                         </div>
                     </div>
                 @else
+                    {{-- firm card --}}
                     <div class="col-md-4">
                         <div class="course-card p-0 h-100 rounded-4 overflow-hidden d-flex flex-column justify-content-between">
                             <div>
@@ -199,7 +182,6 @@
                                 <div class="p-3 pb-0">
                                     <h5 class="fw-bold text-dark mb-1">{{ $course['title'] }}</h5>
                                     <p class="small text-secondary mb-3 fw-medium" style="color: #005b7c !important;">{{ $course['college_name'] ?? 'Partner Institution' }}</p>
-                                    
                                     <p class="small text-secondary mb-2 d-flex align-items-center gap-1">
                                         <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }}
                                     </p>
@@ -235,4 +217,4 @@
             </div>
         @endif
     </div>
-</x-base.layout>
+</x-guest.layout>
