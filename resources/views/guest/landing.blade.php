@@ -119,7 +119,10 @@
 <!-- TopNavBar -->
 <nav class="bg-surface fixed top-0 w-full z-50 shadow-sm border-b border-outline-variant">
 <div class="flex justify-between items-center max-w-container-max mx-auto px-md h-16">
-<div class="text-headline-md font-headline-md font-bold text-primary">EduConnect</div>
+<div class="text-headline-md font-headline-md font-bold text-primary">
+    <span class="material-symbols-outlined fs-2 me-2" style="color: #2563eb;">
+  school
+</span>EduConnect</div>
 <!-- Desktop Nav -->
 <div class="hidden md:flex items-center space-x-lg">
 <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-md text-label-md py-2" href="#courses">Explore Courses</a>

@@ -77,8 +77,8 @@
             </button>
 
             <div class="collapse navbar-collapse" id="guestNavbar">
-                <!-- <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
-                    <li class="nav-item">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
+                    <!-- <li class="nav-item">
                         <a class="nav-link {{ $active === 'home' ? 'active' : '' }}" href="{{ route('landing') }}">
                             <i class="bi bi-house-door-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> Home
                         </a>
@@ -87,8 +87,8 @@
                         <a class="nav-link {{ $active === 'explore' ? 'active' : '' }}" href="{{ route('explore') }}">
                             <i class="bi bi-compass me-1 d-inline-block d-lg-none d-xl-inline"></i> Browse Courses
                         </a>
-                    </li>
-                </ul> -->
+                    </li> -->
+                </ul>
 
                 <div class="d-flex align-items-center ms-lg-3">
                     <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill me-2">Login</a>
