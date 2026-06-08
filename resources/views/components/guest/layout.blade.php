@@ -91,8 +91,12 @@
                 </ul>
 
                 <div class="d-flex align-items-center ms-lg-3">
-                    <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill me-2">Login</a>
+                    @auth
+                    <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill">Dashboard</a>
+                    @else
+                     <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill me-2">Login</a>
                     <a href="{{ route('register') }}" class="btn btn-primary rounded-pill">Register</a>
+                    @endauth
                 </div>
             </div>
         </div>

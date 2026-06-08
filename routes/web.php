@@ -51,6 +51,7 @@ Route::get('/dashboard', function () {
         'student' => redirect()->route('student.dashboard'),
         'firm'    => redirect()->route('firm.dashboard'),
         'college' => redirect()->route('college.dashboard'),
+        'mentor' => redirect()->route('mentor.dashboard'),
         default   => redirect()->route('landing'),
     };
 })->name('dashboard');
