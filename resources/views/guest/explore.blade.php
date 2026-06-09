@@ -188,6 +188,9 @@
                                     <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
                                         <i class="bi bi-building-gear me-1"></i> {{ $course['seat_label'] ?? 'Flexible Group Options' }}
                                     </p>
+                                    <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
+                                        <i class="bi bi-calendar-date"></i> {{ $course['time_firm'] ?? 'Date & Time Slot set by Firm' }}
+                                    </p>
                                 </div>
                             </div>
                             <div class="p-3">

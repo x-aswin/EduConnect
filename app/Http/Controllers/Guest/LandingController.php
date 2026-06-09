@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\Enrollment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LandingController extends Controller
 {
@@ -42,7 +43,7 @@ class LandingController extends Controller
                 'image_url' => $imageUrl,
                 'has_real_image' => !empty($imagePath), // Boolean flag to help conditional rendering in Blade
                 'college_name' => $course->college->user->name ?? 'Partner Institution',
-                'details_url' => route('student.course.show', $course->slug),
+                'details_url' => route('course.show', $course->slug),
                 'badge_label' => 'Student Only',
                 'category_label' => $course->category?->name,
                 'venue' => $course->venue ?? 'Venue TBA',
@@ -79,8 +80,8 @@ class LandingController extends Controller
                 'image_url' => $imageUrl,
                 'has_real_image' => !empty($imagePath), // Boolean flag to help conditional rendering in Blade
                 'college_name' => $course->college->user->name ?? 'Partner Institution',
-                'details_url' => route('firm.course.show', $course->slug),
-                'book_url' => route('firm.course.show', $course->slug),
+                'details_url' => route('course.show', $course->slug),
+                'book_url' => route('course.show', $course->slug),
                 'badge_label' => 'Firm Only',
                 'start_date' => 'Decided by the Firm',
                 'category_label' => $course->category?->name,
@@ -183,12 +184,18 @@ public function explore(Request $request){
             $availableSeats = max(0, (int) ($course->available_seats ?? 0));
             $filledSeats = $totalSeats > 0 ? max(0, $totalSeats - $availableSeats) : 0;
             $progress = $totalSeats > 0 ? (int) round(($filledSeats / $totalSeats) * 100) : 0;
+            
+            if(!$isStudent)
+                $time_firm="Date & Time Slot set by Firm";
+            else
+                $time_firm=null;
 
             return [
                 'id' => $course->id,
                 'slug' => $course->slug,
                 'title' => $course->title,
                 'type' => $isStudent ? 'student' : 'firm',
+                'time_firm' => $time_firm,
                 'badge_label' => $isStudent ? 'Student Only' : 'Firm Only',
                 'category_label' => $course->category?->name ?? null,
                 'college_name' => $course->college?->institution_name ?? $course->college?->user?->name ?? 'Unknown College',
@@ -206,8 +213,8 @@ public function explore(Request $request){
                     : ($totalSeats > 0 ? $totalSeats . ' seats' : 'Flexible group size'),
                 
                 // URLs Map Routing
-                'details_url' => route('student.course.show', $course->slug), // Public tracking view info
-                'book_url' => route('firm.course.show', $course->slug),       // Firm module interaction booking URL
+                'details_url' => route('course.show', $course->slug), // Public tracking view info
+                'book_url' => route('course.show', $course->slug),       // Firm module interaction booking URL
                 
                 // UI Cosmetics Setup variables
                 'gradient' => $gradient,
@@ -317,15 +324,24 @@ public function explore(Request $request){
 //     return view('guest.landingbootstrap', compact('recommendedCourses'));
 // }
 
-public function details(string $slug)
+public function show(string $slug)
     {
+
         $course = Course::with(['college', 'category', 'enrollments'])
             ->where('slug', $slug)
             ->where('status', 'active')
-            ->where('mentor_id', auth()->user()->mentor?->id)
             ->firstOrFail();
 
-        return view('mentor.course-details', ['course' => $course]);
+        if (Auth::check()) {
+        $user = Auth::user();
+        if ($user->role === 'firm' && $course->course_type === 'firm_only')
+            return redirect()->route('firm.course.show', $slug);
+        else if ($user->role === 'student' && $course->course_type === 'student_only')
+            return redirect()->route('student.course.show', $slug);
+        }
+
+
+        return view('guest.course-details', ['course' => $course]);
     }
 
     

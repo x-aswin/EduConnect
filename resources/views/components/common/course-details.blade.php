@@ -72,7 +72,11 @@
                         @endif
                     @endif
                 </div>
-
+            @if(($isguest ?? false))
+                <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill px-5 py-3 fw-semibold">
+                        <i class="bi bi-lock me-2"></i> Login as correct user to Enroll
+                </a>
+            @else
                 @auth
                     @if(auth()->user()->role === 'student')
                         @php
@@ -100,7 +104,6 @@
                                 </button>
                             </form>
                         @endif
-
                     @elseif(auth()->user()->role === 'firm')
                         <button type="button" class="btn btn-primary rounded-pill px-5 py-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#firmBookingModal">
                             <i class="bi bi-building me-2"></i> Book for Firm
@@ -111,6 +114,7 @@
                         <i class="bi bi-lock me-2"></i> Login to Enroll
                     </a>
                 @endauth
+            @endif
             </div>
         </div>
     </div>

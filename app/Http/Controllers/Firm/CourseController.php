@@ -115,6 +115,7 @@ class CourseController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
         $isEnrolled = false;
+
         return view('firm.course-details', ['course' => $course, 'isEnrolled' => $isEnrolled]);
     }
     public function book(Request $request, Course $course)

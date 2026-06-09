@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 // Route::get('/landingbootstrap', [LandingController::class, 'bootstrap'])->name('landingbootstrap');
 Route::get('/explore', [LandingController::class, 'explore'])->name('explore');
+Route::get('/courses/{slug}', [LandingController::class, 'show'])->name('course.show');
 
 Route::get('/dashboard', function () {
     $role = Auth::user()?->role;
