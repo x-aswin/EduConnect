@@ -1,5 +1,5 @@
 {{-- resources/views/components/common/course-details.blade.php --}}
-@props(['course', 'type' => 'student'])
+@props(['course', 'type' => 'student', 'isguest' => false]) {{-- 💡 Added isguest here with a default value of false --}}
 
 @php
     $totalSeats = (int) ($course->total_seats ?? 0);
@@ -72,7 +72,7 @@
                         @endif
                     @endif
                 </div>
-            @if(($isguest ?? false))
+            @if(isset($isguest) && ($isguest === true || $isguest === 'true' || $isguest == 1))
                 <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill px-5 py-3 fw-semibold">
                         <i class="bi bi-lock me-2"></i> Login as correct user to Enroll
                 </a>
