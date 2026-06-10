@@ -220,7 +220,7 @@
                     <h5 class="fw-bold mb-3"><i class="bi bi-people-fill text-primary me-2"></i>Enrollment</h5>
 
                     @auth
-                        @if(auth()->user()->role === 'student')
+                        @if(auth()->user()->role === 'student' && ($course->course_type === "student_only"))
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-secondary">Seats filled</span>
                                 <span class="fw-semibold">{{ $seatsFilled }} / {{ $totalSeats }}</span>

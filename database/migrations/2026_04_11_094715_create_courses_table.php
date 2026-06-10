@@ -33,6 +33,7 @@ return new class extends Migration
             // Logistics
             $table->integer('total_seats')->nullable();
             $table->integer('available_seats')->nullable();
+            $table->integer('firm_duration')->nullable(); //number of days the firm course will be conducted by college, firm need to provide start and end date
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->string('time_slot')->nullable(); // e.g., "10:00 AM - 01:00 PM"

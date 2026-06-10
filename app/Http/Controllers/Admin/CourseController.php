@@ -52,6 +52,7 @@ class CourseController extends Controller
             'price' => 'nullable|numeric|min:0',
             'is_certified' => 'nullable|boolean',
             'total_seats' => 'required_if:course_type,student_only|nullable|integer|min:1',
+            'firm_duration' => 'required_if:course_type,firm_only|nullable|integer|min:1',
             'start_date' => 'required_if:course_type,student_only|nullable|date',
             'end_date' => 'required_if:course_type,student_only|nullable|date|after_or_equal:start_date',
             'time_slot' => 'required_if:course_type,student_only|nullable|string|max:255',
@@ -74,8 +75,9 @@ class CourseController extends Controller
 
         $validated = $request->validate($rules);
         $isFirmOnly = $validated['course_type'] === 'firm_only';
+        $isStudentOnly = $validated['course_type'] === 'student_only';
 
-        DB::transaction(function () use ($validated, $request, $isFirmOnly) {
+        DB::transaction(function () use ($validated, $request, $isFirmOnly,$isStudentOnly) {
             $imagePath = null;
             if ($request->hasFile('course_image')) {
                 $imagePath = $request->file('course_image')->store('courses/images', 'public');
@@ -93,6 +95,7 @@ class CourseController extends Controller
                 'is_certified' => $request->boolean('is_certified'),
                 'total_seats' => $isFirmOnly ? null : ($validated['total_seats'] ?? null),
                 'available_seats' => $isFirmOnly ? null : ($validated['total_seats'] ?? null),
+                'firm_duration' => $isStudentOnly ? null : ($validated['firm_duration'] ?? null),
                 'start_date' => $isFirmOnly ? null : ($validated['start_date'] ?? null),
                 'end_date' => $isFirmOnly ? null : ($validated['end_date'] ?? null),
                 'time_slot' => $isFirmOnly ? null : ($validated['time_slot'] ?? null),
@@ -121,7 +124,7 @@ class CourseController extends Controller
         return view('admin.manage-course', compact('courses', 'colleges', 'mentors', 'categories', 'editCourse', 'viewOnly'));
     }
 
-    /**
+    /**$isStudentOnly
      * Show the form for editing the specified resource.
      */
     public function edit(Request $request, string $id)
@@ -159,6 +162,7 @@ class CourseController extends Controller
             'price' => 'nullable|numeric|min:0',
             'is_certified' => 'nullable|boolean',
             'total_seats' => 'required_if:course_type,student_only|nullable|integer|min:1',
+            'firm_duration' => 'required_if:course_type,firm_only|nullable|integer|min:1',
             'start_date' => 'required_if:course_type,student_only|nullable|date',
             'end_date' => 'required_if:course_type,student_only|nullable|date|after_or_equal:start_date',
             'time_slot' => 'required_if:course_type,student_only|nullable|string|max:255',
@@ -181,6 +185,7 @@ class CourseController extends Controller
 
         $validated = $request->validate($rules);
         $isFirmOnly = $validated['course_type'] === 'firm_only';
+        $isStudentOnly = $validated['course_type'] === 'student_only';
 
         $enrolledCount = $course->enrollments()
                         ->where('status', 'confirmed')
@@ -188,7 +193,7 @@ class CourseController extends Controller
 
         $newAvailableSeats = ($validated['total_seats'] ?? $course->total_seats) - $enrolledCount;
 
-        DB::transaction(function () use ($newAvailableSeats, $request, $validated, $course, $isFirmOnly) {
+        DB::transaction(function () use ($newAvailableSeats, $request, $validated, $course, $isFirmOnly,$isStudentOnly) {
             $updateData = [
                 'college_id' => $validated['college_id'],
                 'category_id' => $validated['category_id'],
@@ -200,6 +205,7 @@ class CourseController extends Controller
                 'is_certified' => $request->boolean('is_certified'),
                 'total_seats' => $isFirmOnly ? null : ($validated['total_seats'] ?? null),
                 'available_seats' => $isFirmOnly ? null : max(0, $newAvailableSeats),
+                'firm_duration' => $isStudentOnly ? null : ($validated['firm_duration'] ?? null),
                 'start_date' => $isFirmOnly ? null : ($validated['start_date'] ?? null),
                 'end_date' => $isFirmOnly ? null : ($validated['end_date'] ?? null),
                 'time_slot' => $isFirmOnly ? null : ($validated['time_slot'] ?? null),

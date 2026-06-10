@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'college_id', 'category_id', 'mentor_id', 'title', 'slug', 
     'description', 'course_image', 'course_type', 'price', 
+    'firm_duration',
     'is_certified', 'total_seats', 'available_seats', 
     'start_date', 'end_date', 'time_slot', 'venue', 'status'
 ])]

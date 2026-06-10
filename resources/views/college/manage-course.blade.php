@@ -204,7 +204,13 @@
                                     <div class="d-flex align-items-center text-secondary small">
                                         <i class="bi bi-person-badge me-2 text-primary"></i>
                                         <span class="text-truncate">
-                                            <strong>Mentor:</strong> {{ $course->mentor->user->name ?? 'Not Assigned' }}
+                                            <strong>Mentor:</strong> 
+
+                                            @if($course->course_type === 'student_only')
+                                            {{ $course->mentor->user->name ?? 'Not Assigned' }}
+                                            @else
+                                            Not applicable for Firm Courses
+                                            @endif
                                         </span>
                                     </div>
                                     
@@ -228,12 +234,21 @@
                                         </div>
                                     @endif
                                     
+                                    @if($course->course_type === 'student_only')
                                     <div class="d-flex align-items-center text-secondary small">
                                         <i class="bi bi-geo-alt me-2 text-primary"></i>
                                         <span class="text-truncate">
                                             <strong>Venue:</strong> {{ $course->venue ?: 'TBD' }}
                                         </span>
                                     </div>
+                                    @else
+                                    <div class="d-flex align-items-center text-secondary small">
+                                        <i class="bi bi-geo-alt me-2 text-primary"></i>
+                                        <span class="text-truncate">
+                                            <strong>Venue:</strong> Set by the firm
+                                        </span>
+                                    </div>
+                                    @endif
                                 </div>
                                 
                                 <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top">
@@ -352,6 +367,14 @@
                             For <strong>Firm Only</strong> courses, seat count, schedule, time, and venue are set by the firm during booking.
                         </div>
                     </div>
+
+                    <div id="collegeFirmDurationWrapper" class="col-md-4 d-none">
+                    <label class="form-label">Firm Duration (days)</label>
+                    <input type="number" step="1" min="1" name="firm_duration" class="form-control @error('firm_duration') is-invalid @enderror" value="{{ old('firm_duration', $editCourse->firm_duration ?? 1) }}" {{ $isView ? 'disabled' : '' }}>
+                    @error('firm_duration')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
                     <div class="col-md-4">
                         <label class="form-label">Price</label>
@@ -602,6 +625,8 @@
         var addSectionButton = document.getElementById('college-add-course-section');
         var sectionTemplate = document.getElementById('college-course-section-template');
 
+        var collegeFirmDurationWrapper = document.getElementById('collegeFirmDurationWrapper');
+
         function filterMentorsByCollege() {
             if (!collegeSelect || !mentorSelect || mentorSelect.disabled) {
                 return;
@@ -635,6 +660,9 @@
 
             if (firmOnlyInfo) {
                 firmOnlyInfo.classList.toggle('d-none', !isFirmOnly);
+            }
+            if (collegeFirmDurationWrapper) {
+                collegeFirmDurationWrapper.classList.toggle('d-none', !isFirmOnly);
             }
 
             if (!logisticsFields.length) {

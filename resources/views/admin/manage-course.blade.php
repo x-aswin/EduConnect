@@ -209,6 +209,14 @@
                         </div>
                     </div>
 
+                    <div id="firmDurationWrapper" class="col-md-4">
+                        <label class="form-label">Firm Duration(days)</label>
+                        <input type="number" step="1" min="0" name="firm_duration" class="form-control @error('firm_duration') is-invalid @enderror" value="{{ old('firm_duration', $editCourse->firm_duration ?? 1) }}" {{ $isView ? 'disabled' : '' }}>
+                        @error('firm_duration')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="col-md-4">
                         <label class="form-label">Price</label>
                         <input type="number" step="0.01" min="0" name="price" class="form-control @error('price') is-invalid @enderror" value="{{ old('price', $editCourse->price ?? 0) }}" {{ $isView ? 'disabled' : '' }}>
@@ -491,6 +499,9 @@
 
             if (firmOnlyInfo) {
                 firmOnlyInfo.classList.toggle('d-none', !isFirmOnly);
+            }
+            if (firmDurationWrapper) {
+                firmDurationWrapper.classList.toggle('d-none', !isFirmOnly);
             }
 
             if (!logisticsFields.length) {
