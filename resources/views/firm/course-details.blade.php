@@ -25,10 +25,23 @@
                                 <input type="text" name="requested_venue" class="form-control" 
                                        placeholder="e.g., Conference Room, Mumbai Office" required>
                             </div>
+
+                            <div class="col-md-6 position-relative">
+                            <label class="form-label fw-semibold small">Proposed Start Date</label>
+                            <input type="date" name="proposed_start" id="proposed_start" class="form-control" required>
+                            <div class="invalid-feedback" id="proposed_start_feedback" style="display: none;"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label fw-semibold small">Proposed End Date</label>
+                            <input type="date" name="proposed_end" id="proposed_end" class="form-control" required>
+                            <div class="invalid-feedback" id="proposed_end_feedback" style="display: none;"></div>
+                        </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Proposed Date & Time *</label>
-                                <input type="datetime-local" name="proposed_schedule" class="form-control" required>
+                                <label class="form-label fw-semibold small">Proposed Time Slot</label>
+                                <input type="text" name="proposed_time" class="form-control" required>
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Number of Participants *</label>
                                 <input type="number" name="participant_count" id="firm_participant_count" class="form-control" min="1" 
@@ -120,6 +133,84 @@
         const contactInput = document.getElementById('participant_contact_input');
         const tbody = document.getElementById('firmParticipantsTableBody');
         const participantCountInput = document.getElementById('firm_participant_count');
+
+        const startFeedback = document.getElementById('proposed_start_feedback');
+        const endFeedback = document.getElementById('proposed_end_feedback');
+        const bookingForm = document.querySelector('#firmBookingModal form');
+
+        const startDateInput = document.getElementById('proposed_start');
+        const endDateInput = document.getElementById('proposed_end');
+
+        const requiredDurationDays = Number(@json($course->firm_duration ?? 0));
+
+        function validateCourseDuration() {
+            if (!startDateInput.value || !endDateInput.value || requiredDurationDays <= 0) {
+                return true;
+            }
+
+            const start = new Date(startDateInput.value);
+            const end = new Date(endDateInput.value);
+            
+            // 1. Reset everything to baseline clean states
+            startDateInput.classList.remove('is-invalid');
+            endDateInput.classList.remove('is-invalid');
+            if (startFeedback) startFeedback.style.display = 'none';
+            if (endFeedback) endFeedback.style.display = 'none';
+
+            // 2. Date comparison validation rule check
+            if (end < start) {
+                endDateInput.classList.add('is-invalid');
+                if (endFeedback) {
+                    endFeedback.textContent = 'End date cannot be before start date.';
+                    endFeedback.style.display = 'block';
+                }
+                return false;
+            }
+
+            // 3. Exact matching sequence evaluation loop
+            const timeDiff = Math.abs(end.getTime() - start.getTime());
+            const calculatedDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+
+            if (calculatedDays !== requiredDurationDays) {
+                endDateInput.classList.add('is-invalid');
+                if (endFeedback) {
+                    endFeedback.textContent = `The duration must be exactly ${requiredDurationDays} days. Currently selected: ${calculatedDays} days.`;
+                    endFeedback.style.display = 'block';
+                }
+                return false;
+            }
+
+            return true;
+        } // <-- Only ONE closing brace here
+
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', validateCourseDuration);
+            endDateInput.addEventListener('change', validateCourseDuration);
+        }
+
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function (e) {
+                if (!validateCourseDuration()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        }
+        
+
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', validateCourseDuration);
+            endDateInput.addEventListener('change', validateCourseDuration);
+        }
+
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function (e) {
+                if (!validateCourseDuration()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        }
 
         const unitPrice = Number(@json($course->price ?? 0));
 

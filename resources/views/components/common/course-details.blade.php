@@ -63,6 +63,9 @@
                         Date set by you
                         <span class="mx-2">|</span>
                         <i class="bi bi-clock me-1"></i> Time slot set by you
+
+                        <span class="mx-2">|</span>
+                        <i class="bi bi-hourglass-split me-1"></i> {{ $course->firm_duration }} Days
                     @else
                         {{ $startDisplay }}
                         @if(!empty($endDisplay)) – {{ $endDisplay }} @endif
@@ -72,6 +75,8 @@
                         @endif
                     @endif
                 </div>
+
+                
             @if(isset($isguest) && ($isguest === true || $isguest === 'true' || $isguest == 1))
                 <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill px-5 py-3 fw-semibold">
                         <i class="bi bi-lock me-2"></i> Login as correct user to Enroll

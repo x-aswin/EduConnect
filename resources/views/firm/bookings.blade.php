@@ -22,102 +22,117 @@
         @else
         <div class="row g-3">
             @forelse($bookings as $booking)
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h5 class="fw-bold mb-1">{{ $booking->course?->title ?? 'Untitled Course' }}</h5>
-                                    <small class="text-muted d-block">
-                                        <i class="bi bi-building me-1"></i>
-                                        {{ $booking->course?->college?->institution_name ?? 'College' }}
-                                    </small>
-                                </div>
-                                @if($booking->status === 'confirmed')
-                                    <span class="badge bg-success-subtle text-success border border-success">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Approved
-                                    </span>
-                                @elseif($booking->status === 'pending')
-                                    <span class="badge bg-warning-subtle text-warning border border-warning">
-                                        <i class="bi bi-hourglass-split me-1"></i> Pending
-                                    </span>
-                                @else
-                                    <span class="badge bg-danger-subtle text-danger border border-danger">
-                                        <i class="bi bi-x-circle-fill me-1"></i> Rejected
-                                    </span>
-                                @endif
-                            </div>
-
-                            <div class="row g-2 mb-3 pb-3 border-bottom small">
-                                <div class="col-6">
-                                    <span class="text-secondary d-block">Venue</span>
-                                    <strong>{{ $booking->requested_venue ?? 'N/A' }}</strong>
-                                </div>
-                                <div class="col-6">
-                                    <span class="text-secondary d-block">Time</span>
-                                    <strong>
-                                        @if($booking->proposed_schedule)
-                                            {{ \Carbon\Carbon::parse($booking->proposed_schedule)->format('M d, Y h:i A') }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </strong>
-                                </div>
-                                <div class="col-6">
-                                    <span class="text-secondary d-block">Participants</span>
-                                    <strong>{{ $booking->participants->count() ?: $booking->participant_count }}</strong>
-                                </div>
-                                <div class="col-6">
-                                    <span class="text-secondary d-block">Total Amount</span>
-                                    <strong>{{ !is_null($booking->total_amount) ? '₹' . number_format((float) $booking->total_amount, 2) : '-' }}</strong>
-                                </div>
-                                @if(!empty($booking->college_note))
-                                    <div class="col-12">
-                                        <span class="text-secondary d-block">Message</span>
-                                        <strong>{{ $booking->college_note }}</strong>
-                                    </div>
-                                @endif
-                                @if(!empty($booking->course?->mentor?->user?->name))
-                                    <div class="col-12">
-                                        <span class="text-secondary d-block">Course Mentor</span>
-                                        <strong>{{ $booking->course->mentor->user->name }}</strong>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="small text-muted mb-3">
-                                <i class="bi bi-calendar3 me-1"></i>
-                                Booking on {{ $booking->created_at->format('M d, Y') }}
-                            </div>
-
-                            <div class="d-flex gap-2 mt-auto">
-                                <a href="{{ route('firm.bookings.show', ['enrollment' => $booking, 'mode' => 'view']) }}" class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1">
-                                    <i class="bi bi-eye me-1"></i> View
-                                </a>
-
-                                @if($booking->status === 'pending')
-                                    <a href="{{ route('firm.bookings.show', ['enrollment' => $booking, 'mode' => 'edit']) }}" class="btn btn-outline-warning btn-sm rounded-pill">
-                                        <i class="bi bi-pencil me-1"></i> Edit
-                                    </a>
-                                    <form method="POST" action="{{ route('firm.bookings.destroy', $booking) }}" class="m-0" onsubmit="return confirm('Remove this booking request?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">
-                                            <i class="bi bi-trash me-1"></i> Remove
-                                        </button>
-                                    </form>
-                                @elseif($booking->status === 'confirmed' && $booking->payment_status !== 'paid')
-                                    <a href="{{ route('firm.bookings.payment', $booking) }}" class="btn btn-warning btn-sm rounded-pill flex-grow-1">
-                                        <i class="bi bi-credit-card me-1"></i> Pay
-                                    </a>
-                                @elseif($booking->status === 'confirmed' && $booking->payment_status === 'paid')
-                                    <span class="badge bg-success-subtle text-success border border-success align-self-center">Paid</span>
-                                @endif
-                            </div>
-                        </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+            <div class="card-body d-flex flex-column">
+                
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1">{{ $booking->course?->title ?? 'Untitled Course' }}</h5>
+                        <small class="text-muted d-block">
+                            <i class="bi bi-building me-1"></i>
+                            {{ $booking->course?->college?->institution_name ?? 'College' }}
+                        </small>
                     </div>
+                    @if($booking->status === 'confirmed')
+                        <span class="badge bg-success-subtle text-success border border-success">
+                            <i class="bi bi-check-circle-fill me-1"></i> Approved
+                        </span>
+                    @elseif($booking->status === 'pending')
+                        <span class="badge bg-warning-subtle text-warning border border-warning">
+                            <i class="bi bi-hourglass-split me-1"></i> Pending
+                        </span>
+                    @else
+                        <span class="badge bg-danger-subtle text-danger border border-danger">
+                            <i class="bi bi-x-circle-fill me-1"></i> Rejected
+                        </span>
+                    @endif
                 </div>
-            @empty
+
+                <div class="row g-3 mb-3 pb-3 border-bottom small">
+                    <div class="col-md-6 col-12">
+                        <span class="text-secondary d-block small">Venue</span>
+                        <strong class="text-dark">{{ $booking->requested_venue ?? 'N/A' }}</strong>
+                    </div>
+                    
+                    <div class="col-md-6 col-12">
+                        <span class="text-secondary d-block small">Time Slot</span>
+                        <strong class="text-dark">{{ $booking->proposed_time ?? 'N/A' }}</strong>
+                    </div>
+
+                    <div class="col-6 col-md-4">
+                        <span class="text-secondary d-block small">Start Date</span>
+                        <strong class="text-dark">
+                            {{ $booking->proposed_start ? \Carbon\Carbon::parse($booking->proposed_start)->format('M d, Y') : 'N/A' }}
+                        </strong>
+                    </div>
+
+                    <div class="col-6 col-md-4">
+                        <span class="text-secondary d-block small">End Date</span>
+                        <strong class="text-dark">
+                            {{ $booking->proposed_end ? \Carbon\Carbon::parse($booking->proposed_end)->format('M d, Y') : 'N/A' }}
+                        </strong>
+                    </div>
+
+                    <div class="col-6 col-md-4">
+                        <span class="text-secondary d-block small">Participants</span>
+                        <strong class="text-dark">{{ $booking->participants->count() ?: $booking->participant_count }}</strong>
+                    </div>
+                    
+                    <div class="col-6">
+                        <span class="text-secondary d-block small">Total Amount</span>
+                        <strong class="text-primary">{{ !is_null($booking->total_amount) ? '₹' . number_format((float) $booking->total_amount, 2) : '-' }}</strong>
+                    </div>
+
+                    @if(!empty($booking->course?->mentor?->user?->name))
+                        <div class="col-6">
+                            <span class="text-secondary d-block small">Course Mentor</span>
+                            <strong class="text-dark">{{ $booking->course->mentor->user->name }}</strong>
+                        </div>
+                    @endif
+
+                    @if(!empty($booking->college_note))
+                        <div class="col-12">
+                            <span class="text-secondary d-block small">Message Note</span>
+                            <strong class="text-dark d-block bg-light p-2 rounded mt-1">{{ $booking->college_note }}</strong>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="small text-muted mb-3">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    Booking on {{ $booking->created_at->format('M d, Y') }}
+                </div>
+
+                <div class="d-flex gap-2 mt-auto">
+                    <a href="{{ route('firm.bookings.show', ['enrollment' => $booking, 'mode' => 'view']) }}" class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1">
+                        <i class="bi bi-eye me-1"></i> View
+                    </a>
+
+                    @if($booking->status === 'pending')
+                        <a href="{{ route('firm.bookings.show', ['enrollment' => $booking, 'mode' => 'edit']) }}" class="btn btn-outline-warning btn-sm rounded-pill">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                        <form method="POST" action="{{ route('firm.bookings.destroy', $booking) }}" class="m-0" onsubmit="return confirm('Remove this booking request?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">
+                                <i class="bi bi-trash me-1"></i> Remove
+                            </button>
+                        </form>
+                    @elseif($booking->status === 'confirmed' && $booking->payment_status !== 'paid')
+                        <a href="{{ route('firm.bookings.payment', $booking) }}" class="btn btn-warning btn-sm rounded-pill flex-grow-1">
+                            <i class="bi bi-credit-card me-1"></i> Pay
+                        </a>
+                    @elseif($booking->status === 'confirmed' && $booking->payment_status === 'paid')
+                        <span class="badge bg-success-subtle text-success border border-success align-self-center">Paid</span>
+                    @endif
+                </div>
+
+            </div>
+        </div>
+    </div>
+@empty
             @endforelse
         </div>
         @endif
@@ -307,10 +322,44 @@
                                 <label class="form-label fw-semibold small">Requested Venue</label>
                                 <input type="text" name="requested_venue" class="form-control" value="{{ old('requested_venue', $enrollment->requested_venue) }}" required>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold small">Proposed Schedule</label>
-                                <input type="datetime-local" name="proposed_schedule" class="form-control" value="{{ old('proposed_schedule', $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('Y-m-d\TH:i') : '') }}" required>
-                            </div>
+                            <div class="row">
+    <div class="col-md-6 mb-3 position-relative">
+        <label class="form-label fw-semibold small">Proposed Start Date</label>
+        <input type="date" name="proposed_start" id="proposed_start" 
+               class="form-control @error('proposed_start') is-invalid @enderror" 
+               value="{{ old('proposed_start', $enrollment->proposed_start ? \Carbon\Carbon::parse($enrollment->proposed_start)->format('Y-m-d') : '') }}" required>
+        
+        <div class="invalid-feedback" id="proposed_start_feedback" style="display: none;"></div>
+        
+        @error('proposed_start')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+    </div>
+
+    <div class="col-md-6 mb-3 position-relative">
+        <label class="form-label fw-semibold small">Proposed End Date</label>
+        <input type="date" name="proposed_end" id="proposed_end" 
+               class="form-control @error('proposed_end') is-invalid @enderror" 
+               value="{{ old('proposed_end', $enrollment->proposed_end ? \Carbon\Carbon::parse($enrollment->proposed_end)->format('Y-m-d') : '') }}" required>
+        
+        <div class="invalid-feedback" id="proposed_end_feedback" style="display: none;"></div>
+        
+        @error('proposed_end')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold small">Proposed Time Slot</label>
+    <input type="text" name="proposed_time" class="form-control @error('proposed_time') is-invalid @enderror" 
+           placeholder="e.g., 10:00 AM - 01:00 PM"
+           value="{{ old('proposed_time', $enrollment->proposed_time ?? '') }}" required>
+    
+    @error('proposed_time')
+        <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
+</div>
                             <div class="mb-3">
                                 <label class="form-label fw-semibold small">Message</label>
                                 <textarea name="college_note" class="form-control" rows="3" placeholder="Optional message to the college">{{ old('college_note', $enrollment->college_note) }}</textarea>
@@ -334,8 +383,11 @@
                         <div>{{ $enrollment->course->college?->institution_name ?? 'N/A' }}</div>
                         <div class="small text-muted mt-3">Requested Venue</div>
                         <div>{{ $enrollment->requested_venue ?? 'N/A' }}</div>
-                        <div class="small text-muted mt-3">Proposed Schedule</div>
-                        <div>{{ $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('M d, Y h:i A') : 'N/A' }}</div>
+                        <div class="small text-muted mt-3">
+    <div class="mb-1"><i class="bi bi-calendar-event me-1"></i> <strong>Start Date:</strong> {{ $enrollment->proposed_start ? \Carbon\Carbon::parse($enrollment->proposed_start)->format('M d, Y') : 'N/A' }}</div>
+    <div class="mb-1"><i class="bi bi-calendar-check me-1"></i> <strong>End Date:</strong> {{ $enrollment->proposed_end ? \Carbon\Carbon::parse($enrollment->proposed_end)->format('M d, Y') : 'N/A' }}</div>
+    <div><i class="bi bi-clock me-1"></i> <strong>Time Slot:</strong> {{ $enrollment->proposed_time ?? 'N/A' }}</div>
+</div>
                         <div class="small text-muted mt-3">Payment</div>
                         <div>
                             @if($enrollment->status === 'confirmed' && $enrollment->payment_status === 'pending')

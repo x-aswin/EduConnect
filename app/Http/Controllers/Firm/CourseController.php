@@ -133,7 +133,30 @@ class CourseController extends Controller
         // Validate the form input
         $validated = $request->validate([
             'requested_venue'    => 'required|string|max:255',
-            'proposed_schedule'  => 'required|date',
+            'proposed_start'     => 'required|date',
+            'proposed_end'       => [
+                'required',
+                'date',
+                'after_or_equal:proposed_start',
+                function ($attribute, $value, $fail) use ($request, $course) {
+                    $startStr = $request->input('proposed_start');
+                    if (!$startStr || !$value || !$course->firm_duration) {
+                        return;
+                    }
+
+                    $start = new \DateTime($startStr);
+                    $end = new \DateTime($value);
+                    
+                    // Calculate inclusive duration in days
+                    $diffDays = (int) $start->diff($end)->format('%a') + 1;
+                    $expected = (int) $course->firm_duration;
+
+                    if ($diffDays !== $expected) {
+                        $fail("The duration between start and end dates must be exactly {$expected} days. Currently selected: {$diffDays} days.");
+                    }
+                }
+            ],
+            'proposed_time'  => 'required|string|max:255',
             'participant_count'  => 'nullable|integer|min:1',
             'participants'       => 'nullable|array',
             'participants.*.name' => 'required_with:participants|string|max:255',
@@ -156,7 +179,9 @@ class CourseController extends Controller
                 'type'              => 'firm',
                 'status'            => 'pending',
                 'requested_venue'   => $validated['requested_venue'],
-                'proposed_schedule' => $validated['proposed_schedule'],
+                'proposed_start' => $validated['proposed_start'],
+                'proposed_end' => $validated['proposed_end'],
+                'proposed_time' => $validated['proposed_time'],
                 'participant_count' => $finalCount,
                 'total_amount'      => $totalAmount,
                 'payment_status'    => 'na',
@@ -178,6 +203,7 @@ class CourseController extends Controller
         return redirect()->route('firm.bookings.index')
             ->with('success', 'Booking request submitted successfully.');
     }
+
     function bookings()
     {
         $user = Auth::user();
@@ -222,7 +248,32 @@ class CourseController extends Controller
 
         $validated = $request->validate([
             'requested_venue' => 'required|string|max:255',
-            'proposed_schedule' => 'required|date',
+            'proposed_start'     => 'required|date',
+            'proposed_end'       => [
+                'required',
+                'date',
+                'after_or_equal:proposed_start',
+                function ($attribute, $value, $fail) use ($request, $enrollment) { // <-- Pass $enrollment instead of $course
+                    $startStr = $request->input('proposed_start');
+                    $course = $enrollment->course; // <-- Fetch course from relation
+
+                    if (!$startStr || !$value || !$course || !$course->firm_duration) {
+                        return;
+                    }
+
+                    $start = new \DateTime($startStr);
+                    $end = new \DateTime($value);
+                    
+                    // Calculate inclusive duration in days
+                    $diffDays = (int) $start->diff($end)->format('%a') + 1;
+                    $expected = (int) $course->firm_duration;
+
+                    if ($diffDays !== $expected) {
+                        $fail("The duration between start and end dates must be exactly {$expected} days. Currently selected: {$diffDays} days.");
+                    }
+                }
+            ],
+            'proposed_time'  => 'required|string|max:255',
             'college_note' => 'nullable|string|max:500',
             'participants' => 'nullable|array',
             'participants.*.name' => 'required_with:participants|string|max:255',
@@ -234,7 +285,9 @@ class CourseController extends Controller
 
             $enrollment->update([
                 'requested_venue' => $validated['requested_venue'],
-                'proposed_schedule' => $validated['proposed_schedule'],
+                'proposed_start' => $validated['proposed_start'],
+                'proposed_end' => $validated['proposed_end'],
+                'proposed_time' => $validated['proposed_time'],
                 'college_note' => $validated['college_note'] ?? null,
                 'participant_count' => max($participantCount, 1),
                 'total_amount' => (float) ($enrollment->course->price ?? 0) * max($participantCount, 1),

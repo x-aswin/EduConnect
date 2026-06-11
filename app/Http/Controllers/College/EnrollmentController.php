@@ -103,23 +103,19 @@ class EnrollmentController extends Controller
     {
         $college = College::where('user_id', Auth::id())->firstOrFail();
 
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'course_id' => 'required|exists:courses,id',
-            'status' => 'required|in:pending,confirmed,rejected',
+        // 1. Core validation to ensure relationships and core statuses exist
+        $request->validate([
+            'user_id'        => 'required|exists:users,id',
+            'course_id'      => 'required|exists:courses,id',
+            'status'         => 'required|in:pending,confirmed,rejected',
             'payment_status' => 'required|in:pending,paid,na',
-            'requested_venue' => 'nullable|string|max:255',
-            'proposed_schedule' => 'nullable|date',
-            'college_note' => 'nullable|string|max:1000',
-            'participants' => 'nullable|array',
-            'participants.*.name' => 'nullable|string|max:255',
-            'participants.*.contact_info' => 'nullable|string|max:255',
         ]);
 
-        $user = User::select('id', 'role')->findOrFail($validated['user_id']);
-        $course = Course::select('id', 'college_id', 'course_type', 'price')
-            ->where('college_id', $college->id)
-            ->findOrFail($validated['course_id']);
+        // 2. Fetch full models so we can access firm_duration and available_seats
+        $user = User::select('id', 'role')->findOrFail($request->user_id);
+        
+        // Ensure the course belongs to the authenticated college
+        $course = Course::where('college_id', $college->id)->findOrFail($request->course_id);
 
         if (!in_array($user->role, ['student', 'firm'], true)) {
             return back()->withErrors([
@@ -136,7 +132,47 @@ class EnrollmentController extends Controller
 
         $enrollmentType = $user->role === 'firm' ? 'firm' : 'student';
 
-        $participants = collect($validated['participants'] ?? [])
+        // 3. Validate strict scheduling logistics if this is a firm booking
+        $rules = [];
+        if ($enrollmentType === 'firm') {
+            $rules = [
+                'requested_venue' => 'required|string|max:255',
+                'proposed_start'  => 'required|date',
+                'proposed_time'   => 'required|string|max:255',
+                'proposed_end'    => [
+                    'required',
+                    'date',
+                    'after_or_equal:proposed_start',
+                    function ($attribute, $value, $fail) use ($request, $course) {
+                        $startStr = $request->input('proposed_start');
+                        if (!$startStr || !$value || !$course->firm_duration) {
+                            return;
+                        }
+
+                        $start = new \DateTime($startStr);
+                        $end = new \DateTime($value);
+                        
+                        $diffDays = (int) $start->diff($end)->format('%a') + 1;
+                        $expected = (int) $course->firm_duration;
+
+                        if ($diffDays !== $expected) {
+                            $fail("The duration between start and end dates must be exactly {$expected} days. Currently selected: {$diffDays} days.");
+                        }
+                    }
+                ],
+                'college_note'                 => 'nullable|string|max:1000',
+                'participants'                 => 'nullable|array',
+                'participants.*.name'          => 'nullable|string|max:255',
+                'participants.*.contact_info'  => 'nullable|string|max:255',
+            ];
+        }
+
+        if (!empty($rules)) {
+            $request->validate($rules);
+        }
+
+        // 4. Process the participants logic
+        $participants = collect($request->input('participants', []))
             ->map(function ($participant) {
                 return [
                     'name' => trim((string) ($participant['name'] ?? '')),
@@ -166,22 +202,25 @@ class EnrollmentController extends Controller
             ? ((float) $course->price * (int) ($participantCount ?? 0))
             : (float) $course->price;
 
-        DB::transaction(function () use ($validated, $enrollmentType, $participantCount, $calculatedTotalAmount, $participants, $course) {
+        // 5. Save to the database
+        DB::transaction(function () use ($request, $enrollmentType, $participantCount, $calculatedTotalAmount, $participants, $course) {
             $enrollment = Enrollment::create([
-                'user_id' => $validated['user_id'],
-                'course_id' => $validated['course_id'],
-                'type' => $enrollmentType,
-                'status' => $validated['status'],
-                'payment_status' => $validated['payment_status'],
-                'requested_venue' => $validated['requested_venue'] ?? null,
-                'proposed_schedule' => $validated['proposed_schedule'] ?? null,
-                'college_note' => $enrollmentType === 'firm' ? ($validated['college_note'] ?? null) : null,
+                'user_id'           => $request->user_id,
+                'course_id'         => $request->course_id,
+                'type'              => $enrollmentType,
+                'status'            => $request->status,
+                'payment_status'    => $request->payment_status,
+                'requested_venue'   => $enrollmentType === 'firm' ? $request->requested_venue : null,
+                'proposed_start'    => $enrollmentType === 'firm' ? $request->proposed_start : null,
+                'proposed_end'      => $enrollmentType === 'firm' ? $request->proposed_end : null,
+                'proposed_time'     => $enrollmentType === 'firm' ? $request->proposed_time : null,
+                'college_note'      => $enrollmentType === 'firm' ? $request->college_note : null,
                 'participant_count' => $participantCount,
-                'total_amount' => $calculatedTotalAmount,
+                'total_amount'      => $calculatedTotalAmount,
             ]);
 
             // If created with confirmed status, decrement seats
-            if ($validated['status'] === 'confirmed') {
+            if ($request->status === 'confirmed') {
                 $seatCount = $enrollmentType === 'student' ? 1 : ($participantCount ?? 1);
                 $course->available_seats = max(0, $course->available_seats - $seatCount);
                 $course->save();
@@ -286,16 +325,51 @@ class EnrollmentController extends Controller
             })
             ->findOrFail($id);
 
-        $validated = $request->validate([
+        // 1. Base validation rules
+        $rules = [
             'status' => 'required|in:pending,confirmed,rejected',
             'payment_status' => 'required|in:pending,paid,na',
-            'college_note' => 'nullable|string|max:1000',
-            'participants' => 'nullable|array',
-            'participants.*.name' => 'nullable|string|max:255',
-            'participants.*.contact_info' => 'nullable|string|max:255',
-        ]);
+        ];
 
-        $participants = collect($validated['participants'] ?? [])
+        // 2. Add conditional firm-specific rules (including schedule logistics and note)
+        if ($enrollment->type === 'firm') {
+            $rules['requested_venue'] = 'required|string|max:255';
+            $rules['proposed_start']  = 'required|date';
+            $rules['proposed_time']   = 'required|string|max:255';
+            $rules['proposed_end']    = [
+                'required',
+                'date',
+                'after_or_equal:proposed_start',
+                function ($attribute, $value, $fail) use ($request, $enrollment) {
+                    $startStr = $request->input('proposed_start');
+                    $course = $enrollment->course;
+
+                    if (!$startStr || !$value || !$course || !$course->firm_duration) {
+                        return;
+                    }
+
+                    $start = new \DateTime($startStr);
+                    $end = new \DateTime($value);
+                    
+                    // Calculate inclusive duration in days
+                    $diffDays = (int) $start->diff($end)->format('%a') + 1;
+                    $expected = (int) $course->firm_duration;
+
+                    if ($diffDays !== $expected) {
+                        $fail("The duration between start and end dates must be exactly {$expected} days. Currently selected: {$diffDays} days.");
+                    }
+                }
+            ];
+            $rules['college_note'] = 'nullable|string|max:1000';
+            $rules['participants'] = 'nullable|array';
+            $rules['participants.*.name'] = 'nullable|string|max:255';
+            $rules['participants.*.contact_info'] = 'nullable|string|max:255';
+        }
+
+        $validated = $request->validate($rules);
+
+        // 3. Process the participants logic (safely fallback to empty array)
+        $participants = collect($request->input('participants', []))
             ->map(function ($participant) {
                 return [
                     'name' => trim((string) ($participant['name'] ?? '')),
@@ -321,7 +395,8 @@ class EnrollmentController extends Controller
             }
         }
 
-        DB::transaction(function () use ($enrollment, $validated, $participants) {
+        // 4. Save to the database
+        DB::transaction(function () use ($request, $enrollment, $validated, $participants) {
             $oldStatus = $enrollment->status;
             $newStatus = $validated['status'];
             $course = $enrollment->course;
@@ -343,14 +418,28 @@ class EnrollmentController extends Controller
                 ? ((float) $enrollment->course->price * (int) ($participantCount ?? 0))
                 : (float) $enrollment->course->price;
 
-            $enrollment->update([
+            // Prepare base update array
+            $updateData = [
                 'status' => $validated['status'],
                 'payment_status' => $validated['payment_status'],
-                'college_note' => $enrollment->type === 'firm' ? ($validated['college_note'] ?? null) : null,
                 'participant_count' => $participantCount,
                 'total_amount' => $totalAmount,
-            ]);
+            ];
 
+            // Append specific logic fields if this is a firm booking
+            if ($enrollment->type === 'firm') {
+                $updateData['requested_venue'] = $request->input('requested_venue');
+                $updateData['proposed_start']  = $request->input('proposed_start');
+                $updateData['proposed_end']    = $request->input('proposed_end');
+                $updateData['proposed_time']   = $request->input('proposed_time');
+                $updateData['college_note']    = $request->input('college_note');
+            } else {
+                $updateData['college_note']    = null;
+            }
+
+            $enrollment->update($updateData);
+
+            // Sync dynamic participant arrays
             if ($enrollment->type === 'firm') {
                 $enrollment->participants()->delete();
                 $enrollment->participants()->createMany($participants->all());

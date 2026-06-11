@@ -192,13 +192,31 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-6 firm-only-field d-none">
-                            <label class="form-label">Proposed Schedule</label>
-                            <input type="datetime-local" name="proposed_schedule" class="form-control @error('proposed_schedule') is-invalid @enderror" value="{{ old('proposed_schedule') }}">
-                            @error('proposed_schedule')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        <div class="col-md-4 firm-only-field d-none position-relative">
+    <label class="form-label">Proposed Start Date</label>
+    <input type="date" name="proposed_start" id="proposed_start" class="form-control @error('proposed_start') is-invalid @enderror" value="{{ old('proposed_start') }}">
+    <div class="invalid-feedback" id="proposed_start_feedback" style="display: none;"></div>
+    @error('proposed_start')
+        <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="col-md-4 firm-only-field d-none position-relative">
+    <label class="form-label">Proposed End Date</label>
+    <input type="date" name="proposed_end" id="proposed_end" class="form-control @error('proposed_end') is-invalid @enderror" value="{{ old('proposed_end') }}">
+    <div class="invalid-feedback" id="proposed_end_feedback" style="display: none;"></div>
+    @error('proposed_end')
+        <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="col-md-4 firm-only-field d-none">
+    <label class="form-label">Proposed Time Slot</label>
+    <input type="text" name="proposed_time" class="form-control @error('proposed_time') is-invalid @enderror" placeholder="e.g., 10:00 AM - 01:00 PM" value="{{ old('proposed_time') }}">
+    @error('proposed_time')
+        <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
+</div>
 
                         <div class="col-12 firm-only-field d-none">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -281,31 +299,78 @@
                     @if(isset($editEnrollment))
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">User / Firm</label>
+                                <label class="form-label fw-semibold">User / Firm</label>
                                 <input type="text" class="form-control" value="{{ $editEnrollment->user?->name ?? 'N/A' }}" disabled>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Course</label>
+                                <label class="form-label fw-semibold">Course</label>
                                 <input type="text" class="form-control" value="{{ $editEnrollment->course?->title ?? 'N/A' }}" disabled>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Type</label>
+                                <label class="form-label fw-semibold">Type</label>
                                 <input type="text" class="form-control" value="{{ ucfirst($editEnrollment->type) }}" disabled>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Participants</label>
+                                <label class="form-label fw-semibold">Participants</label>
                                 <input type="text" class="form-control" value="{{ $editEnrollment->type === 'firm' ? ($editEnrollment->participants->count() ?: $editEnrollment->participant_count) : '-' }}" disabled>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Total Cost</label>
+                                <label class="form-label fw-semibold">Total Cost</label>
                                 <input type="text" class="form-control" value="{{ !is_null($editEnrollment->total_amount) ? '₹ ' . number_format((float) $editEnrollment->total_amount, 2) : '-' }}" disabled>
                             </div>
 
                             @if($editEnrollment->type === 'firm')
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Requested Venue</label>
+                                    <input type="text" name="requested_venue" 
+                                           class="form-control @error('requested_venue') is-invalid @enderror" 
+                                           value="{{ old('requested_venue', $editEnrollment->requested_venue) }}" 
+                                           {{ $isView ? 'disabled' : 'required' }}>
+                                    @error('requested_venue')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-4 position-relative">
+                                    <label class="form-label fw-semibold">Proposed Start Date</label>
+                                    <input type="date" name="proposed_start" id="proposed_start"
+                                           class="form-control @error('proposed_start') is-invalid @enderror" 
+                                           value="{{ old('proposed_start', $editEnrollment->proposed_start ? \Carbon\Carbon::parse($editEnrollment->proposed_start)->format('Y-m-d') : '') }}" 
+                                           {{ $isView ? 'disabled' : 'required' }}>
+                                    <div class="invalid-feedback" id="proposed_start_feedback" style="display: none;"></div>
+                                    @error('proposed_start')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-4 position-relative">
+                                    <label class="form-label fw-semibold">Proposed End Date</label>
+                                    <input type="date" name="proposed_end" id="proposed_end"
+                                           class="form-control @error('proposed_end') is-invalid @enderror" 
+                                           value="{{ old('proposed_end', $editEnrollment->proposed_end ? \Carbon\Carbon::parse($editEnrollment->proposed_end)->format('Y-m-d') : '') }}" 
+                                           {{ $isView ? 'disabled' : 'required' }}>
+                                    <div class="invalid-feedback" id="proposed_end_feedback" style="display: none;"></div>
+                                    @error('proposed_end')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Proposed Time Slot</label>
+                                    <input type="text" name="proposed_time" 
+                                           class="form-control @error('proposed_time') is-invalid @enderror" 
+                                           placeholder="e.g., 10:00 AM - 01:00 PM"
+                                           value="{{ old('proposed_time', $editEnrollment->proposed_time) }}" 
+                                           {{ $isView ? 'disabled' : 'required' }}>
+                                    @error('proposed_time')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <div class="col-12">
                                     @if($isView)
-                                        <label class="form-label">Participant Details</label>
+                                        <label class="form-label fw-semibold">Participant Details</label>
                                         @if($editEnrollment->participants->isNotEmpty())
                                             <ul class="list-group">
                                                 @foreach($editEnrollment->participants as $participant)
@@ -316,11 +381,11 @@
                                                 @endforeach
                                             </ul>
                                         @else
-                                            <div class="form-control bg-light">No participant details available.</div>
+                                            <div class="form-control bg-light text-muted">No participant details available.</div>
                                         @endif
                                     @else
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <label class="form-label mb-0">Participant Details</label>
+                                            <label class="form-label mb-0 fw-semibold">Participant Details</label>
                                             <button type="button" id="edit_add_participant_btn" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-plus-lg"></i> Add Participant
                                             </button>
@@ -374,9 +439,8 @@
                                     @endif
                                 </div>
                             @endif
-
                             <div class="col-md-6">
-                                <label class="form-label">Enrollment Status</label>
+                                <label class="form-label fw-semibold">Enrollment Status</label>
                                 <select name="status" class="form-select @error('status') is-invalid @enderror" {{ $isView ? 'disabled' : '' }}>
                                     <option value="pending" {{ old('status', $editEnrollment->status ?? 'pending') === 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="confirmed" {{ old('status', $editEnrollment->status ?? '') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -388,7 +452,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Payment Status</label>
+                                <label class="form-label fw-semibold">Payment Status</label>
                                 <select name="payment_status" class="form-select @error('payment_status') is-invalid @enderror" {{ $isView ? 'disabled' : '' }}>
                                     <option value="na" {{ old('payment_status', $editEnrollment->payment_status ?? 'na') === 'na' ? 'selected' : '' }}>N/A</option>
                                     <option value="pending" {{ old('payment_status', $editEnrollment->payment_status ?? '') === 'pending' ? 'selected' : '' }}>Pending</option>
@@ -398,7 +462,6 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
                         </div>
                     @endif
                 </div>

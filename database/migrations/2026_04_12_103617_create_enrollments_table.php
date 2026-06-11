@@ -29,7 +29,9 @@ return new class extends Migration
 
             // Firm only fields — null for student enrollments
             $table->text('requested_venue')->nullable();
-            $table->dateTime('proposed_schedule')->nullable();
+            $table->date('proposed_start')->nullable();
+            $table->date('proposed_end')->nullable();
+            $table->string('proposed_time')->nullable();
 
             // firm booking extras
             $table->integer('participant_count')->nullable(); // firm only
