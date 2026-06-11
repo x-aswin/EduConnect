@@ -721,7 +721,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Payment Status</label>
+                                <label class="form-label fw-semibold">Payment Status (N/A for Free Course)</label>
                                 <select name="payment_status" class="form-select @error('payment_status') is-invalid @enderror" {{ $isView ? 'disabled' : '' }}>
                                     <option value="na" {{ old('payment_status', $editEnrollment->payment_status ?? 'na') === 'na' ? 'selected' : '' }}>N/A</option>
                                     <option value="pending" {{ old('payment_status', $editEnrollment->payment_status ?? '') === 'pending' ? 'selected' : '' }}>Pending</option>

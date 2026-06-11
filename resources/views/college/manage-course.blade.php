@@ -377,7 +377,7 @@
                 </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Price</label>
+                        <label class="form-label">Price (Set 0 for Free Course)</label>
                         <input type="number" step="0.01" min="0" name="price" class="form-control @error('price') is-invalid @enderror" value="{{ old('price', $editCourse->price ?? 0) }}" {{ $isView ? 'disabled' : '' }}>
                         @error('price')
                             <div class="invalid-feedback">{{ $message }}</div>
