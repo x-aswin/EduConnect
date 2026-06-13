@@ -163,9 +163,9 @@
         @endif
 
         {{-- Absolute badges placed on top of image overlay --}}
-        <span class="badge {{ $course['badge_class'] }} position-absolute top-0 start-0 m-3 shadow-sm rounded-pill" style="font-size: 11px;">
+        {{-- <span class="badge {{ $course['badge_class'] }} position-absolute top-0 start-0 m-3 shadow-sm rounded-pill" style="font-size: 11px;">
           {{ $course['badge_label'] }}
-        </span>
+        </span> --}}
       </div>
 
       <div class="p-3">
