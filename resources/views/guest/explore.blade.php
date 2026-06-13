@@ -117,94 +117,108 @@
         <div class="row g-4">
             @forelse($courses as $course)
                 {{-- student card --}}
-                @if(($course['type'] ?? 'student') === 'student')
-                    <div class="col-md-4">
-                        <div class="course-card p-0 h-100 rounded-4 overflow-hidden d-flex flex-column justify-content-between">
-                            <div>
-                                <div class="d-flex align-items-center justify-content-center position-relative" style="height: 140px; background: {{ $course['gradient'] ?? 'linear-gradient(135deg, #e0e7ff, #c7d2fe)' }};">
-                                    <i class="bi {{ $course['icon'] ?? 'bi-code-slash' }} fs-1 {{ $course['icon_color'] ?? 'text-primary' }}"></i>
-                                    <span class="badge position-absolute top-0 start-0 m-3 bg-primary text-white shadow-sm font-semibold rounded-pill">
-                                        {{ $course['badge_label'] ?? 'Student Only' }}
-                                    </span>
-                                    @if(!empty($course['category_label']))
-                                        <span class="badge position-absolute top-0 end-0 m-3 bg-white text-primary shadow-sm rounded-pill">
-                                            {{ $course['category_label'] }}
-                                        </span>
-                                    @endif
-                                </div>
-                                <div class="p-3 pb-0">
-                                    <h5 class="fw-bold text-dark mb-1">{{ $course['title'] }}</h5>
-                                    <p class="small text-primary mb-3 fw-medium">{{ $course['college_name'] ?? 'Partner Institution' }}</p>
-                                    <p class="small text-secondary mb-2 d-flex align-items-center gap-1">
-                                        <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }}
-                                    </p>
-                                    <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
-                                        <i class="bi bi-calendar-event me-1"></i> Starts: {{ $course['start_date'] ?? 'TBA' }}
-                                    </p>
-                                    <div class="pt-2 border-top border-light-subtle">
-                                        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 12px;">
-                                            <span class="text-secondary"><i class="bi bi-people me-1"></i> {{ $course['seats_label'] ?? 'Seats Availability' }}</span>
-                                            <span class="fw-bold text-primary">{{ $course['progress'] ?? 0 }}% Filled</span>
-                                        </div>
-                                        <div class="progress-bar-track w-100">
-                                            <div class="bg-primary h-100 rounded-pill transition-all" style="width: {{ $course['progress'] ?? 0 }}%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-3">
-                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light-subtle mb-3">
-                                    <span class="small text-muted text-uppercase tracking-wider" style="font-size: 11px;">Tuition Fee</span>
-                                    <span class="fw-bold text-primary fs-5">{{ $course['price_label'] }}</span>
-                                </div>
-                                <a href="{{ $course['details_url'] }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-1">
-                                    <i class="bi bi-mortarboard"></i> View Details
-                                </a>
-                            </div>
+@if(($course['type'] ?? 'student') === 'student')
+    <div class="col-md-4">
+        <div class="course-card p-0 h-100 rounded-4 overflow-hidden d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center justify-content-center position-relative overflow-hidden" style="height: 140px; background: {{ $course['gradient'] ?? 'linear-gradient(135deg, #e0e7ff, #c7d2fe)' }};">
+                    @if(!empty($course['image_url']))
+                        <img src="{{ $course['image_url'] }}" alt="{{ $course['title'] }}" class="w-100 h-100" style="object-fit: cover; object-position: center;">
+                    @else
+                        <div class="d-flex align-items-center justify-content-center h-100 w-100">
+                            <i class="bi bi-code-slash fs-1 text-primary"></i>
+                        </div>
+                    @endif
+                    
+                    <span class="badge position-absolute top-0 start-0 m-3 bg-primary text-white shadow-sm font-semibold rounded-pill">
+                        {{ $course['badge_label'] ?? 'Student Only' }}
+                    </span>
+                    @if(!empty($course['category_label']))
+                        <span class="badge position-absolute top-0 end-0 m-3 bg-white text-primary shadow-sm rounded-pill">
+                            {{ $course['category_label'] }}
+                        </span>
+                    @endif
+                </div>
+                <div class="p-3 pb-0">
+                    <h5 class="fw-bold text-dark mb-1">{{ $course['title'] }}</h5>
+                    <p class="small text-primary mb-3 fw-medium">{{ $course['college_name'] ?? 'Partner Institution' }}</p>
+                    <p class="small text-secondary mb-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }}
+                    </p>
+                    <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
+                        <i class="bi bi-calendar-event me-1"></i> Starts: {{ $course['start_date'] ?? 'TBA' }}
+                    </p>
+                    <div class="pt-2 border-top border-light-subtle">
+                        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 12px;">
+                            <span class="text-secondary"><i class="bi bi-people me-1"></i> {{ $course['seats_label'] ?? 'Seats Availability' }}</span>
+                            <span class="fw-bold text-primary">{{ $course['progress'] ?? 0 }}% Filled</span>
+                        </div>
+                        <div class="progress-bar-track w-100">
+                            <div class="bg-primary h-100 rounded-pill transition-all" style="width: {{ $course['progress'] ?? 0 }}%"></div>
                         </div>
                     </div>
-                @else
-                    {{-- firm card --}}
-                    <div class="col-md-4">
-                        <div class="course-card p-0 h-100 rounded-4 overflow-hidden d-flex flex-column justify-content-between">
-                            <div>
-                                <div class="d-flex align-items-center justify-content-center position-relative" style="height: 140px; background: {{ $course['gradient'] ?? 'linear-gradient(135deg, #e0e7ff, #a5b4fc)' }};">
-                                    <i class="bi {{ $course['icon'] ?? 'bi-building' }} fs-1 {{ $course['icon_color'] ?? 'text-success' }}"></i>
-                                    <span class="badge position-absolute top-0 start-0 m-3 text-white shadow-sm font-semibold rounded-pill" style="background-color: #005b7c !important;">
-                                        {{ $course['badge_label'] ?? 'Firm Only' }}
-                                    </span>
-                                    @if(!empty($course['category_label']))
-                                        <span class="badge position-absolute top-0 end-0 m-3 bg-white text-dark shadow-sm rounded-pill">
-                                            {{ $course['category_label'] }}
-                                        </span>
-                                    @endif
-                                </div>
-                                <div class="p-3 pb-0">
-                                    <h5 class="fw-bold text-dark mb-1">{{ $course['title'] }}</h5>
-                                    <p class="small text-secondary mb-3 fw-medium" style="color: #005b7c !important;">{{ $course['college_name'] ?? 'Partner Institution' }}</p>
-                                    <p class="small text-secondary mb-2 d-flex align-items-center gap-1">
-                                        <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }}
-                                    </p>
-                                    <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
-                                        <i class="bi bi-building-gear me-1"></i> {{ $course['seat_label'] ?? 'Flexible Group Options' }}
-                                    </p>
-                                    <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
-                                        <i class="bi bi-calendar-date"></i> {{ $course['time_firm'] ?? 'Date & Time Slot set by Firm' }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="p-3">
-                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light-subtle mb-3">
-                                    <span class="small text-muted text-uppercase tracking-wider" style="font-size: 11px;">Per Participant</span>
-                                    <span class="fw-bold fs-5" style="color: #005b7c !important;">{{ $course['price_label'] }}</span>
-                                </div>
-                                <a href="{{ $course['book_url'] ?? $course['details_url'] }}" class="btn text-white rounded-pill w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-1" style="background-color: #005b7c !important;">
-                                    <i class="bi bi-building"></i> Book for Firm
-                                </a>
-                            </div>
+                </div>
+            </div>
+            <div class="p-3">
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light-subtle mb-3">
+                    <span class="small text-muted text-uppercase tracking-wider" style="font-size: 11px;">Tuition Fee</span>
+                    <span class="fw-bold text-primary fs-5">{{ $course['price_label'] }}</span>
+                </div>
+                <a href="{{ $course['details_url'] }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-1">
+                    <i class="bi bi-mortarboard"></i> View Details
+                </a>
+            </div>
+        </div>
+    </div>
+@else
+    {{-- firm card --}}
+    <div class="col-md-4">
+        <div class="course-card p-0 h-100 rounded-4 overflow-hidden d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center justify-content-center position-relative overflow-hidden" style="height: 140px; background: {{ $course['gradient'] ?? 'linear-gradient(135deg, #e0e7ff, #a5b4fc)' }};">
+                    @if(!empty($course['image_url']))
+                        <img src="{{ $course['image_url'] }}" alt="{{ $course['title'] }}" class="w-100 h-100" style="object-fit: cover; object-position: center;">
+                    @else
+                        <div class="d-flex align-items-center justify-content-center h-100 w-100">
+                            <i class="bi bi-building fs-1 text-success"></i>
                         </div>
-                    </div>
-                @endif
+                    @endif
+                    
+                    <span class="badge position-absolute top-0 start-0 m-3 text-white shadow-sm font-semibold rounded-pill" style="background-color: #005b7c !important;">
+                        {{ $course['badge_label'] ?? 'Firm Only' }}
+                    </span>
+                    @if(!empty($course['category_label']))
+                        <span class="badge position-absolute top-0 end-0 m-3 bg-white text-dark shadow-sm rounded-pill">
+                            {{ $course['category_label'] }}
+                        </span>
+                    @endif
+                </div>
+                <div class="p-3 pb-0">
+                    <h5 class="fw-bold text-dark mb-1">{{ $course['title'] }}</h5>
+                    <p class="small text-secondary mb-3 fw-medium" style="color: #005b7c !important;">{{ $course['college_name'] ?? 'Partner Institution' }}</p>
+                    <p class="small text-secondary mb-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }}
+                    </p>
+                    <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
+                        <i class="bi bi-building-gear me-1"></i> {{ $course['seat_label'] ?? 'Flexible Group Options' }}
+                    </p>
+                    <p class="small text-secondary mb-3 d-flex align-items-center gap-1">
+                        <i class="bi bi-calendar-date"></i> {{ $course['time_firm'] ?? 'Date & Time Slot set by Firm' }}
+                    </p>
+                </div>
+            </div>
+            <div class="p-3">
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light-subtle mb-3">
+                    <span class="small text-muted text-uppercase tracking-wider" style="font-size: 11px;">Per Participant</span>
+                    <span class="fw-bold fs-5" style="color: #005b7c !important;">{{ $course['price_label'] }}</span>
+                </div>
+                <a href="{{ $course['book_url'] ?? $course['details_url'] }}" class="btn text-white rounded-pill w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-1" style="background-color: #005b7c !important;">
+                    <i class="bi bi-building"></i> Book for Firm
+                </a>
+            </div>
+        </div>
+    </div>
+@endif
             @empty
                 <div class="col-12 text-center py-5 bg-white rounded-4 border">
                     <i class="bi bi-search-heart text-muted fs-1 d-block mb-2"></i>

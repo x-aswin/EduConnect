@@ -184,6 +184,9 @@ public function explore(Request $request){
             $availableSeats = max(0, (int) ($course->available_seats ?? 0));
             $filledSeats = $totalSeats > 0 ? max(0, $totalSeats - $availableSeats) : 0;
             $progress = $totalSeats > 0 ? (int) round(($filledSeats / $totalSeats) * 100) : 0;
+
+            $imagePath = $course->course_image ?? $course->college?->photo ?? null;
+            $imageUrl = $imagePath ? asset('storage/' . ltrim($imagePath, '/')) : asset('images/default-course.png');
             
             if(!$isStudent)
                 $time_firm="Date & Time Slot set by Firm";
@@ -195,6 +198,7 @@ public function explore(Request $request){
                 'slug' => $course->slug,
                 'title' => $course->title,
                 'type' => $isStudent ? 'student' : 'firm',
+                'image_url' => $imageUrl,
                 'time_firm' => $time_firm,
                 'badge_label' => $isStudent ? 'Student Only' : 'Firm Only',
                 'category_label' => $course->category?->name ?? null,

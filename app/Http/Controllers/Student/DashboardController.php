@@ -155,6 +155,11 @@ class DashboardController extends Controller
                 ];
                 $visual = $visuals[$index % count($visuals)];
 
+                $imageUrl = null;
+                if (!empty($course->course_image)) {
+                    $imageUrl = asset('storage/' . ltrim($course->course_image, '/'));
+                }
+
                 return [
                     'title' => $course->title,
                     'details_url' => route('student.course.show', $course->slug),
@@ -168,6 +173,7 @@ class DashboardController extends Controller
                     'gradient' => $visual['gradient'],
                     'icon' => $visual['icon'],
                     'icon_color' => $visual['icon_color'],
+                    'image_url' => $imageUrl,
                 ];
             });
 
