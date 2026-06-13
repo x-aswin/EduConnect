@@ -1,4 +1,4 @@
-@props(['active' => null, 'title' => 'EduConnect'])
+@props(['active' => null, 'title' => 'EduConnect', 'hideButtons' => false])
 <x-base.layout :title="$title">
     @push('styles')
     <style>
@@ -89,7 +89,7 @@
                         </a>
                     </li> -->
                 </ul>
-
+                @if(!$hideButtons)
                 <div class="d-flex align-items-center ms-lg-3">
                     @auth
                     <a href="{{ route('dashboard') }}" class="btn btn-primary rounded-pill">Dashboard</a>
@@ -98,6 +98,7 @@
                     <a href="{{ route('register') }}" class="btn btn-primary rounded-pill">Register</a>
                     @endauth
                 </div>
+                @endif
             </div>
         </div>
     </nav>

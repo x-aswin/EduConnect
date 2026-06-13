@@ -1,4 +1,4 @@
-<x-firm.layout title="Complete Profile - EduConnect" active="profile">
+<x-firm.layout title="Complete Profile - EduConnect" active="profile" :hideButtons="true">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">

@@ -45,7 +45,7 @@
         </div>
     </form>
 </x-guest-layout> --}}
-<x-guest.layout title="Login - EduConnect" active="login">
+<x-guest.layout title="Login - EduConnect" active="login" :hideButtons="true">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6"> {{-- Wider card --}}
