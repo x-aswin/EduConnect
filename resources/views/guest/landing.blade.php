@@ -435,7 +435,7 @@
 </div>
 <h3 class="font-headline-lg text-headline-lg text-white mb-md">List Your Institution</h3>
 <p class="text-white/80 font-body-md text-body-md mb-lg">Ready to scale your professional impact? Apply today to join 50+ world-class institutions.</p>
-<a class="inline-flex items-center justify-center px-lg py-md bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:bg-opacity-90 transition-all uppercase tracking-widest shadow-xl font-bold" href="/register">
+<a class="inline-flex items-center justify-center px-lg py-md bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:bg-opacity-90 transition-all uppercase tracking-widest shadow-xl font-bold" href="/register/college">
             Apply for Partnership
         </a>
 <div class="mt-lg flex items-center justify-center gap-xs text-white/60 font-label-sm text-label-sm">
