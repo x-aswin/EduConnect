@@ -1,0 +1,106 @@
+## Certificate Feature — Design
+
+Your core idea is solid: don't pre-generate PDFs, just flag eligibility and render on-demand. Here's a refined version.
+
+### Schema Changes
+
+**courses table** — add:
+- `is_certified` (already exists)
+- `certificate_template` — optional, if you want different templates per course later (skip for now, hardcode one template)
+
+**New table: `certificate_signatories`**
+
+| Column | Type | Notes |
+|---|---|---|
+| id | BigInt (PK) | |
+| course_id | BigInt (FK) | → courses.id |
+| name | String | e.g. "Dr. John Mathew" |
+| designation | String | e.g. "Principal", "HOD" |
+| signature_image | String | Path to uploaded signature |
+| display_order | Integer | 1, 2, or 3 — left to right |
+| created_at / updated_at | Timestamps | |
+
+Max 3 rows per course, enforced in controller validation, not DB constraint.
+
+**enrollments table** — add:
+- `certificate_issued` (Boolean, default false) — the flag you mentioned
+- `certificate_issued_at` (Timestamp, nullable)
+- `certificate_code` (String, nullable, unique) — used for verification link, generated once when first issued
+
+### Flow
+
+**College side:**
+1. College marks course as `is_certified = true` and adds 1–3 signatories (name, designation, signature image) when creating/editing the course.
+2. After the course end_date passes (or manually), college sees a "Mark Certificates Available" action on confirmed enrollments — sets `certificate_issued = true` and generates `certificate_code` (e.g. `Str::uuid()` or a short hash like `strtoupper(Str::random(10))`).
+
+This can be bulk — a button on the course's enrollment list: "Issue Certificates to All Confirmed Students" → loops through confirmed enrollments, sets the flag.
+
+**Student side:**
+1. On "My Enrollments" page, if `enrollment.certificate_issued == true`, show a "Download Certificate" button.
+2. Clicking it hits a route like `/student/enrollments/{enrollment}/certificate` → controller generates PDF on-the-fly using student name, course title, college name, dates, and the signatories — returns as download (not stored).
+
+### PDF Generation
+
+Use the `pdf` skill / a library like `barryvdh/laravel-dompdf` or `dompdf` directly — render a Blade view (`certificates.student`) to HTML, convert to PDF, stream it.
+
+```php
+public function downloadCertificate(Enrollment $enrollment)
+{
+    abort_unless($enrollment->user_id === auth()->id(), 403);
+    abort_unless($enrollment->certificate_issued, 404);
+
+    $enrollment->load(['course.college', 'course.signatories', 'user']);
+
+    $pdf = Pdf::loadView('certificates.student', [
+        'enrollment' => $enrollment,
+    ]);
+
+    return $pdf->stream('certificate-' . $enrollment->certificate_code . '.pdf');
+}
+```
+
+The certificate blade includes student name (`enrollment.user.name`), course title, college name, dates, "Certified" badge if applicable, and loops through up to 3 signatories rendering signature image + name + designation side by side.
+
+### Verification Link
+
+You suggested `?q=userid_courseid_enrollmentid` — better to use the single `certificate_code` (random unique string) instead. Reasons:
+
+- A guessable composite of sequential IDs lets anyone enumerate certificates (`?q=1_1_1`, `?q=1_1_2`...) — privacy/security issue.
+- A random unique code per certificate is the standard approach and simpler to verify.
+
+```
+https://educonnect.test/verify-certificate/{certificate_code}
+```
+
+Public route, no auth required:
+
+```php
+public function verify(string $code)
+{
+    $enrollment = Enrollment::where('certificate_code', $code)
+        ->where('certificate_issued', true)
+        ->with(['course.college', 'user'])
+        ->first();
+
+    return view('certificates.verify', compact('enrollment'));
+}
+```
+
+The verify page shows: "This certificate is valid" with student name, course, college, issue date — or "Certificate not found / invalid" if null. Don't expose sensitive info beyond what's already on the certificate itself.
+
+### QR Code on Certificate (nice addition)
+
+Embed a QR code on the PDF pointing to the verification URL — easy with `simplesoftwareio/simple-qrcode`, lets anyone scan and verify instantly.
+
+### Firm Side (later)
+
+Same mechanism — `firm_participants` could get its own `certificate_issued` + `certificate_code` per participant, since each participant is a separate person needing their own certificate. The firm enrollment's certificate button would let the firm download a zip of all participant certificates, or each participant gets verified individually via their own code.
+
+### Summary of New/Changed Tables
+
+| Table | Change |
+|---|---|
+| enrollments | + `certificate_issued`, `certificate_issued_at`, `certificate_code` |
+| certificate_signatories | new table, belongs to courses |
+
+This keeps things minimal — no certificate storage, generated fresh each download, verification via unguessable code, and signatory data attached to the course (since the same college/course likely reuses the same signatories across all enrollments).
