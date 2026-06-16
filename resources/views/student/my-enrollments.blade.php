@@ -121,6 +121,13 @@
                                 <a href="{{ route('student.course.show', $enrollment->course->slug) }}" class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1">
                                     <i class="bi bi-eye me-1"></i> View Course
                                 </a>
+
+                                {{-- Certificate Download Button (NEW) --}}
+                                @if($enrollment->certificate_issued)
+                                    <a href="{{ route('student.certificates.download', $enrollment) }}" class="btn btn-success btn-sm rounded-pill">
+                                        <i class="bi bi-download me-1"></i> Certificate
+                                    </a>
+                                @endif
                                 @if($enrollment->status === 'confirmed' && $enrollment->payment_status === 'pending')
                                     <a href="{{ route('student.enrollment.payment', $enrollment) }}" class="btn btn-warning btn-sm rounded-pill">
                                         <i class="bi bi-credit-card me-1"></i> Pay
