@@ -15,6 +15,7 @@ use App\Http\Controllers\College\ProfileController as CollegeProfileController;
 use App\Http\Controllers\College\CourseController as CollegeCourseController;
 use App\Http\Controllers\College\MentorController as CollegeMentorController;
 use App\Http\Controllers\College\EnrollmentController as CollegeEnrollmentController;
+use App\Http\Controllers\College\CertificateController as CollegeCertificateController;
 
 
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
@@ -88,6 +89,9 @@ Route::middleware(['auth','role:college'])->group(function(){
         Route::resource('/mentors', CollegeMentorController::class)->names('mentors');
         Route::resource('/enrollments', CollegeEnrollmentController::class)->names('enrollments');
         Route::get('/reports', [\App\Http\Controllers\College\ReportController::class, 'index'])->name('reports.index');
+
+        Route::get('/certificates', [CollegeCertificateController::class, 'index'])->name('certificate');
+        Route::post('/certificates/{course}/issue', [CollegeCertificateController::class, 'issue'])->name('certificates.issue');
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

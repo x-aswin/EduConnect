@@ -1,9 +1,4 @@
 
-Max 3 rows per course, enforced in controller validation, not DB constraint.
-
-
-### Flow
-
 **College side:**
 1. College marks course as `is_certified = true` and adds 1–3 signatories (name, designation, signature image) when creating/editing the course.
 2. After the course end_date passes (or manually), college sees a "Mark Certificates Available" action on confirmed enrollments — sets `certificate_issued = true` and generates `certificate_code` (e.g. `Str::uuid()` or a short hash like `strtoupper(Str::random(10))`).

@@ -59,7 +59,7 @@ class Course extends Model
     {
         return $this->hasMany(Enrollment::class);
     }
-    public function certificateSignatories(): HasMany
+    public function Signatories(): HasMany
     {
         return $this->hasMany(CertificateSignatory::class)->orderBy('display_order');
     }
