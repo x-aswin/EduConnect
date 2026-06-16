@@ -1,22 +1,6 @@
 
-**New table: `certificate_signatories`**
-
-| Column | Type | Notes |
-|---|---|---|
-| id | BigInt (PK) | |
-| course_id | BigInt (FK) | → courses.id |
-| name | String | e.g. "Dr. John Mathew" |
-| designation | String | e.g. "Principal", "HOD" |
-| signature_image | String | Path to uploaded signature |
-| display_order | Integer | 1, 2, or 3 — left to right |
-| created_at / updated_at | Timestamps | |
-
 Max 3 rows per course, enforced in controller validation, not DB constraint.
 
-**enrollments table** — add:
-- `certificate_issued` (Boolean, default false) — the flag you mentioned
-- `certificate_issued_at` (Timestamp, nullable)
-- `certificate_code` (String, nullable, unique) — used for verification link, generated once when first issued
 
 ### Flow
 

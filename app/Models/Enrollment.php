@@ -20,6 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
         'participant_count',
         'total_amount',
         'college_note',
+        'certificate_issued',
+        'certificate_issued_at',
+        'certificate_code',
 ])]
 class Enrollment extends Model
 {
@@ -40,4 +43,9 @@ class Enrollment extends Model
     {
         return $this->hasMany(FirmParticipant::class);
     }
+
+    protected $casts = [
+        'certificate_issued' => 'boolean',
+        'certificate_issued_at' => 'datetime',
+    ];
 }
