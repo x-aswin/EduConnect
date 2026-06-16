@@ -18,10 +18,21 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
-    {
-        return view('auth.register');
-    }
+    // public function create(): View
+    // {
+    //     return view('auth.register');
+    // }
+        public function create(Request $request): View
+        {
+            // Get the type from route defaults (or fallback to query string)
+            $type = $request->route('type') ?? $request->query('type', 'learner');
+
+            if ($type === 'college') {
+                return view('auth.register-college');
+            }
+
+            return view('auth.register-learner');
+        }
 
     /**
      * Handle an incoming registration request.

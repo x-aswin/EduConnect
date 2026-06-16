@@ -147,30 +147,57 @@
     <a href="{{ route('student.explore.index') }}" class="text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
   </div>
   <div class="row g-4 mb-5">
-    @forelse($recommendedCourses as $course)
-    <div class="col-md-4">
-      <div class="course-card p-0">
-        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 120px; background: {{ $course['gradient'] }};">
-          <i class="bi {{ $course['icon'] }} fs-1 {{ $course['icon_color'] }}"></i>
+@forelse($recommendedCourses as $course)
+<div class="col-md-4 mb-4"> {{-- Added margin bottom for cleaner grids --}}
+  <div class="course-card p-0 h-100 d-flex flex-column justify-content-between">
+    <div>
+      {{-- CARD HEADER IMAGE BLOCK --}}
+      <div class="position-relative overflow-hidden d-flex align-items-center justify-content-center" style="height: 140px; background: {{ $course['gradient'] }};">
+        @if(!empty($course['image_url']))
+          <img src="{{ $course['image_url'] }}" alt="{{ $course['title'] }}" class="w-100 h-100" style="object-fit: cover; object-position: center;">
+        @else
+          {{-- Smooth fallback to icon style --}}
+          <div class="d-flex align-items-center justify-content-center h-100 w-100">
+            <i class="bi {{ $course['icon'] }} fs-1 {{ $course['icon_color'] }}"></i>
+          </div>
+        @endif
+
+        {{-- Absolute badges placed on top of image overlay --}}
+        {{-- <span class="badge {{ $course['badge_class'] }} position-absolute top-0 start-0 m-3 shadow-sm rounded-pill" style="font-size: 11px;">
+          {{ $course['badge_label'] }}
+        </span> --}}
+      </div>
+
+      <div class="p-3">
+        <h5 class="fw-bold mt-1 text-dark">{{ $course['title'] }}</h5>
+        <p class="small text-secondary mb-2">
+          <i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }} · 
+          <i class="bi bi-calendar3 ms-2"></i> Starts {{ $course['start_date'] }}
+        </p>
+        
+        <div class="d-flex justify-content-between align-items-center mt-2" style="font-size: 13px;">
+          <span class="text-secondary"><i class="bi bi-person me-1"></i> {{ $course['seats_label'] }}</span>
+          <span class="fw-bold text-primary">{{ $course['progress'] }}% Filled</span>
         </div>
-        <div class="p-3">
-          <span class="badge {{ $course['badge_class'] }} mb-2">{{ $course['badge_label'] }}</span>
-          <h5 class="fw-bold mt-1">{{ $course['title'] }}</h5>
-          <p class="small text-secondary"><i class="bi bi-geo-alt me-1"></i> {{ $course['venue'] }} · <i class="bi bi-calendar3 ms-2"></i> Starts {{ $course['start_date'] }}</p>
-          <div class="d-flex justify-content-between align-items-center mt-2">
-            <span class="fw-bold text-primary">{{ $course['price_label'] }}</span>
-            <span class="small"><i class="bi bi-person"></i> {{ $course['seats_label'] }}</span>
-          </div>
-          <div class="progress mt-2">
-            <div class="progress-bar bg-primary" style="width: {{ $course['progress'] }}%"></div>
-          </div>
-          <a href="{{ $course['details_url'] }}" class="btn btn-primary rounded-pill w-100 mt-3 py-2 fw-semibold">
-            <i class="bi bi-box-arrow-in-right"></i> View Details
-          </a>
+        
+        <div class="progress mt-1" style="height: 6px; border-radius: 10px;">
+          <div class="progress-bar bg-primary rounded-pill transition-all" role="progressbar" style="width: {{ $course['progress'] }}%"></div>
         </div>
       </div>
     </div>
-    @empty
+
+    <div class="p-3 pt-0">
+      <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light-subtle mb-3">
+        <span class="small text-muted text-uppercase tracking-wider" style="font-size: 11px;">Tuition Fee</span>
+        <span class="fw-bold text-primary fs-5">{{ $course['price_label'] }}</span>
+      </div>
+      <a href="{{ $course['details_url'] }}" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-1">
+        <i class="bi bi-box-arrow-in-right"></i> View Details
+      </a>
+    </div>
+  </div>
+</div>
+@empty
     <div class="col-12">
       <div class="alert alert-light border rounded-4 mb-0">
         No active recommendations yet. Check back after new courses are published.
