@@ -1,12 +1,3 @@
-## Certificate Feature — Design
-
-Your core idea is solid: don't pre-generate PDFs, just flag eligibility and render on-demand. Here's a refined version.
-
-### Schema Changes
-
-**courses table** — add:
-- `is_certified` (already exists)
-- `certificate_template` — optional, if you want different templates per course later (skip for now, hardcode one template)
 
 **New table: `certificate_signatories`**
 
