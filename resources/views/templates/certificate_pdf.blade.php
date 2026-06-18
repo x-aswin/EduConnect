@@ -269,7 +269,7 @@
 
                     <div class="central-text">
                         @php
-                            $genderLower = strtolower($student->gender ?? '');
+                            $genderLower = strtolower($gender ?? '');
                             $prefix = '';
                             if ($genderLower === 'male') $prefix = 'Mr. ';
                             elseif ($genderLower === 'female') $prefix = 'Ms. ';

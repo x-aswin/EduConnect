@@ -324,6 +324,7 @@ class CourseController extends Controller
     // 6. Map model entities into variables expected by your template layout
     $data = [
         'student'          => $enrollment->user,
+        'gender'           => $enrollment->user->student->gender,
         'course'           => $enrollment->course,
         'signatories'      => $enrollment->course->signatories->toArray(),
         'verificationCode' => $enrollment->certificate_code,
