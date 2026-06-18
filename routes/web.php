@@ -59,6 +59,8 @@ Route::get('/dashboard', function () {
 })->name('dashboard');
 // ->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/verify', [LandingController::class, 'verify'])->name('certificate.verify');
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -121,6 +123,9 @@ Route::middleware(['auth', 'role:student'])->group(function () {
             ->name('enrollment.pay');
         Route::delete('/my-enrollments/{enrollment}', [StudentCourseController::class, 'destroy'])
             ->name('my.enrollments.destroy');
+
+        Route::get('/my-enrollments/{enrollment}/certificate', [StudentCourseController::class, 'download'])
+        ->name('certificates.download');
 
         Route::get('/complete-profile', [StudentProfileController::class, 'CompleteEdit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [StudentProfileController::class, 'CompleteUpdate'])->name('complete.profile.update');

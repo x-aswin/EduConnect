@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 
+use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 class CourseController extends Controller
 {
     /**
@@ -285,48 +289,53 @@ class CourseController extends Controller
     }
 
     public function download(Enrollment $enrollment)
-    {
-        // 1. Authorization Guard
-        abort_unless($enrollment->user_id === auth()->id(), 403, 'Unauthorized access.');
-        
-        // 2. Issuance Security Guard
-        abort_unless($enrollment->certificate_issued, 404, 'Certificate not yet available.');
+{
+    // 1. Authorization Guard
+    abort_unless($enrollment->user_id === auth()->id(), 403, 'Unauthorized access.');
+    
+    // 2. Issuance Security Guard
+    abort_unless($enrollment->certificate_issued, 404, 'Certificate not yet available.');
 
-        // 3. Lazy code generation: build the code if it doesn't exist yet
-        if (!$enrollment->certificate_code) {
-            $enrollment->update([
-                'certificate_code' => 'EDU-' . now()->year . '-' . strtoupper(Str::random(8))
-            ]);
-        }
+    // 3. Lazy code generation: build the code if it doesn't exist yet
+    if (!$enrollment->certificate_code) {
+        $enrollment->update([
+            'certificate_code' => 'EDU-' . now()->year . '-' . strtoupper(Str::random(8))
+        ]);
+    }
 
-        // 4. Eager load relationships needed for the template layout map
-        $enrollment->load(['course.college.user', 'course.signatories', 'user']);
+    // 4. Eager load relationships needed for the template layout map
+    $enrollment->load(['course.college.user', 'course.signatories', 'user']);
 
-        // 5. Generate Base64 QR Code safely for DomPDF inclusion
-        // This generates a public URL hitting your upcoming public verification path
-        $verificationUrl = route('public.certificate.verify', $enrollment->certificate_code);
-        
-        $qrCodeData = QrCode::format('png')
-            ->size(150)
-            ->margin(1)
+    // 5. Generate Base64 QR Code safely for DomPDF inclusion via SVG Base64 encoding
+        $verificationUrl = url('/verify?code=' . $enrollment->certificate_code);
+
+        // Generate as raw SVG string (this requires NO server-side image extensions like Imagick or GD)
+        $qrCodeSvgRaw = QrCode::format('svg')
+            ->size(120) // High-fidelity scaling for the container vector canvas
+            ->margin(0)
             ->errorCorrection('M')
             ->generate($verificationUrl);
             
-        $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrCodeData);
+        // Encode the raw XML/SVG string into a safe inline Data URI string
+        $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrCodeSvgRaw);
 
-        // 6. Map model entities into variables expected by your custom template layout
-        $data = [
-            'student'           => $enrollment->user, // Maps to $student->name, $student->gender
-            'course'            => $enrollment->course, // Maps to $course->title, $course->start_date, etc.
-            'signatories'       => $enrollment->course->signatories->toArray(), // Maps to array loop structure
-            'verificationCode'  => $enrollment->certificate_code, // Maps to $verificationCode
-            'qrCode'            => $qrCodeBase64, // Maps to base64 $qrCode image slot
-        ];
+        
+        
+    // 6. Map model entities into variables expected by your template layout
+    $data = [
+        'student'          => $enrollment->user,
+        'course'           => $enrollment->course,
+        'signatories'      => $enrollment->course->signatories->toArray(),
+        'verificationCode' => $enrollment->certificate_code,
+        'qrCode'           => $qrCodeBase64,
+        'verificationUrl' => $verificationUrl,
+    ];
 
-        // 7. Render using your precise template layout name
-        $pdf = Pdf::loadView('templates.certificate_pdf', $data)
-            ->setPaper('a4', 'landscape');
+    // 7. Render using your precise template layout name
+    $pdf = Pdf::loadView('templates.certificate_pdf', $data)
+        ->setPaper('a4', 'landscape')
+        ->setWarnings(false); // Silences non-fatal asset parsing notifications
 
-        return $pdf->stream('Certificate-' . $enrollment->certificate_code . '.pdf');
-    }
+    return $pdf->stream('Certificate-' . $enrollment->certificate_code . '.pdf');
+}
 }
