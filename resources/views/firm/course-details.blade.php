@@ -64,6 +64,69 @@
                                     <input type="hidden" name="total_amount" id="firm_total_amount_hidden" value="0">
                                 </div>
                             </div>
+                            @if($groups->isNotEmpty())
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Add from Saved Groups</label>
+                                <div class="accordion accordion-flush border rounded" id="groupsAccordion">
+                                    @foreach($groups as $group)
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed py-2 small" type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#group{{ $group->id }}"
+                                                    aria-expanded="false">
+                                                {{ $group->group_name }}
+                                                <span class="badge bg-secondary ms-2">{{ $group->members->count() }} members</span>
+                                            </button>
+                                        </h2>
+                                        <div id="group{{ $group->id }}" class="accordion-collapse collapse"
+                                             data-bs-parent="#groupsAccordion">
+                                            <div class="accordion-body p-2">
+                                                @if($group->members->isEmpty())
+                                                    <p class="text-muted small mb-0">No members in this group.</p>
+                                                @else
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-borderless mb-1">
+                                                            <thead class="table-light small">
+                                                                <tr>
+                                                                    <th style="width:5%">
+                                                                        <input type="checkbox" class="form-check-input group-select-all"
+                                                                               data-group="{{ $group->id }}">
+                                                                    </th>
+                                                                    <th>Name</th>
+                                                                    <th>Contact</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach($group->members as $member)
+                                                                <tr>
+                                                                    <td>
+                                                                        <input type="checkbox" class="form-check-input group-member-check"
+                                                                               data-group="{{ $group->id }}"
+                                                                               data-name="{{ $member->name }}"
+                                                                               data-contact="{{ $member->contact_info }}">
+                                                                    </td>
+                                                                    <td class="small">{{ $member->name }}</td>
+                                                                    <td class="small">{{ $member->contact_info }}</td>
+                                                                </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-primary w-100 add-group-members-btn"
+                                                            data-group="{{ $group->id }}">
+                                                        <i class="bi bi-plus-lg me-1"></i> Add selected members to participants
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+
                             <div class="col-12 mt-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <label class="form-label mb-0 small fw-semibold">Firm Participants</label>
@@ -307,5 +370,54 @@
 
         // initialize participant count from existing rows
         updateParticipantCount();
+
+        // Select all checkbox per group
+        document.querySelectorAll('.group-select-all').forEach(function(selectAll) {
+            selectAll.addEventListener('change', function() {
+                const groupId = this.dataset.group;
+                document.querySelectorAll(`.group-member-check[data-group="${groupId}"]`)
+                        .forEach(cb => cb.checked = this.checked);
+            });
+        });
+
+        // Add selected group members to participants table
+        document.querySelectorAll('.add-group-members-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const groupId = this.dataset.group;
+                const checks = document.querySelectorAll(
+                    `.group-member-check[data-group="${groupId}"]:checked`
+                );
+
+                if (checks.length === 0) {
+                    alert('Please select at least one member from this group.');
+                    return;
+                }
+
+                // Collect names already in the table to avoid duplicates
+                const existingNames = Array.from(
+                    tbody.querySelectorAll('input[type="hidden"][name$="[name]"]')
+                ).map(i => i.value.trim().toLowerCase());
+
+                let addedCount = 0;
+                checks.forEach(function(cb) {
+                    const name = (cb.dataset.name || '').trim();
+                    const contact = (cb.dataset.contact || '').trim();
+                    if (!name) return;
+                    if (existingNames.includes(name.toLowerCase())) return; // skip duplicate
+                    addParticipant(name, contact);
+                    existingNames.push(name.toLowerCase());
+                    cb.checked = false;
+                    addedCount++;
+                });
+
+                // Uncheck select-all for this group
+                const selectAll = document.querySelector(`.group-select-all[data-group="${groupId}"]`);
+                if (selectAll) selectAll.checked = false;
+
+                if (addedCount === 0) {
+                    alert('Selected members are already in the participants list.');
+                }
+            });
+        });
     });
 </script>

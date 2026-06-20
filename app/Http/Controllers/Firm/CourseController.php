@@ -111,15 +111,29 @@ class CourseController extends Controller
 
         return view('firm.browse-course', compact('courses', 'categories', 'sort'));
     }
-       public function show(string $slug)
+    public function show(string $slug)
     {
         $course = Course::with(['college', 'category'])
             ->where('slug', $slug)
             ->where('status', 'active')
             ->firstOrFail();
+
         $isEnrolled = false;
 
-        return view('firm.course-details', ['course' => $course, 'isEnrolled' => $isEnrolled]);
+        $groups = collect();
+        $user = Auth::user();
+        if ($user && $user->role === 'firm' && $user->firm) {
+            $groups = $user->firm->groups()
+                          ->where('is_active', true)
+                          ->with('members')
+                          ->get();
+        }
+
+        return view('firm.course-details', [
+            'course'     => $course,
+            'isEnrolled' => $isEnrolled,
+            'groups'     => $groups,
+        ]);
     }
     public function book(Request $request, Course $course)
     {
