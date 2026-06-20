@@ -151,6 +151,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ route('mentor.reports.index') }}"><i class="bi bi-bar-chart-line"></i> Reports</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">

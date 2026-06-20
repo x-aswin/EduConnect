@@ -189,6 +189,7 @@ Route::middleware(['auth', 'role:mentor'])->group(function () {
         Route::get('/mycourses', [MentorCourseController::class, 'browse'])->name('mycourses');
         Route::get('/course/{slug}', [MentorCourseController::class, 'details'])->name('coursedetails');
         Route::get('/chat-requests', [MentorChatController::class, 'requests'])->name('chat.requests');
+        Route::get('/reports', [\App\Http\Controllers\Mentor\ReportController::class, 'index'])->name('reports.index');
 
         Route::post('/chat/{chat}/accept',  [MentorChatController::class, 'accept'])->name('chat.accept');
         Route::post('/chat/{chat}/decline', [MentorChatController::class, 'decline'])->name('chat.decline');

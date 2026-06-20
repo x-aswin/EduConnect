@@ -98,12 +98,12 @@
                             <span><i class="bi bi-building me-1"></i> College:</span>
                             <span>{{ $request->course?->college?->institution_name ?? 'N/A' }}</span>
                         </div>
-                        @if($request->course)
+                        <!-- @if($request->course)
                             <div class="d-flex justify-content-between mt-1">
                                 <span><i class="bi bi-people me-1"></i> Enrolled:</span>
                                 <span>{{ $request->course->enrollments_count ?? 0 }} students</span>
                             </div>
-                        @endif
+                        @endif -->
                         <div class="d-flex justify-content-between mt-1">
                             <span><i class="bi bi-calendar3 me-1"></i> Requested:</span>
                             <span>{{ $request->created_at->format('M d, Y') }}</span>
