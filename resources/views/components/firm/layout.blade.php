@@ -146,11 +146,6 @@
             <i class="bi bi-journal-check me-1 d-inline-block d-lg-none d-xl-inline"></i> My Bookings
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link {{ $active === 'reports' ? 'active' : '' }}" href="{{ route('firm.reports.index') }}">
-            <i class="bi bi-bar-chart-line me-1 d-inline-block d-lg-none d-xl-inline"></i> Reports
-          </a>
-        </li>
         <!-- <li class="nav-item dropdown d-none d-lg-block">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-building me-1"></i> Organisation
@@ -192,6 +187,7 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ route('firm.profile.edit') }}"><i class="bi bi-building"></i> Organisation Profile</a></li>
+            <li><a class="dropdown-item" href="{{ route('firm.reports.index') }}"><i class="bi bi-bar-chart-line"></i> Reports</a></li>
             {{-- <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person-circle"></i> My Account</a></li> --}}
             <li><hr class="dropdown-divider"></li>
             <li>
