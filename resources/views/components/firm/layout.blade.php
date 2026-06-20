@@ -147,7 +147,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'reports' ? 'active' : '' }}" href="#">
+          <a class="nav-link {{ $active === 'reports' ? 'active' : '' }}" href="{{ route('firm.reports.index') }}">
             <i class="bi bi-bar-chart-line me-1 d-inline-block d-lg-none d-xl-inline"></i> Reports
           </a>
         </li>

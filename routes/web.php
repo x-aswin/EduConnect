@@ -168,6 +168,9 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::get('bookings/{enrollment}/certificate', [FirmCourseController::class, 'download'])
             ->name('certificates.download');
 
+        Route::get('/reports', [\App\Http\Controllers\Firm\ReportController::class, 'index'])
+            ->name('reports.index');
+
         // Firm profile management ()
         Route::get('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeEdit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeUpdate'])->name('complete.profile.update');
