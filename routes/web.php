@@ -25,6 +25,8 @@ use App\Http\Controllers\Student\ChatController as StudentChatController;
 
 use App\Http\Controllers\Firm\DashboardController as FirmDashboardController;
 use App\Http\Controllers\Firm\CourseController as FirmCourseController;
+use App\Http\Controllers\Firm\GroupController;
+use App\Http\Controllers\Firm\GroupMemberController;
 
 use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
 use App\Http\Controllers\Mentor\CourseController as MentorCourseController;
@@ -170,6 +172,15 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
 
         Route::get('/reports', [\App\Http\Controllers\Firm\ReportController::class, 'index'])
             ->name('reports.index');
+
+        Route::resource('groups', GroupController::class)
+             ->except(['create', 'edit']);
+
+        Route::post('groups/{group}/members', [GroupMemberController::class, 'store'])
+             ->name('groups.members.store');
+
+        Route::delete('groups/{group}/members/{member}', [GroupMemberController::class, 'destroy'])
+             ->name('groups.members.destroy');
 
         // Firm profile management ()
         Route::get('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeEdit'])->name('complete.profile.edit');

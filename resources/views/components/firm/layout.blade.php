@@ -146,6 +146,11 @@
             <i class="bi bi-journal-check me-1 d-inline-block d-lg-none d-xl-inline"></i> My Bookings
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link {{ $active === 'groups' ? 'active' : '' }}" href="{{ route('firm.groups.index') }}">
+            <i class="bi bi-people-fill me-1 d-inline-block d-lg-none d-xl-inline"></i> My Groups
+          </a>
+        </li>
         <!-- <li class="nav-item dropdown d-none d-lg-block">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-building me-1"></i> Organisation
