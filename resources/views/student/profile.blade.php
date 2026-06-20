@@ -159,6 +159,30 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Verification ID Document (Aadhaar, College ID, etc.)</label>
+                                <input type="file" name="verification_doc" class="form-control @error('verification_doc') is-invalid @enderror" accept="image/*,application/pdf">
+                                @error('verification_doc')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text small text-muted">Upload an image or a PDF file (Max 2MB) to update your verification ID.</div>
+                                
+                                @if(auth()->user()->student?->verification_doc)
+                                    <div class="mt-2 p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-check-fill text-success fs-3 me-3"></i>
+                                            <div>
+                                                <span class="d-block small fw-bold text-secondary">Uploaded Document</span>
+                                                <span class="text-muted small">Verification ID is on file</span>
+                                            </div>
+                                        </div>
+                                        <a href="{{ asset('storage/' . auth()->user()->student->verification_doc) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="bi bi-eye me-1"></i> View Document
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 

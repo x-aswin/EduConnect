@@ -15,6 +15,7 @@ class Student extends Model
         'current_qualification',
         'address',
         'photo',
+        'verification_doc',
     ];
 
     protected $casts = [

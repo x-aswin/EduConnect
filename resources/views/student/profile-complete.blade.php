@@ -96,6 +96,17 @@
                                 @enderror
                             </div>
 
+                            <!-- Verification Document Upload -->
+                            <div class="mb-4">
+                                <label for="verification_doc" class="form-label fw-semibold small text-secondary">Verification ID Document (Aadhaar, College ID, etc.)</label>
+                                <input type="file" id="verification_doc" name="verification_doc" accept="image/*,application/pdf" 
+                                       class="form-control rounded-pill py-2 @error('verification_doc') is-invalid @enderror">
+                                @error('verification_doc')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text small text-muted ms-2">Upload an image or a PDF file (Max 2MB)</div>
+                            </div>
+
                             <button type="submit" class="btn btn-primary rounded-pill w-100 py-2 fw-semibold shadow-sm">
                                 <i class="bi bi-check2-circle me-2"></i> Save Profile & Continue
                             </button>

@@ -37,6 +37,7 @@ class ProfileController extends Controller
             'current_qualification' => 'required|string|max:100',
             'address'               => 'required|string|max:500',
             'photo'                 => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'verification_doc'      => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         // Find the existing student record
@@ -61,6 +62,16 @@ class ProfileController extends Controller
             $photoPath = $request->file('photo')->store('students/photos', 'public');
         }
 
+        // Handle Verification Doc Upload: preserve existing when not provided
+        $verificationDocPath = $student->verification_doc;
+        if ($request->hasFile('verification_doc')) {
+            // delete old document
+            if ($verificationDocPath && Storage::disk('public')->exists($verificationDocPath)) {
+                Storage::disk('public')->delete($verificationDocPath);
+            }
+            $verificationDocPath = $request->file('verification_doc')->store('students/verification_docs', 'public');
+        }
+
         // Update with the validated data
         $student->update([
             'phone'                 => $request->phone,
@@ -69,6 +80,7 @@ class ProfileController extends Controller
             'current_qualification' => $request->current_qualification,
             'address'               => $request->address,
             'photo'                 => $photoPath,
+            'verification_doc'      => $verificationDocPath,
         ]);
 
         return redirect()->route('student.profile.edit')->with('success', 'Profile updated successfully!')->with('status', 'profile-updated');
@@ -100,12 +112,17 @@ class ProfileController extends Controller
             'current_qualification' => 'required|string|max:100',
             'address'               => 'required|string|max:500',
             'photo'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'verification_doc' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         $student = Student::firstOrNew(['user_id' => Auth::id()]);
 
         if ($request->hasFile('photo')) {
             $student->photo = $request->file('photo')->store('students/photos', 'public');
+        }
+
+        if ($request->hasFile('verification_doc')) {
+            $student->verification_doc = $request->file('verification_doc')->store('students/verification_docs', 'public');
         }
 
         $student->fill([
