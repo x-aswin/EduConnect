@@ -151,7 +151,7 @@
             <i class="bi bi-bar-chart-line me-1 d-inline-block d-lg-none d-xl-inline"></i> Reports
           </a>
         </li>
-        <li class="nav-item dropdown d-none d-lg-block">
+        <!-- <li class="nav-item dropdown d-none d-lg-block">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-building me-1"></i> Organisation
           </a>
@@ -161,7 +161,7 @@
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ route('firm.bookings.index') }}"><i class="bi bi-calendar-check"></i> Upcoming Sessions</a></li>
           </ul>
-        </li>
+        </li> -->
       </ul>
 
       <div class="d-flex align-items-center ms-lg-3">

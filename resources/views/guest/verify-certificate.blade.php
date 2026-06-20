@@ -102,7 +102,6 @@
                 @if($valid && isset($certificate))
                 <div class="verify-card p-4 p-lg-5">
                     
-                    {{-- Status Banner --}}
                     <div class="status-banner valid mb-4">
                         <i class="bi bi-shield-check fs-4" style="color: #16a34a;"></i>
                         <div>
@@ -111,43 +110,92 @@
                         </div>
                     </div>
 
-                    {{-- Certificate Details --}}
-                    <div class="detail-row">
-                        <span class="detail-label">Student Name</span>
-                        <span class="detail-value highlight">{{ $certificate['student_name'] }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Course</span>
-                        <span class="detail-value">{{ $certificate['course_title'] }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Institution</span>
-                        <span class="detail-value">{{ $certificate['college_name'] }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Duration</span>
-                        <span class="detail-value">
-                            {{ $certificate['start_date'] }} – {{ $certificate['end_date'] }}
-                        </span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Certificate ID</span>
-                        <span class="detail-value" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">
-                            {{ $certificate['code'] }}
-                        </span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Issued On</span>
-                        <span class="detail-value">{{ $certificate['issued_date'] ?? $certificate['end_date'] }}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Status</span>
-                        <span class="detail-value">
-                            <span class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill">
-                                <i class="bi bi-check-circle-fill me-1"></i> Valid
+                    {{-- Firm certificates – show organisation and participant list --}}
+                    @if($certificate['is_firm'])
+                        <div class="detail-row">
+                            <span class="detail-label">Organisation</span>
+                            <span class="detail-value highlight">{{ $certificate['firm_name'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Course</span>
+                            <span class="detail-value">{{ $certificate['course_title'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Institution</span>
+                            <span class="detail-value">{{ $certificate['college_name'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Duration</span>
+                            <span class="detail-value">{{ $certificate['start_date'] }} – {{ $certificate['end_date'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Certificate ID</span>
+                            <span class="detail-value" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                                {{ $certificate['code'] }}
                             </span>
-                        </span>
-                    </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Issued On</span>
+                            <span class="detail-value">{{ $certificate['issued_date'] ?? $certificate['end_date'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value">
+                                <span class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Valid
+                                </span>
+                            </span>
+                        </div>
+
+                        {{-- Participants list --}}
+                        <div class="mt-4">
+                            <h6 class="fw-bold text-secondary text-uppercase small mb-2">Participants</h6>
+                            <ul class="list-group list-group-flush">
+                                @foreach($certificate['participants'] as $name)
+                                    <li class="list-group-item px-0 py-2 d-flex align-items-center gap-2 border-0">
+                                        <i class="bi bi-person-check-fill text-success"></i>
+                                        <span class="fw-semibold">{{ $name }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @else
+                        {{-- Student certificate – show student name --}}
+                        <div class="detail-row">
+                            <span class="detail-label">Student Name</span>
+                            <span class="detail-value highlight">{{ $certificate['student_name'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Course</span>
+                            <span class="detail-value">{{ $certificate['course_title'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Institution</span>
+                            <span class="detail-value">{{ $certificate['college_name'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Duration</span>
+                            <span class="detail-value">{{ $certificate['start_date'] }} – {{ $certificate['end_date'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Certificate ID</span>
+                            <span class="detail-value" style="font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                                {{ $certificate['code'] }}
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Issued On</span>
+                            <span class="detail-value">{{ $certificate['issued_date'] ?? $certificate['end_date'] }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value">
+                                <span class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Valid
+                                </span>
+                            </span>
+                        </div>
+                    @endif
 
                     {{-- Issuer Info --}}
                     <div class="text-center mt-4 pt-3 border-top">

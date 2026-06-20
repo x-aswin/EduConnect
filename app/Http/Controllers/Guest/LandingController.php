@@ -349,53 +349,88 @@ class LandingController extends Controller
             return view('guest.course-details', ['course' => $course]);
         }
 
-    public function verify(Request $request)
-    {
-        $code = $request->query('code');
+public function verify(Request $request)
+{
+    $code = $request->query('code');
 
-        if (empty($code)) {
-            return view('guest.verify-certificate', [
-                'valid' => false,
-                'errorMessage' => 'No verification code provided.',
-            ]);
-        }
-
-        // Look up the enrollment by verification code
-        // Adjust this query to match how you store/generate verification codes
-        $enrollment = Enrollment::with(['user.student', 'course.college'])
-            ->where('certificate_code', $code)
-            ->first();
-
-        if (!$enrollment) {
-            return view('guest.verify-certificate', [
-                'valid' => false,
-                'errorMessage' => 'Certificate not found. The code may be invalid or the certificate has been revoked.',
-            ]);
-        }
-
-        $student = $enrollment->user;
-        $course = $enrollment->course;
-        $college = $course->college;
-
+    if (empty($code)) {
         return view('guest.verify-certificate', [
-            'valid' => true,
-            'certificate' => [
-                'code' => $code,
-                'student_name' => ($student->student->gender === 'Male' ? 'Mr. ' : ($student->student->gender === 'Female' ? 'Ms. ' : '')) . $student->name,
-                'course_title' => $course->title,
-                'college_name' => $college->institution_name ?? $college->user->name,
-                'start_date' => isset($course->start_date) 
-    ? \Carbon\Carbon::parse($course->start_date)->format('F d, Y') 
-    : 'N/A',
-                'end_date' => isset($course->end_date) 
-    ? \Carbon\Carbon::parse($course->end_date)->format('F d, Y') 
-    : 'N/A',
-                'issued_date' => isset($enrollment->certificate_issued_at) 
-    ? \Carbon\Carbon::parse($enrollment->certificate_issued_at)->format('F d, Y') 
-    : 'N/A',
-            ],
+            'valid' => false,
+            'errorMessage' => 'No verification code provided.',
         ]);
     }
+
+    // Look up the enrollment by certificate_code
+    $enrollment = Enrollment::with(['user.student', 'user.firm', 'course.college', 'participants'])
+        ->where('certificate_code', $code)
+        ->first();
+
+    if (!$enrollment) {
+        return view('guest.verify-certificate', [
+            'valid' => false,
+            'errorMessage' => 'Certificate not found. The code may be invalid or the certificate has been revoked.',
+        ]);
+    }
+
+    $course = $enrollment->course;
+    $college = $course->college;
+    $isFirm = $enrollment->type === 'firm';
+
+    if ($isFirm) {
+        // Firm certificate – show firm name and list all participants
+        $firm = $enrollment->user->firm;
+        $participantNames = $enrollment->participants->pluck('name')->toArray();
+
+        $certificate = [
+            'code'           => $code,
+            'firm_name'      => $firm->org_name ?? 'N/A',
+            'participants'   => $participantNames,
+            'course_title'   => $course->title,
+            'college_name'   => $college->institution_name ?? $college->user->name,
+            'start_date'     => $enrollment->proposed_start
+                ? \Carbon\Carbon::parse($enrollment->proposed_start)->format('F d, Y')
+                : 'N/A',
+            'end_date'       => $enrollment->proposed_end
+                ? \Carbon\Carbon::parse($enrollment->proposed_end)->format('F d, Y')
+                : 'N/A',
+            'issued_date'    => $enrollment->certificate_issued_at
+                ? \Carbon\Carbon::parse($enrollment->certificate_issued_at)->format('F d, Y')
+                : 'N/A',
+            'is_firm'        => true,
+        ];
+    } else {
+        // Student certificate – show student name and title
+        $student = $enrollment->user;
+        $gender = $student->student->gender ?? null;
+        $prefix = match($gender) {
+            'Male'   => 'Mr. ',
+            'Female' => 'Ms. ',
+            default  => '',
+        };
+
+        $certificate = [
+            'code'         => $code,
+            'student_name' => $prefix . $student->name,
+            'course_title' => $course->title,
+            'college_name' => $college->institution_name ?? $college->user->name,
+            'start_date'   => $course->start_date
+                ? \Carbon\Carbon::parse($course->start_date)->format('F d, Y')
+                : 'N/A',
+            'end_date'     => $course->end_date
+                ? \Carbon\Carbon::parse($course->end_date)->format('F d, Y')
+                : 'N/A',
+            'issued_date'  => $enrollment->certificate_issued_at
+                ? \Carbon\Carbon::parse($enrollment->certificate_issued_at)->format('F d, Y')
+                : 'N/A',
+            'is_firm'      => false,
+        ];
+    }
+
+    return view('guest.verify-certificate', [
+        'valid'       => true,
+        'certificate' => $certificate,
+    ]);
+}
 
     /**
      * Decode a verification code back to an enrollment ID if needed.
