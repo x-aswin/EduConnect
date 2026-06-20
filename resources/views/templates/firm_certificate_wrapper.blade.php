@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Certificate of Completion - EduConnect</title>
+    <title>Certificates – {{ $firm->org_name ?? 'Firm' }}</title>
     <style>
         /* 1. Register local TTF assets safely */
         @font-face {
@@ -229,11 +229,25 @@
             color: #64748b;
             font-weight: 400;
         }
+        @font-face { … }
+        @page { size: A4 landscape; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
     </style>
 </head>
 <body>
-
-@include('templates._certificate_body')
-
+    @foreach($participantPages as $index => $page)
+        @include('templates.certificate_body_pdf', [
+            'student'          => $page['student'],
+            'course'           => $course,
+            'signatories'      => $signatories,
+            'verificationCode' => $page['verificationCode'],
+            'qrCode'           => $page['qrCode'],
+            'verificationUrl'  => $page['verificationUrl'],
+            'firmName'         => $page['firmName'] ?? null,
+        ])
+        @if(!$loop->last)
+            <div style="page-break-after: always;"></div>
+        @endif
+    @endforeach
 </body>
 </html>

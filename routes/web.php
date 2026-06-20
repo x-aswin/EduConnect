@@ -26,7 +26,6 @@ use App\Http\Controllers\Student\ChatController as StudentChatController;
 use App\Http\Controllers\Firm\DashboardController as FirmDashboardController;
 use App\Http\Controllers\Firm\CourseController as FirmCourseController;
 
-
 use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
 use App\Http\Controllers\Mentor\CourseController as MentorCourseController;
 use App\Http\Controllers\Mentor\ChatController as MentorChatController;
@@ -163,6 +162,9 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
         Route::get('/bookings/{enrollment}/payment', [FirmCourseController::class, 'payment'])->name('bookings.payment');
         Route::post('/bookings/{enrollment}/pay', [FirmCourseController::class, 'processPayment'])->name('booking.pay');
         Route::delete('/bookings/{enrollment}', [FirmCourseController::class, 'destroy'])->name('bookings.destroy');
+
+        Route::get('bookings/{enrollment}/certificate', [FirmCourseController::class, 'download'])
+            ->name('certificates.download');
 
         // Firm profile management ()
         Route::get('/complete-profile', [\App\Http\Controllers\Firm\ProfileController::class, 'completeEdit'])->name('complete.profile.edit');

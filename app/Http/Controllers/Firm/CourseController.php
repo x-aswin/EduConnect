@@ -11,6 +11,9 @@ use App\Models\FirmParticipant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class CourseController extends Controller
 {
@@ -452,4 +455,67 @@ class CourseController extends Controller
         if (!$deleted) return back()->with('error', 'Unable to remove this booking.');
         return redirect()->route('firm.bookings.index')->with('success', 'Booking removed.');
     }
+    public function download(Enrollment $enrollment)
+{
+    $user = auth()->user();
+    abort_unless($user->role === 'firm' && $enrollment->user_id === $user->id, 403);
+    abort_unless($enrollment->certificate_issued, 404, 'Certificate not yet available.');
+
+    $enrollment->load([
+        'course.college.user',
+        'course.signatories',
+        'user.firm',
+        'participants' => fn ($q) => $q->orderBy('created_at'),
+    ]);
+
+    $firm = $enrollment->user->firm;
+    $course = $enrollment->course;
+    $course->start_date = $enrollment->proposed_start;
+    $course->end_date   = $enrollment->proposed_end;
+    $participants = $enrollment->participants;
+
+    // Generate base code if missing
+    if (!$enrollment->certificate_code) {
+        $year = $enrollment->certificate_issued_at 
+                    ? \Carbon\Carbon::parse($enrollment->certificate_issued_at)->year 
+                    : now()->year;
+        $enrollment->update([
+            'certificate_code' => 'EDUCONNECT-' . $year . '-' . strtoupper(\Str::random(8))
+        ]);
+        $enrollment->refresh();
+    }
+
+    // Build pages – each participant gets their own "student" entry
+    $participantPages = $participants->map(function ($participant, $index) use ($enrollment, $course, $firm) {
+        $code = $enrollment->certificate_code;
+        $verificationUrl = url('/verify?code=' . $code);
+        $qrCodeSvg = QrCode::format('svg')
+            ->size(120)
+            ->margin(0)
+            ->errorCorrection('M')
+            ->generate($verificationUrl);
+        $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrCodeSvg);
+
+        return [
+            'student'          => $participant,
+            'gender'           => 'Other',
+            'verificationCode' => $code,
+            'qrCode'           => $qrCodeBase64,
+            'verificationUrl'  => $verificationUrl,
+            'firmName'         => $firm->org_name,
+        ];
+    });
+
+    $pdf = Pdf::loadView('templates.firm_certificate_wrapper', [
+        'participantPages' => $participantPages,
+        'course'           => $course,
+        'signatories'      => $course->signatories->toArray(),
+        'firm'             => $firm,
+    ])
+    ->setPaper('a4', 'landscape')
+    ->setWarnings(false);
+
+    return $pdf->stream('Certificates-' . $enrollment->certificate_code . '.pdf');
+}
+
 }
