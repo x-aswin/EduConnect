@@ -177,6 +177,7 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ route('student.profile.edit') }}"><i class="bi bi-person-circle"></i> Profile</a></li>
+            <li><a class="dropdown-item" href="{{ route('student.reports.index') }}"><i class="bi bi-bar-chart-line"></i> Reports</a></li>
             {{-- <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Account Settings</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check"></i> Privacy</a></li> --}}
             <li><hr class="dropdown-divider"></li>

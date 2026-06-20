@@ -116,6 +116,8 @@ Route::middleware(['auth', 'role:student'])->group(function () {
         // List student's enrollments
         Route::get('/my-enrollments', [StudentCourseController::class, 'myEnrollments'])
             ->name('my.enrollments');
+        Route::get('/reports', [\App\Http\Controllers\Student\ReportController::class, 'index'])
+            ->name('reports.index');
         // Payment view and processing for a student's enrollment
         Route::get('/enrollments/{enrollment}/payment', [StudentCourseController::class, 'payment'])
             ->name('enrollment.payment');
