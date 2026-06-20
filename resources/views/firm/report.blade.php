@@ -101,7 +101,7 @@
 
     <!-- Header Section -->
     <div class="report-header mt-4">
-        <span class="badge bg-white bg-opacity-20 text-white px-3 py-2 rounded-pill mb-2">
+        <span class="badge bg-white bg-opacity-20 text-black px-3 py-2 rounded-pill mb-2">
             <i class="bi bi-graph-up me-1"></i> Organisation Analytics
         </span>
         <h1 class="fw-bold mt-2 mb-1">Reports & Training Statistics</h1>
