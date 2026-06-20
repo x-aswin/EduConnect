@@ -220,6 +220,34 @@
                             </div>
                             @endif
 
+                            @if ($isView)
+                            <div class="col-md-4">
+                                <label class="form-label d-block">Verification Document</label>
+                                @if(isset($editStudent) && $editStudent->verification_doc)
+                                    <a href="{{ asset('storage/' . $editStudent->verification_doc) }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                        <i class="bi bi-file-earmark-check-fill"></i> View Doc
+                                    </a>
+                                @else
+                                    <span class="text-muted small">Not Uploaded</span>
+                                @endif
+                            </div>
+                            @else
+                            <div class="col-md-4">
+                                <label class="form-label">Verification Document</label>
+                                <input type="file" name="verification_doc" class="form-control @error('verification_doc') is-invalid @enderror" accept="image/*,application/pdf">
+                                @error('verification_doc')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                @if(isset($editStudent) && $editStudent->verification_doc)
+                                    <div class="mt-1">
+                                        <a href="{{ asset('storage/' . $editStudent->verification_doc) }}" target="_blank" class="text-decoration-none small">
+                                            <i class="bi bi-file-earmark-check-fill text-success"></i> View Current Doc
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                            @endif
+
                             <div class="col-md-12">
                                 <label class="form-label">Full Address</label>
                                 <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="2" {{ $isView ? 'disabled' : '' }}>{{ old('address', $editStudent->address ?? '') }}</textarea>

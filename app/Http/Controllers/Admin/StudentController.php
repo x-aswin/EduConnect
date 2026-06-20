@@ -42,6 +42,7 @@ class StudentController extends Controller
         'status'   => 'required|in:active,blocked',
         'phone'    => 'required|digits:10',
         'photo'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        'verification_doc' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
         'dob'      => 'required|date',
         'gender'   => 'required|in:male,female,other',
         'current_qualification' => 'required|string|max:255',
@@ -67,6 +68,12 @@ class StudentController extends Controller
             $photoPath = $request->file('photo')->store('students/photos', 'public');
         }
 
+        // Handle Verification Document Upload if exists
+        $verificationDocPath = null;
+        if ($request->hasFile('verification_doc')) {
+            $verificationDocPath = $request->file('verification_doc')->store('students/verification_docs', 'public');
+        }
+
         // Create the Student Profile linked to that User
         Student::create([
             'user_id'               => $user->id,
@@ -76,6 +83,7 @@ class StudentController extends Controller
             'current_qualification' => $request->current_qualification,
             'address'               => $request->address,
             'photo'                 => $photoPath,
+            'verification_doc'      => $verificationDocPath,
         ]);
     });
 
@@ -124,6 +132,7 @@ class StudentController extends Controller
             'status'   => 'required|in:active,blocked',
             'phone'    => 'required|digits:10',
             'photo'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'verification_doc' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'dob'      => 'required|date',
             'gender'   => 'required|in:male,female,other',
             'current_qualification' => 'required|string|max:255',
@@ -171,6 +180,14 @@ class StudentController extends Controller
                 $updateData['photo'] = $request->file('photo')->store('students/photos', 'public');
             }
 
+            // delete old verification document first
+            if ($request->hasFile('verification_doc')) {
+                if ($student->verification_doc && Storage::disk('public')->exists($student->verification_doc)) {
+                    Storage::disk('public')->delete($student->verification_doc);
+                }
+                $updateData['verification_doc'] = $request->file('verification_doc')->store('students/verification_docs', 'public');
+            }
+
             $student->update($updateData);
         });
 
@@ -189,6 +206,11 @@ class StudentController extends Controller
         // 1. Delete the profile photo from storage if it exists
         if ($student->photo && Storage::disk('public')->exists($student->photo)) {
             Storage::disk('public')->delete($student->photo);
+        }
+
+        // Delete the verification document from storage if it exists
+        if ($student->verification_doc && Storage::disk('public')->exists($student->verification_doc)) {
+            Storage::disk('public')->delete($student->verification_doc);
         }
 
         // 2. Delete Student Profile
