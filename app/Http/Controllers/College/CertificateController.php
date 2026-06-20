@@ -15,21 +15,118 @@ class CertificateController extends Controller
     /**
      * Display the list of certified courses and their certificate status.
      */
-    public function index()
+    public function index(Request $request)
     {
         $college = auth()->user()->college;
 
-        // Fetch courses that are certified, belonging to the logged-in college.
-        // Eager load signatories and ONLY 'confirmed' enrollments to count them efficiently.
-        $courses = Course::where('college_id', $college->id)
+        $courses = $this->filteredCoursesQuery($request, $college->id)->get();
+
+        // Stats calculation based on all certified courses of the college
+        $allCertifiedCourses = Course::where('college_id', $college->id)
+            ->where('is_certified', true)
+            ->with(['enrollments' => function ($query) {
+                $query->where('status', 'confirmed');
+            }])
+            ->get();
+
+        $totalCourses = $allCertifiedCourses->count();
+        $endedCourses = $allCertifiedCourses->filter(fn($c) => \Carbon\Carbon::parse($c->end_date)->isPast())->count();
+        $totalConfirmedEnrollments = $allCertifiedCourses->sum(fn($c) => $c->enrollments->count());
+        $totalIssuedCertificates = $allCertifiedCourses->sum(fn($c) => $c->enrollments->where('certificate_issued', true)->count());
+
+        return view('college.certificate', compact(
+            'courses',
+            'totalCourses',
+            'endedCourses',
+            'totalConfirmedEnrollments',
+            'totalIssuedCertificates'
+        ));
+    }
+
+    /**
+     * Show the signatory configuration form for a specific course (via Modal).
+     */
+    public function edit(Request $request, Course $course)
+    {
+        abort_unless($course->college_id === auth()->user()->college->id, 403, 'Unauthorized access.');
+
+        $college = auth()->user()->college;
+
+        $courses = $this->filteredCoursesQuery($request, $college->id)->get();
+        $editCourse = $course->load('signatories');
+        $queryParams = collect($request->query())->toArray();
+        $indexUrl = route('college.certificate', $queryParams);
+
+        // Stats calculation based on all certified courses of the college
+        $allCertifiedCourses = Course::where('college_id', $college->id)
+            ->where('is_certified', true)
+            ->with(['enrollments' => function ($query) {
+                $query->where('status', 'confirmed');
+            }])
+            ->get();
+
+        $totalCourses = $allCertifiedCourses->count();
+        $endedCourses = $allCertifiedCourses->filter(fn($c) => \Carbon\Carbon::parse($c->end_date)->isPast())->count();
+        $totalConfirmedEnrollments = $allCertifiedCourses->sum(fn($c) => $c->enrollments->count());
+        $totalIssuedCertificates = $allCertifiedCourses->sum(fn($c) => $c->enrollments->where('certificate_issued', true)->count());
+
+        return view('college.certificate', compact(
+            'courses',
+            'editCourse',
+            'indexUrl',
+            'totalCourses',
+            'endedCourses',
+            'totalConfirmedEnrollments',
+            'totalIssuedCertificates'
+        ));
+    }
+
+    /**
+     * Helper to build the filtered query for courses.
+     */
+    private function filteredCoursesQuery(Request $request, int $collegeId)
+    {
+        $query = Course::where('college_id', $collegeId)
             ->where('is_certified', true)
             ->with(['signatories', 'enrollments' => function ($query) {
                 $query->where('status', 'confirmed');
-            }])
-            ->orderBy('end_date', 'desc')
-            ->get();
+            }]);
 
-        return view('college.certificate', compact('courses'));
+        // Search filter
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        // Signatory status filter
+        $signatoriesStatus = $request->input('signatories_status');
+        if ($signatoriesStatus === 'configured') {
+            $query->has('signatories');
+        } elseif ($signatoriesStatus === 'pending') {
+            $query->doesntHave('signatories');
+        }
+
+        // Course status filter
+        $status = $request->input('status');
+        if ($status === 'ended') {
+            $query->whereDate('end_date', '<', now()->toDateString());
+        } elseif ($status === 'ongoing') {
+            $query->whereDate('end_date', '>=', now()->toDateString());
+        }
+
+        // Sort
+        $sort = $request->input('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->orderBy('end_date', 'asc');
+        } elseif ($sort === 'title_asc') {
+            $query->orderBy('title', 'asc');
+        } elseif ($sort === 'title_desc') {
+            $query->orderBy('title', 'desc');
+        } else {
+            $query->orderBy('end_date', 'desc');
+        }
+
+        return $query;
     }
 
     /**
