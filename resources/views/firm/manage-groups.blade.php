@@ -2,7 +2,7 @@
     @push('styles')
     <style>
         .page-header {
-            background: linear-gradient(135deg, #1e3ce0 0%, #4f6ef6 100%);
+            background: linear-gradient(135deg, #1e3ce0 0%, #295b69ff 100%);
             border-radius: 2rem;
             color: white;
             padding: 2rem 2.5rem;
