@@ -156,7 +156,7 @@
                     </p>
                     <p class="text-secondary mb-0">
                         Venue: {{ $enrollment->requested_venue ?? 'N/A' }} · 
-                        Time: {{ $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('M d, Y h:i A') : 'N/A' }} ·
+                        Time: {{ $enrollment->proposed_time ?? 'N/A' }} ·
                         <a href="{{ route('firm.course.show', $enrollment->course->slug) }}" class="text-decoration-none">View course</a>
                     </p>
                     @if(!empty($enrollment->college_note))
