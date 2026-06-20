@@ -154,6 +154,34 @@
             0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; }
             40% { transform: scale(1.4); opacity: 1; }
         }
+
+        /* ==========================================================================
+           GLOBAL SKELETON SHIMMER LOADER FOR IMAGES
+           ========================================================================== */
+        .img-skeleton {
+            background: #f1f5f9;
+            background-image: linear-gradient(
+                90deg, 
+                #f1f5f9 0px, 
+                #e2e8f0 50px, 
+                #f1f5f9 100px
+            );
+            background-size: 200% 100%;
+            animation: imgShimmer 1.5s infinite linear;
+            transition: background 0.4s ease;
+        }
+
+        @keyframes imgShimmer {
+            0% { background-position: -100% 0; }
+            100% { background-position: 100% 0; }
+        }
+
+        /* Clears backdrops smoothly when images arrive */
+        .img-skeleton-loaded {
+            background: transparent !important;
+            background-image: none !important;
+            animation: none !important;
+        }
     </style>
 </head>
 <body>
@@ -198,44 +226,87 @@
 
         // 1. Intercept Standard Form Submissions (e.g. Save, Issue, Update actions)
         document.addEventListener("submit", function (e) {
-            // Check to ensure it is not an asynchronous background request or livewire event
             if (!e.target.hasAttribute('data-remote') && !e.target.matches('[id^="ajax"]')) {
                 window.showLoader();
             }
         });
 
-        // 2. Intercept Sidebar/Navbar Link Clicks
         // 2. Intercept Sidebar/Navbar Link Clicks (Smarter Exclusion Logic)
-document.addEventListener("click", function (e) {
-    const link = e.target.closest("a");
-    
-    if (link && link.href) {
-        const hrefAttr = link.getAttribute('href');
+        document.addEventListener("click", function (e) {
+            const link = e.target.closest("a");
+            
+            if (link && link.href) {
+                const hrefAttr = link.getAttribute('href');
 
-        // Bailing conditions: Do NOT show loader for these types of links
-        if (
-            !hrefAttr ||
-            hrefAttr === '#' || 
-            hrefAttr.startsWith('#') || 
-            hrefAttr.startsWith('javascript:') ||
-            link.hasAttribute('data-bs-toggle') || // Excludes Bootstrap Dropdowns/Collapses
-            link.classList.contains('dropdown-toggle') || // Excludes standard dropdown headers
-            link.target === "_blank" ||
-            link.hasAttribute('download')
-        ) {
-            return; // Exit safely, let the dropdown open normally
-        }
+                if (
+                    !hrefAttr ||
+                    hrefAttr === '#' || 
+                    hrefAttr.startsWith('#') || 
+                    hrefAttr.startsWith('javascript:') ||
+                    link.hasAttribute('data-bs-toggle') || 
+                    link.classList.contains('dropdown-toggle') || 
+                    link.target === "_blank" ||
+                    link.hasAttribute('download')
+                ) {
+                    return; 
+                }
 
-        // If it passes all safety checks above, it's a real page change!
-        window.showLoader();
-    }
-});
+                window.showLoader();
+            }
+        });
+
         // 3. Force Hide Loader when hitting the browser's Back/Forward button
         window.addEventListener("pageshow", function (event) {
             if (event.persisted) {
                 window.hideLoader();
             }
         });
+
+        // ==================================================================
+        // 4. AUTOMATED GLOBAL IMAGE SKELETON OBSERVER SYSTEM
+        // ==================================================================
+        function setupImageSkeleton(img) {
+            // Safety guard: skip if the element has explicit opt-out or is an un-rendered tiny element
+            if (img.hasAttribute('data-no-skeleton') || (img.width > 0 && img.width < 15)) {
+                return;
+            }
+
+            // If image is still mid-flight over the connection network
+            if (!img.complete) {
+                img.classList.add('img-skeleton');
+
+                // Strip skeleton effects the exact millisecond the pixels resolve
+                img.addEventListener('load', function () {
+                    img.classList.add('img-skeleton-loaded');
+                }, { once: true });
+
+                // Fail gracefully if asset drops out or hits a 404
+                img.addEventListener('error', function () {
+                    img.classList.add('img-skeleton-loaded');
+                }, { once: true });
+            } else {
+                // Keep background transparent if image was already sitting in local browser cache
+                img.classList.add('img-skeleton-loaded');
+            }
+        }
+
+        // Initialize elements present on template compilation render
+        document.querySelectorAll('img').forEach(setupImageSkeleton);
+
+        // Track asynchronous insertions (Livewire modifications, modal pops, or client tab switches)
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.tagName === 'IMG') {
+                        setupImageSkeleton(node);
+                    } else if (node.querySelectorAll) {
+                        node.querySelectorAll('img').forEach(setupImageSkeleton);
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
     });
 </script>
 
