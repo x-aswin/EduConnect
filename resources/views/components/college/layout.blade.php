@@ -152,10 +152,10 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ $active === 'profile' ? 'active' : '' }}" href="{{ route('college.profile.edit') }}">
-            <i class="bi bi-gear me-1"></i> Profile
-          </a>
-        </li>
+    <a class="nav-link {{ $active === 'certificates' ? 'active' : '' }}" href="{{ route('college.certificate') }}">
+        <i class="bi bi-award me-1"></i> Certificates
+    </a>
+</li>
         {{-- <!-- Additional quick action: Mentor management shortcut (optional) -->
         <li class="nav-item dropdown d-none d-lg-block">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
