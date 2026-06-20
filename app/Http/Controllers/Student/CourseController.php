@@ -297,14 +297,17 @@ class CourseController extends Controller
     abort_unless($enrollment->certificate_issued, 404, 'Certificate not yet available.');
 
     // 3. Lazy code generation: build the code if it doesn't exist yet
-    if (!$enrollment->certificate_code) {
-        $enrollment->update([
-            'certificate_code' => 'EDU-' . now()->year . '-' . strtoupper(Str::random(8))
-        ]);
-    }
+ if (!$enrollment->certificate_code) {
+    // Extract the exact year the college authorized the certificate
+    $issuedYear = \Carbon\Carbon::parse($enrollment->certificate_issued_at)->year;
+
+    $enrollment->update([
+        'certificate_code' => 'EDUCONNECT-' . $issuedYear . '-' . strtoupper(Str::random(8))
+    ]);
+}
 
     // 4. Eager load relationships needed for the template layout map
-    $enrollment->load(['course.college.user', 'course.signatories', 'user']);
+$enrollment->load(['course.college.user', 'course.signatories', 'user.student']);
 
     // 5. Generate Base64 QR Code safely for DomPDF inclusion via SVG Base64 encoding
         $verificationUrl = url('/verify?code=' . $enrollment->certificate_code);

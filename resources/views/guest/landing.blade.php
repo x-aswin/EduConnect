@@ -221,7 +221,7 @@
                                 Custom venue &amp; training options
                             </li>
 <li class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-primary text-[20px]">info</span>
+<span class="material-symbols-outlined text-tertiary text-[20px]">info</span>
                                 You add the Participants, set Time &amp; Venue
                             </li>
 </ul>
