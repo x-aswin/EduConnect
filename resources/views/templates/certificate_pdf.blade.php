@@ -233,7 +233,7 @@
 </head>
 <body>
 
-@include('templates._certificate_body')
+@include('templates.certificate_body_pdf')
 
 </body>
 </html>

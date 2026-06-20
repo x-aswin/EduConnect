@@ -127,16 +127,16 @@
                     @elseif($booking->status === 'confirmed' && $booking->payment_status === 'paid')
                         <span class="badge bg-success-subtle text-success border border-success align-self-center">Paid</span>
                     @endif
-                    @if($booking->certificate_issued)
-                        <div class="mt-3">
-                            <a href="{{ route('firm.certificates.download', $booking) }}" 
-                            class="btn btn-success rounded-pill w-100">
-                                <i class="bi bi-download me-1"></i> Download Certificates ({{ $booking->participant_count }} participants)
-                            </a>
-                        </div>
-                    @endif
-                    
                 </div>
+
+                @if($booking->certificate_issued)
+                    <div class="mt-2">
+                        <a href="{{ route('firm.certificates.download', $booking) }}" 
+                        class="btn btn-success rounded-pill w-100 btn-sm">
+                            <i class="bi bi-download me-1"></i> Download Certificates ({{ $booking->participant_count }} participants)
+                        </a>
+                    </div>
+                @endif
 
             </div>
         </div>
