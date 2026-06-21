@@ -9,6 +9,7 @@ use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class CertificateController extends Controller
 {
@@ -89,7 +90,8 @@ class CertificateController extends Controller
         $query = Course::where('college_id', $collegeId)
             ->where('is_certified', true)
             ->with(['signatories', 'enrollments' => function ($query) {
-                $query->where('status', 'confirmed');
+                $query->where('status', 'confirmed')
+                      ->with('user.firm'); // Load firm name for firm enrollments
             }]);
 
         // Search filter
@@ -203,5 +205,70 @@ class CertificateController extends Controller
 
         return redirect()->route('college.certificate')
             ->with('success', 'Signatories saved and certificates successfully issued for ' . $course->title);
+    }
+
+    /**
+     * Issue a certificate for a single specific enrollment (used for firm courses
+     * where the same course can have multiple separate enrollments).
+     * Signatories are shared at the course level; only this enrollment is marked as issued.
+     */
+    public function issueForEnrollment(Request $request, Course $course, Enrollment $enrollment)
+    {
+        // 1. Security: college must own the course, and enrollment must belong to it
+        abort_unless($course->college_id === auth()->user()->college->id, 403, 'Unauthorized access.');
+        abort_unless($enrollment->course_id === $course->id, 404, 'Enrollment does not belong to this course.');
+        abort_unless($enrollment->status === 'confirmed', 422, 'Enrollment is not confirmed.');
+
+        // 2. Validate signatories
+        $request->validate([
+            'signatories'                    => 'required|array|min:1|max:2',
+            'signatories.0.name'             => 'required|string|max:255',
+            'signatories.0.designation'      => 'required|string|max:255',
+            'signatories.1.name'             => 'nullable|string|max:255',
+            'signatories.1.designation'      => 'nullable|string|max:255',
+            'signatories.*.signature_image'  => 'nullable|image|mimes:png,jpg,jpeg|max:1024',
+            'signatories.*.existing_image'   => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($request, $course, $enrollment) {
+
+            // --- A. Process Signatories (shared at course level) ---
+            foreach ($request->signatories as $index => $sigData) {
+                if ($index === 1 && empty($sigData['name']) && empty($sigData['designation']) && !isset($sigData['signature_image']) && empty($sigData['existing_image'])) {
+                    continue;
+                }
+
+                $imagePath = $sigData['existing_image'] ?? null;
+
+                if ($request->hasFile("signatories.$index.signature_image")) {
+                    if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                        Storage::disk('public')->delete($imagePath);
+                    }
+                    $imagePath = $request->file("signatories.$index.signature_image")->store('signatures', 'public');
+                }
+
+                CertificateSignatory::updateOrCreate(
+                    ['course_id' => $course->id, 'display_order' => $index + 1],
+                    [
+                        'name'            => $sigData['name'],
+                        'designation'     => $sigData['designation'],
+                        'signature_image' => $imagePath,
+                    ]
+                );
+            }
+
+            // --- B. Issue certificate for this specific enrollment only ---
+            if (!$enrollment->certificate_issued) {
+                $enrollment->update([
+                    'certificate_issued'    => true,
+                    'certificate_issued_at' => now(),
+                ]);
+            }
+        });
+
+        $firmName = $enrollment->user?->firm?->org_name ?? $enrollment->user?->name ?? 'the firm';
+
+        return redirect()->route('college.certificate')
+            ->with('success', 'Certificate issued for enrollment by ' . $firmName . ' in ' . $course->title . '.');
     }
 }

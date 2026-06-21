@@ -96,6 +96,8 @@ Route::middleware(['auth','role:college'])->group(function(){
         Route::get('/certificates', [CollegeCertificateController::class, 'index'])->name('certificate');
         Route::get('/certificates/{course}/edit', [CollegeCertificateController::class, 'edit'])->name('certificates.edit');
         Route::post('/certificates/{course}/issue', [CollegeCertificateController::class, 'issue'])->name('certificates.issue');
+        // Per-enrollment issuance for firm courses (same course, multiple bookings)
+        Route::post('/certificates/{course}/enrollment/{enrollment}/issue', [CollegeCertificateController::class, 'issueForEnrollment'])->name('certificates.issue.enrollment');
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

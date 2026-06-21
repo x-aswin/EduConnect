@@ -117,34 +117,47 @@
             <div class="d-grid gap-3">
                 @foreach($courses as $course)
                     @php
-                        $isEnded = \Carbon\Carbon::parse($course->end_date)->isPast();
+                        $isFirmCourse = $course->course_type === 'firm_only';
+                        $isEnded = $course->end_date ? \Carbon\Carbon::parse($course->end_date)->isPast() : false;
                         $confirmedCount = $course->enrollments->count();
                         $issuedCount = $course->enrollments->where('certificate_issued', true)->count();
                         $allIssued = $confirmedCount > 0 && $issuedCount === $confirmedCount;
+                        // Existing signatories for this course (used in data attributes)
+                        $sig1 = $course->signatories->where('display_order', 1)->first();
+                        $sig2 = $course->signatories->where('display_order', 2)->first();
                     @endphp
 
                     <div class="enrollment-item border rounded-3 p-3 p-md-4 bg-light">
+                        {{-- Course Header --}}
                         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                             <div>
-                                <div class="fw-semibold fs-5 mb-1">{{ $course->title }}</div>
-                                
+                                <div class="fw-semibold fs-5 mb-1">
+                                    {{ $course->title }}
+                                    @if($isFirmCourse)
+                                        <span class="badge bg-info-subtle text-info border border-info ms-2" style="font-size:0.7rem;">Firm Course</span>
+                                    @endif
+                                </div>
+
                                 <div class="d-flex flex-wrap gap-3 text-muted small mt-2">
-                                    <span class="d-flex align-items-center gap-1">
-                                        <i class="bi bi-calendar-event"></i> 
-                                        Ends: {{ \Carbon\Carbon::parse($course->end_date)->format('d M Y') }}
-                                    </span>
-                                    
-                                    @if($isEnded)
-                                        <span class="badge bg-danger-subtle text-danger border border-danger">Ended</span>
+                                    @if($course->end_date)
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i class="bi bi-calendar-event"></i>
+                                            Ends: {{ \Carbon\Carbon::parse($course->end_date)->format('d M Y') }}
+                                        </span>
+                                        @if($isEnded)
+                                            <span class="badge bg-danger-subtle text-danger border border-danger">Ended</span>
+                                        @else
+                                            <span class="badge bg-success-subtle text-success border border-success">Ongoing</span>
+                                        @endif
                                     @else
-                                        <span class="badge bg-success-subtle text-success border border-success">Ongoing</span>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary">Open / On-demand</span>
                                     @endif
                                 </div>
                             </div>
 
                             <div class="d-flex flex-wrap gap-3 align-items-center bg-white p-2 px-3 rounded border">
                                 <div class="text-center">
-                                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Confirmed</div>
+                                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Bookings</div>
                                     <div class="fw-bold fs-5">{{ $confirmedCount }}</div>
                                 </div>
                                 <div class="vr"></div>
@@ -155,7 +168,8 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        {{-- Signatory status + action --}}
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                             <div class="small text-secondary">
                                 @if($course->signatories->count() > 0)
                                     <i class="bi bi-check-circle-fill text-success me-1"></i> Signatories configured
@@ -163,17 +177,80 @@
                                     <i class="bi bi-exclamation-circle-fill text-warning me-1"></i> Signatories pending
                                 @endif
                             </div>
-                            
-                            <div class="btn-group gap-2">
-                                <a href="{{ route('college.certificates.edit', array_merge([$course->id], $queryParams)) }}" class="btn btn-primary rounded-pill px-4">
-                                    @if($allIssued)
-                                        <i class="bi bi-pencil-square me-1"></i> Update Signatories
-                                    @else
-                                        <i class="bi bi-award me-1"></i> Provide Certificates
-                                    @endif
-                                </a>
-                            </div>
+
+                            @if(!$isFirmCourse)
+                                {{-- Student course: bulk issue button --}}
+                                <div class="btn-group gap-2">
+                                    <a href="{{ route('college.certificates.edit', array_merge([$course->id], $queryParams)) }}" class="btn btn-primary rounded-pill px-4">
+                                        @if($allIssued)
+                                            <i class="bi bi-pencil-square me-1"></i> Update Signatories
+                                        @else
+                                            <i class="bi bi-award me-1"></i> Provide Certificates
+                                        @endif
+                                    </a>
+                                </div>
+                            @endif
                         </div>
+
+                        {{-- Firm-only: expand each enrollment as its own actionable sub-row --}}
+                        @if($isFirmCourse && $confirmedCount > 0)
+                            <div class="mt-3 d-grid gap-2">
+                                @foreach($course->enrollments as $enrollment)
+                                    @php
+                                        $firmName = $enrollment->user?->firm?->org_name ?? $enrollment->user?->name ?? 'Unknown Firm';
+                                        $enrollStart = $enrollment->proposed_start ? \Carbon\Carbon::parse($enrollment->proposed_start)->format('d M Y') : '—';
+                                        $enrollEnd   = $enrollment->proposed_end   ? \Carbon\Carbon::parse($enrollment->proposed_end)->format('d M Y')   : '—';
+                                        $enrollVenue = $enrollment->requested_venue ?? '—';
+                                    @endphp
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 rounded-3 px-3 py-2 border bg-white">
+                                        <div>
+                                            <div class="fw-semibold small">{{ $firmName }}</div>
+                                            <div class="text-muted" style="font-size:0.78rem;">
+                                                <i class="bi bi-calendar2-range me-1"></i>{{ $enrollStart }} – {{ $enrollEnd }}
+                                                &nbsp;·&nbsp;
+                                                <i class="bi bi-geo-alt me-1"></i>{{ $enrollVenue }}
+                                                @if($enrollment->participant_count)
+                                                    &nbsp;·&nbsp;
+                                                    <i class="bi bi-people me-1"></i>{{ $enrollment->participant_count }} participants
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if($enrollment->certificate_issued)
+                                                <span class="badge bg-success-subtle text-success border border-success px-3 py-2">
+                                                    <i class="bi bi-patch-check-fill me-1"></i>Certificate Issued
+                                                </span>
+                                            @else
+                                                <button type="button"
+                                                    class="btn btn-sm btn-primary rounded-pill px-3 firm-issue-btn"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#firmIssueModal"
+                                                    data-action="{{ route('college.certificates.issue.enrollment', [$course->id, $enrollment->id]) }}"
+                                                    data-course-title="{{ $course->title }}"
+                                                    data-firm-name="{{ $firmName }}"
+                                                    data-sig1-name="{{ $sig1?->name }}"
+                                                    data-sig1-designation="{{ $sig1?->designation }}"
+                                                    data-sig1-existing="{{ $sig1?->signature_image }}"
+                                                    data-sig1-image="{{ $sig1?->signature_image ? asset('storage/' . $sig1->signature_image) : '' }}"
+                                                    data-sig2-name="{{ $sig2?->name }}"
+                                                    data-sig2-designation="{{ $sig2?->designation }}"
+                                                    data-sig2-existing="{{ $sig2?->signature_image }}"
+                                                    data-sig2-image="{{ $sig2?->signature_image ? asset('storage/' . $sig2->signature_image) : '' }}"
+                                                    data-start="{{ $enrollStart }}"
+                                                    data-end="{{ $enrollEnd }}"
+                                                    data-venue="{{ $enrollVenue }}">
+                                                    <i class="bi bi-award me-1"></i> Issue Certificate
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @elseif($isFirmCourse && $confirmedCount === 0)
+                            <div class="mt-3 text-muted small text-center py-2 border-top">
+                                <i class="bi bi-info-circle me-1"></i> No confirmed enrollments yet.
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             </div>
@@ -181,6 +258,81 @@
     </div>
 </div>
 
+{{-- Single Firm Issue Modal (reused for all enrollments) --}}
+<div class="modal fade" id="firmIssueModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="firmIssueModalTitle">
+                    <i class="bi bi-award me-2"></i>Issue Certificate
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="firmIssueForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 bg-info-subtle text-info-emphasis d-flex align-items-start gap-3">
+                        <i class="bi bi-info-circle-fill fs-4 flex-shrink-0"></i>
+                        <div id="firmIssueAlertText"></div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 border-bottom pb-2">Certificate Signatories</h6>
+                    <p class="small text-muted mb-4">Add up to 2 authorized signatories to appear on the generated certificate.</p>
+
+                    <div class="row g-4">
+                        @for ($i = 0; $i < 2; $i++)
+                            <div class="col-md-6">
+                                <div class="card border border-2 shadow-sm h-100">
+                                    <div class="card-header bg-light fw-semibold text-secondary">
+                                        Signatory {{ $i + 1 }} {{ $i === 0 ? '(Required)' : '(Optional)' }}
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Name</label>
+                                            <input type="text" name="signatories[{{ $i }}][name]" 
+                                                   id="firm_signatory_name_{{ $i }}"
+                                                   class="form-control" 
+                                                   placeholder="e.g. Dr. John Doe" 
+                                                   {{ $i === 0 ? 'required' : '' }}>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Designation</label>
+                                            <input type="text" name="signatories[{{ $i }}][designation]" 
+                                                   id="firm_signatory_designation_{{ $i }}"
+                                                   class="form-control" 
+                                                   placeholder="e.g. Principal" 
+                                                   {{ $i === 0 ? 'required' : '' }}>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label small fw-semibold">Signature Image</label>
+                                            <input type="file" name="signatories[{{ $i }}][signature_image]" 
+                                                   class="form-control form-control-sm" 
+                                                   accept="image/png, image/jpeg">
+                                            <div class="form-text" style="font-size: 0.75rem;">Transparent PNG recommended. Max 1MB.</div>
+                                        </div>
+                                        <div id="firm_existing_sig_{{ $i }}" class="mt-2 bg-light p-2 rounded text-center border d-none">
+                                            <span class="d-block small text-muted mb-1">Current Signature:</span>
+                                            <img src="" alt="Signature" height="40" class="object-fit-contain" id="firm_sig_img_{{ $i }}">
+                                            <input type="hidden" name="signatories[{{ $i }}][existing_image]" id="firm_sig_hidden_{{ $i }}" value="">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-send-check me-1"></i> Save & Issue Certificate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Student course modal (unchanged) --}}
 @if(isset($editCourse))
     @php
         $confirmedCount = $editCourse->enrollments->count();
@@ -270,6 +422,68 @@
         });
     </script>
 @endif
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const firmModal = document.getElementById('firmIssueModal');
+        const firmForm = document.getElementById('firmIssueForm');
+        const alertText = document.getElementById('firmIssueAlertText');
+        const modalTitle = document.getElementById('firmIssueModalTitle');
+
+        // Populate modal when any firm issue button is clicked
+        firmModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+
+    const action = button.getAttribute('data-action');
+    const courseTitle = button.getAttribute('data-course-title');
+    const firmName = button.getAttribute('data-firm-name');
+    const start = button.getAttribute('data-start');
+    const end = button.getAttribute('data-end');
+    const venue = button.getAttribute('data-venue');
+
+    firmForm.action = action;
+    modalTitle.innerHTML = '<i class="bi bi-award me-2"></i>Issue Certificate — ' + courseTitle;
+    alertText.innerHTML =
+        'Issuing certificate for <strong>' + firmName + '</strong>\'s booking (' +
+        start + ' – ' + end + ', ' + venue + ').<br>Signatories are shared across all bookings for this course.';
+
+    // Pre‑fill signatory fields from button data attributes
+    for (let i = 0; i < 2; i++) {
+        const idx = i + 1;
+        const nameField = document.getElementById('firm_signatory_name_' + i);
+        const designationField = document.getElementById('firm_signatory_designation_' + i);
+        const existingImageDiv = document.getElementById('firm_existing_sig_' + i);
+        const sigImg = document.getElementById('firm_sig_img_' + i);
+        const sigHidden = document.getElementById('firm_sig_hidden_' + i);
+
+        const sigName = button.getAttribute('data-sig' + idx + '-name') || '';
+        const sigDesignation = button.getAttribute('data-sig' + idx + '-designation') || '';
+        const sigImageUrl = button.getAttribute('data-sig' + idx + '-image') || '';
+        const sigExisting = button.getAttribute('data-sig' + idx + '-existing') || '';
+
+        if (nameField) nameField.value = sigName;
+        if (designationField) designationField.value = sigDesignation;
+        if (sigHidden) sigHidden.value = sigExisting;
+
+        if (sigImageUrl) {
+            if (sigImg) sigImg.src = sigImageUrl;
+            if (existingImageDiv) existingImageDiv.classList.remove('d-none');
+        } else {
+            if (existingImageDiv) existingImageDiv.classList.add('d-none');
+        }
+    }
+});
+
+        // Reset form fields when modal is closed
+        firmModal.addEventListener('hidden.bs.modal', function () {
+    firmForm.reset();
+    document.querySelectorAll('[id^="firm_existing_sig_"]').forEach(el => el.classList.add('d-none'));
+    document.querySelectorAll('[id^="firm_sig_img_"]').forEach(img => img.src = '');
+});
+    });
+</script>
+@endpush
 
 <style>
     .filter-studio {
