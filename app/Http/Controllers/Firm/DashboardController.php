@@ -128,6 +128,8 @@ class DashboardController extends Controller
                     'text-primary',
                     'text-info',
                 ];
+                $imagePath = $course->course_image ?? $course->college?->photo ?? null;
+                $imageUrl = $imagePath ? asset('storage/' . ltrim($imagePath, '/')) : null;
 
                 return [
                     'title' => $course->title,
@@ -143,6 +145,7 @@ class DashboardController extends Controller
                     'gradient' => $gradients[$index % count($gradients)],
                     'icon' => $icons[$index % count($icons)],
                     'icon_color' => $colors[$index % count($colors)],
+                    'image' => $imageUrl,
                 ];
             });
 

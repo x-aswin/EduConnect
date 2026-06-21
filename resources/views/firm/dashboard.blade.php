@@ -124,9 +124,14 @@
         @forelse($recommendedCourses as $course)
             <div class="col-md-4">
                 <div class="course-card p-0 h-100">
-                    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 120px; background: {{ $course['gradient'] }};">
-                        <i class="bi {{ $course['icon'] }} fs-1 {{ $course['icon_color'] }}"></i>
-                    </div>
+                    @if(!empty($course['image']))
+                        <div class="course-card-img" style="height: 120px; background-image: url('{{ $course['image'] }}'); background-size: cover; background-position: center;">
+                        </div>
+                    @else
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 120px; background: {{ $course['gradient'] }};">
+                            <i class="bi {{ $course['icon'] }} fs-1 {{ $course['icon_color'] }}"></i>
+                        </div>
+                    @endif
                     <div class="p-3">
                         <span class="badge bg-warning bg-opacity-10 text-warning mb-2">{{ $course['badge_label'] }}</span>
                         <h5 class="fw-bold mt-1">{{ $course['title'] }}</h5>
