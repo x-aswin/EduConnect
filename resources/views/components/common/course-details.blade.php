@@ -10,6 +10,15 @@
     $sections = $course->sections ?? collect();
     $mentor = $course->mentor ?? null;
 
+    $courseStarted = false;
+    if (!empty($course->start_date)) {
+        try {
+            $courseStarted = \Illuminate\Support\Carbon::parse($course->start_date)->isPast();
+        } catch (\Throwable $e) {
+            $courseStarted = false;
+        }
+    }
+
     $startDisplay = 'TBA';
     if (!empty($course->start_date)) {
         try {
@@ -75,9 +84,12 @@
                         @endif
                     @endif
                 </div>
-
-                
-            @if(isset($isguest) && ($isguest === true || $isguest === 'true' || $isguest == 1))
+            @if($type !== 'firm' && $courseStarted)
+                {{-- Course has already started — cannot enroll --}}
+                <button type="button" class="btn btn-secondary rounded-pill px-5 py-3 fw-semibold shadow-sm" disabled>
+                    <i class="bi bi-calendar-x me-2"></i> Course Already Started
+                </button>             
+            @elseif(isset($isguest) && ($isguest === true || $isguest === 'true' || $isguest == 1))
                 <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill px-5 py-3 fw-semibold">
                         <i class="bi bi-lock me-2"></i> Login as correct user to Enroll
                 </a>
