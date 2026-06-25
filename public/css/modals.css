@@ -1,16 +1,33 @@
 /* ==========================================================================
-   GLOBAL MODAL STYLES - EduConnect
+   GLOBAL MODAL STYLES - EduConnect Modern
    ========================================================================== */
 
+/* Backdrop blur effect */
+/* Remove backdrop-filter from .modal-backdrop (doesn't work there) */
+.modal-backdrop {
+    background: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Apply blur to the modal itself so background content blurs */
+.modal {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* Modal container */
 .modal-content {
     border: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-    border-radius: 1.25rem;
+    box-shadow: 
+        0 25px 60px rgba(15, 23, 42, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
     overflow: hidden;
 }
 
+/* Header */
 .modal-header {
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem 1.75rem;
 }
 
 .modal-header.bg-primary {
@@ -19,59 +36,154 @@
 
 .modal-header .btn-close {
     filter: brightness(0) invert(1);
-    opacity: 0.8;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
 }
 
 .modal-header .btn-close:hover {
     opacity: 1;
+    transform: rotate(90deg);
 }
 
+/* Body */
 .modal-body {
-    padding: 1.5rem;
+    padding: 1.75rem;
 }
 
+/* Footer */
 .modal-footer {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1.75rem 1.75rem;
     border-top: none;
+    gap: 0.75rem;
 }
 
-/* Form controls inside modals */
+/* Form controls */
 .modal-body .form-control,
 .modal-body .form-select {
-    border-radius: 0.75rem;
-    padding: 0.6rem 1rem;
-    border-color: #e2e8f0;
-    transition: all 0.2s;
+    border-radius: 0.85rem;
+    padding: 0.65rem 1.1rem;
+    border: 1.5px solid #e2e8f0;
+    background: #fafbfc;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.92rem;
+}
+
+.modal-body .form-control:hover,
+.modal-body .form-select:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
 }
 
 .modal-body .form-control:focus,
 .modal-body .form-select:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+    background: #ffffff;
+    box-shadow: 
+        0 0 0 4px rgba(37, 99, 235, 0.08),
+        0 2px 8px rgba(37, 99, 235, 0.06);
+    outline: none;
 }
 
+.modal-body .form-control::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+/* Labels */
 .modal-body .form-label {
     font-weight: 600;
-    font-size: 0.85rem;
-    color: #475569;
-    margin-bottom: 0.35rem;
+    font-size: 0.83rem;
+    color: #334155;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.01em;
 }
 
-/* Buttons in footer */
+/* Input group */
+.modal-body .input-group-text {
+    border-radius: 0.85rem;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    color: #64748b;
+}
+
+/* Cards inside modals */
+.modal-body .card {
+    border-radius: 1rem;
+    border: 1.5px solid #f1f5f9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: box-shadow 0.2s;
+}
+
+.modal-body .card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Alerts inside modals */
+.modal-body .alert {
+    border-radius: 0.85rem;
+    border: none;
+}
+
+/* Footer buttons */
 .modal-footer .btn {
     border-radius: 50px;
     font-weight: 600;
-    padding: 0.6rem 1.5rem;
+    padding: 0.65rem 1.75rem;
+    transition: all 0.25s;
+    letter-spacing: 0.01em;
 }
 
 .modal-footer .btn-secondary,
 .modal-footer .btn-light {
     background: #f1f5f9;
-    border: none;
+    border: 1.5px solid transparent;
     color: #475569;
 }
 
 .modal-footer .btn-secondary:hover,
 .modal-footer .btn-light:hover {
     background: #e2e8f0;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.modal-footer .btn-primary {
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.modal-footer .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+.modal-footer .btn:active {
+    transform: translateY(0);
+}
+
+/* Section headings inside modals */
+.modal-body h6.border-bottom {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 575.98px) {
+    .modal-header {
+        padding: 1.25rem;
+    }
+    .modal-body {
+        padding: 1.25rem;
+    }
+    .modal-footer {
+        padding: 0 1.25rem 1.25rem;
+        flex-direction: column;
+    }
+    .modal-footer .btn {
+        width: 100%;
+    }
 }
