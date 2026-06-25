@@ -34,6 +34,8 @@ use App\Http\Controllers\Mentor\ChatController as MentorChatController;
 
 use App\Http\Controllers\Guest\LandingController as LandingController;
 
+use App\Http\Controllers\ChatbotController as ChatbotController;
+
 use App\Http\Controllers\ProfileController;
 use App\Models\College;
 use Illuminate\Support\Facades\Auth;
@@ -227,5 +229,7 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
     Route::get('/chat/{chat}/messages', [\App\Http\Controllers\Api\ChatApiController::class, 'getMessages'])->name('chat.messages');
 });
 
+Route::post('/chatbot/message', [ChatbotController::class, 'message'])->name('chatbot.message');
+Route::get('/chatbot-test', fn() => view('guest.chatbot-test'))->name('chatbot.test');
 
 require __DIR__.'/auth.php';
