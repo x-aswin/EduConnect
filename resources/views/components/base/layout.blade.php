@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     @stack('styles')
     <title>{{ $title ?? 'EduConnect' }}</title>
     
@@ -224,35 +224,47 @@
             loader.classList.add('hidden');
         };
 
-        // 1. Intercept Standard Form Submissions (e.g. Save, Issue, Update actions)
+        // 1. Intercept Standard Form Submissions
         document.addEventListener("submit", function (e) {
-            if (!e.target.hasAttribute('data-remote') && !e.target.matches('[id^="ajax"]')) {
-                window.showLoader();
+            // Skip chat forms, Alpine.js forms, and AJAX forms
+            const form = e.target;
+            if (
+                form.hasAttribute('data-remote') || 
+                form.matches('[id^="ajax"]') ||
+                form.closest('[x-data]') ||          // Alpine.js forms
+                form.classList.contains('chat-form')  // Chat forms
+            ) {
+                return;
             }
+            window.showLoader();
         });
 
-        // 2. Intercept Sidebar/Navbar Link Clicks (Smarter Exclusion Logic)
+        // 2. Intercept Sidebar/Navbar Link Clicks
         document.addEventListener("click", function (e) {
             const link = e.target.closest("a");
             
-            if (link && link.href) {
-                const hrefAttr = link.getAttribute('href');
+            if (!link || !link.href) return;
 
-                if (
-                    !hrefAttr ||
-                    hrefAttr === '#' || 
-                    hrefAttr.startsWith('#') || 
-                    hrefAttr.startsWith('javascript:') ||
-                    link.hasAttribute('data-bs-toggle') || 
-                    link.classList.contains('dropdown-toggle') || 
-                    link.target === "_blank" ||
-                    link.hasAttribute('download')
-                ) {
-                    return; 
-                }
+            const hrefAttr = link.getAttribute('href');
 
-                window.showLoader();
+            // Skip these types of links
+            if (
+                !hrefAttr ||
+                hrefAttr === '#' || 
+                hrefAttr.startsWith('#') || 
+                hrefAttr.startsWith('javascript:') ||
+                link.hasAttribute('data-bs-toggle') || 
+                link.classList.contains('dropdown-toggle') || 
+                link.target === "_blank" ||
+                link.hasAttribute('download') ||
+                link.closest('[x-data]') ||           // Alpine.js elements
+                link.closest('.chat-contact') ||       // Chat sidebar contacts
+                link.closest('.chat-input')            // Chat input area
+            ) {
+                return; 
             }
+
+            window.showLoader();
         });
 
         // 3. Force Hide Loader when hitting the browser's Back/Forward button
@@ -266,34 +278,27 @@
         // 4. AUTOMATED GLOBAL IMAGE SKELETON OBSERVER SYSTEM
         // ==================================================================
         function setupImageSkeleton(img) {
-            // Safety guard: skip if the element has explicit opt-out or is an un-rendered tiny element
             if (img.hasAttribute('data-no-skeleton') || (img.width > 0 && img.width < 15)) {
                 return;
             }
 
-            // If image is still mid-flight over the connection network
             if (!img.complete) {
                 img.classList.add('img-skeleton');
 
-                // Strip skeleton effects the exact millisecond the pixels resolve
                 img.addEventListener('load', function () {
                     img.classList.add('img-skeleton-loaded');
                 }, { once: true });
 
-                // Fail gracefully if asset drops out or hits a 404
                 img.addEventListener('error', function () {
                     img.classList.add('img-skeleton-loaded');
                 }, { once: true });
             } else {
-                // Keep background transparent if image was already sitting in local browser cache
                 img.classList.add('img-skeleton-loaded');
             }
         }
 
-        // Initialize elements present on template compilation render
         document.querySelectorAll('img').forEach(setupImageSkeleton);
 
-        // Track asynchronous insertions (Livewire modifications, modal pops, or client tab switches)
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 mutation.addedNodes.forEach(function (node) {

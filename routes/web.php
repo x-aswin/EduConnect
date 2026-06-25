@@ -218,7 +218,14 @@ Route::middleware(['auth', 'role:mentor'])->group(function () {
      Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
+// ============================================================
+// API routes for dynamic chat (Alpine.js)
+// ============================================================
+Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
+    Route::get('/chat/{chat}', [\App\Http\Controllers\Api\ChatApiController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{chat}/message', [\App\Http\Controllers\Api\ChatApiController::class, 'sendMessage'])->name('chat.message.send');
+    Route::get('/chat/{chat}/messages', [\App\Http\Controllers\Api\ChatApiController::class, 'getMessages'])->name('chat.messages');
+});
 
 
 require __DIR__.'/auth.php';

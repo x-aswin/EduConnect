@@ -1,9 +1,7 @@
-{{-- resources/views/components/common/chat-layout.blade.php --}}
+{{-- resources/views/components/common/chat.blade.php --}}
 @props(['chats', 'selectedChat' => null, 'role', 'courses' => []])
 
-@php
-    $isMentor = ($role === 'mentor');
-@endphp
+@php $isMentor = ($role === 'mentor'); @endphp
 
 @push('styles')
 <style>
@@ -40,6 +38,7 @@
         text-decoration: none;
         color: inherit;
         border-left: 3px solid transparent;
+        cursor: pointer;
     }
     .chat-contact:hover {
         background: #eef2ff;
@@ -163,7 +162,9 @@
 </style>
 @endpush
 
-<div class="container py-4">
+<div class="container py-4" 
+     x-data="chatApp({{ $selectedChat?->id ?? 'null' }}, '{{ $role }}')" 
+     x-init="init()">
     <div class="chat-shell">
         <!-- LEFT SIDEBAR -->
         <div class="chat-sidebar">
@@ -186,7 +187,6 @@
             <div class="chat-sidebar-list">
                 @forelse($chats as $chat)
                     @php
-                        // Determine the other participant
                         if ($role === 'student') {
                             $otherUser = $chat->mentor;
                             $otherProfile = $otherUser->mentor->photo ?? null;
@@ -198,17 +198,12 @@
                             $otherProfile = $otherUser->student->photo ?? null;
                             $otherName = $otherUser->name ?? 'Student';
                             $courseTitle = $chat->course->title ?? 'Course';
-                            $collegeName = null; // mentor doesn't see college
+                            $collegeName = null;
                         }
-                        // Unread count: messages sent by other user and not read
-                        $unreadCount = $chat->messages()
-                                        ->where('sender_id', '!=', Auth::id())
-                                        ->where('is_read', false)
-                                        ->count();
-                        $activeClass = (isset($selectedChat) && $selectedChat->id === $chat->id) ? 'active-chat' : '';
-                        $unreadClass = $unreadCount > 0 ? 'unread' : '';
                     @endphp
-                    <a href="{{ $role === 'student' ? route('student.chat.show', ['chat' => $chat, 'q' => 'live-chat']) : route('mentor.chat.show', $chat) }}" class="chat-contact {{ $activeClass }} {{ $unreadClass }}">
+                    <div class="chat-contact" 
+                         :class="{ 'active-chat': activeChat?.id === {{ $chat->id }} }"
+                         @click="openChat({{ $chat->id }})">
                         @if($otherProfile)
                             <img src="{{ asset('storage/' . $otherProfile) }}" class="avatar" alt="{{ $otherName }}">
                         @else
@@ -221,10 +216,7 @@
                                 @if($collegeName) · {{ $collegeName }} @endif
                             </div>
                         </div>
-                        @if($unreadCount > 0)
-                            <span class="badge bg-primary rounded-pill ms-1">{{ $unreadCount }}</span>
-                        @endif
-                    </a>
+                    </div>
                 @empty
                     <div class="p-3 text-muted text-center">No accepted chats yet</div>
                 @endforelse
@@ -233,87 +225,162 @@
 
         <!-- RIGHT PANEL -->
         <div class="chat-main">
-            @if($selectedChat)
-                @php
-                    $messages = $selectedChat->messages()->orderBy('created_at')->get();
-                    // Other participant details
-                    if ($role === 'student') {
-                        $otherName = $selectedChat->mentor->name ?? 'Mentor';
-                        $otherPhoto = $selectedChat->mentor->mentor->photo ?? null;
-                        $courseTitle = $selectedChat->course->title ?? 'Course';
-                        $collegeName = $selectedChat->course->college->institution_name ?? null;
-                    } else {
-                        $otherName = $selectedChat->student->name ?? 'Student';
-                        $otherPhoto = $selectedChat->student->student->photo ?? null;
-                        $courseTitle = $selectedChat->course->title ?? 'Course';
-                        $collegeName = null;
-                    }
-                @endphp
-                <!-- Chat header -->
-                <div class="d-flex align-items-center p-3 border-bottom">
-                    <div class="flex-shrink-0">
-                        @if($otherPhoto)
-                            <img src="{{ asset('storage/' . $otherPhoto) }}" class="rounded-circle" width="44" height="44" style="object-fit: cover;">
-                        @else
-                            <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
-                                <i class="bi bi-person text-primary"></i>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="fw-bold mb-0">{{ $otherName }}</h6>
-                        <small class="text-muted">
-                            {{ $courseTitle }}
-                            @if($collegeName) · {{ $collegeName }} @endif
-                        </small>
-                    </div>
-                    <a href="{{ $role === 'student' ? route('student.chat.show') : route('mentor.chat.show') }}" class="btn btn-light rounded-pill ms-auto">
-                        <i class="bi bi-arrow-left me-1"></i> Back
-                    </a>
-                </div>
-
-                <!-- Messages -->
-                <div class="message-area" id="chatMessages">
-                    @forelse($messages as $msg)
-                        <div class="message-bubble {{ $msg->sender_id === Auth::id() ? 'message-sent' : 'message-received' }}">
-                            <p class="mb-0">{{ $msg->message }}</p>
-                            <div class="message-meta">
-                                {{ $msg->created_at->format('h:i A') }}
-                                @if($msg->sender_id === Auth::id() && $msg->is_read)
-                                    <i class="bi bi-check2-all ms-1"></i>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-muted py-5">No messages yet</div>
-                    @endforelse
-                </div>
-
-                <!-- Input -->
-                <div class="chat-input">
-                    <form action="{{ $role === 'student' ? route('student.chat.send', $selectedChat) : route('mentor.chat.send', $selectedChat) }}" method="POST" class="d-flex gap-2">
-                        @csrf
-                        <input type="text" name="message" class="form-control rounded-pill" placeholder="Type a message..." required autofocus>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4">
-                            <i class="bi bi-send-fill"></i>
-                        </button>
-                    </form>
-                </div>
-            @else
+            {{-- Empty state --}}
+            <template x-if="!activeChat">
                 <div class="chat-main-placeholder">
                     <div class="text-center">
                         <i class="bi bi-chat-dots fs-1"></i>
                         <p class="mt-2">Select a chat to start messaging</p>
                     </div>
                 </div>
-            @endif
+            </template>
+
+            {{-- Active chat --}}
+            <template x-if="activeChat">
+                <div style="display: flex; flex-direction: column; height: 100%;">
+                    <!-- Chat header -->
+                    <!-- Chat header -->
+<div class="d-flex align-items-center p-3 border-bottom">
+    <div class="flex-shrink-0">
+        {{-- Photo — shown when available --}}
+        <template x-if="activeChat.other_photo">
+            <img :src="activeChat.other_photo" class="rounded-circle" width="44" height="44" style="object-fit: cover;">
+        </template>
+        {{-- Placeholder — shown when no photo --}}
+        <template x-if="!activeChat.other_photo">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
+                <i class="bi bi-person text-primary"></i>
+            </div>
+        </template>
+    </div>
+    <div class="ms-3">
+        <h6 class="fw-bold mb-0" x-text="activeChat.other_name"></h6>
+        <small class="text-muted" x-text="activeChat.course_title + (activeChat.college_name ? ' · ' + activeChat.college_name : '')"></small>
+    </div>
+</div>
+
+                    <!-- Messages -->
+                    <div class="message-area" id="chatMessages" x-ref="messageArea">
+                        <template x-for="msg in activeChat.messages" :key="msg.id">
+                            <div :class="'message-bubble ' + (msg.sender_id == {{ Auth::id() }} ? 'message-sent' : 'message-received')">
+                                <p class="mb-0" x-text="msg.message"></p>
+                                <div class="message-meta">
+                                    <span x-text="msg.time"></span>
+                                    <i class="bi bi-check2-all ms-1" x-show="msg.sender_id == {{ Auth::id() }} && msg.is_read"></i>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Input -->
+                    <div class="chat-input">
+                        <form @submit.prevent="sendMessage" class="d-flex gap-2">
+                            <input type="text" x-model="newMessage" class="form-control rounded-pill" placeholder="Type a message..." required>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4" :disabled="sending">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </div>
 
+@push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const msgDiv = document.getElementById('chatMessages');
-        if(msgDiv) msgDiv.scrollTop = msgDiv.scrollHeight;
-    });
+function chatApp(initialChatId, role) {
+    return {
+        activeChat: null,
+        newMessage: '',
+        sending: false,
+        pollingInterval: null,
+
+        async init() {
+            if (initialChatId) {
+                await this.openChat(initialChatId);
+            }
+            this.pollingInterval = setInterval(() => this.pollMessages(), 1000);
+        },
+
+        async openChat(chatId) {
+            try {
+                const response = await fetch(`/api/chat/${chatId}`);
+                if (!response.ok) throw new Error('Failed to load chat');
+                
+                const data = await response.json();
+                this.activeChat = data;
+
+                this.$nextTick(() => {
+                    const area = this.$refs.messageArea;
+                    if (area) area.scrollTop = area.scrollHeight;
+                });
+
+                const url = new URL(window.location);
+                url.searchParams.set('chat', chatId);
+                url.searchParams.set('q', 'live-chat');
+                window.history.pushState({}, '', url);
+            } catch (err) {
+                console.error('Failed to open chat:', err);
+            }
+        },
+
+        async sendMessage() {
+            if (!this.newMessage.trim() || !this.activeChat) return;
+            this.sending = true;
+
+            try {
+                const response = await fetch(`/api/chat/${this.activeChat.id}/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify({ message: this.newMessage })
+                });
+
+                const data = await response.json();
+                
+                this.activeChat.messages.push({
+                    id: data.id,
+                    sender_id: {{ Auth::id() }},
+                    message: data.message,
+                    time: data.time,
+                    is_read: false
+                });
+
+                this.newMessage = '';
+
+                this.$nextTick(() => {
+                    const area = this.$refs.messageArea;
+                    if (area) area.scrollTop = area.scrollHeight;
+                });
+            } catch (err) {
+                console.error('Failed to send message:', err);
+            } finally {
+                this.sending = false;
+            }
+        },
+
+        async pollMessages() {
+            if (!this.activeChat) return;
+            try {
+                const response = await fetch(`/api/chat/${this.activeChat.id}/messages`);
+                if (!response.ok) return;
+                
+                const messages = await response.json();
+                if (messages.length !== this.activeChat.messages.length) {
+                    this.activeChat.messages = messages;
+                    this.$nextTick(() => {
+                        const area = this.$refs.messageArea;
+                        if (area) area.scrollTop = area.scrollHeight;
+                    });
+                }
+            } catch (err) {
+                // Silent fail on polling
+            }
+        }
+    };
+}
 </script>
+@endpush
