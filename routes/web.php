@@ -238,5 +238,6 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
 // Route::get('/chatbot-test', fn() => view('guest.chatbot-test'))->name('chatbot.test');
 use App\Http\Controllers\GeminiChatController;
 Route::post('/chatbot', [GeminiChatController::class, 'sendMessage'])->name('api.chatbot');
+Route::post('/chatbot/clear', [GeminiChatController::class, 'clearHistory'])->name('api.chatbot.clear');
 
 require __DIR__.'/auth.php';
