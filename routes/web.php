@@ -234,7 +234,10 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
     Route::get('/chat/{chat}/messages', [\App\Http\Controllers\Api\ChatApiController::class, 'getMessages'])->name('chat.messages');
 });
 
-Route::post('/chatbot/message', [ChatbotController::class, 'message'])->name('chatbot.message');
-Route::get('/chatbot-test', fn() => view('guest.chatbot-test'))->name('chatbot.test');
+// Route::post('/chatbot/message', [ChatbotController::class, 'message'])->name('chatbot.message');
+// Route::get('/chatbot-test', fn() => view('guest.chatbot-test'))->name('chatbot.test');
+use App\Http\Controllers\GeminiChatController;
+
+// Route::post('/api/chatbot', [GeminiChatController::php, 'sendMessage'])->name('api.chatbot');
 
 require __DIR__.'/auth.php';

@@ -106,6 +106,7 @@
     <main class="container py-2">
         {{ $slot }}
     </main>
+    @include('components.common.chatbot')
 
     @push('scripts')
     <script>
