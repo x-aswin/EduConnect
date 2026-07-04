@@ -32,6 +32,10 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        if (! $user?->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         // $profileExists = match ($user->role) {
         //     'student' => $user->student()->exists(),
         //     'mentor' => $user->mentor()->exists(),

@@ -59,8 +59,7 @@ Route::get('/dashboard', function () {
         'mentor' => redirect()->route('mentor.dashboard'),
         default   => redirect()->route('landing'),
     };
-})->name('dashboard');
-// ->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->get('/notifications/seen', function () {
     request()->session()->put('notifications.last_seen_at', now()->toIso8601String());
@@ -70,7 +69,7 @@ Route::middleware('auth')->get('/notifications/seen', function () {
 
 Route::get('/verify', [LandingController::class, 'verify'])->name('certificate.verify');
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('/students', AdminStudentController::class)->names('students');
@@ -89,7 +88,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     
 });
 
-Route::middleware(['auth','role:college'])->group(function(){
+Route::middleware(['auth', 'verified', 'role:college'])->group(function(){
     Route::prefix('college')->name('college.')->group(function(){
         Route::get('/complete-profile', [CollegeProfileController::class, 'completeEdit'])->name('complete.profile.edit');
         Route::patch('/complete-profile', [CollegeProfileController::class, 'completeUpdate'])->name('complete.profile.update');
@@ -115,7 +114,7 @@ Route::middleware(['auth','role:college'])->group(function(){
 
 
 
-Route::middleware(['auth', 'role:student'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     Route::prefix('student')->name('student.')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
         Route::get('/explore', [StudentCourseController::class, 'index'])->name('explore.index');
@@ -160,7 +159,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 });
 
 
-Route::middleware(['auth', 'role:firm'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:firm'])->group(function () {
     Route::prefix('firm')->name('firm.')->group(function () {
         Route::get('/dashboard', [FirmDashboardController::class, 'index'])->name('dashboard');
         Route::get('/explore', [FirmCourseController::class, 'index'])->name('explore.index');
@@ -204,7 +203,7 @@ Route::middleware(['auth', 'role:firm'])->group(function () {
      Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:mentor'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:mentor'])->group(function () {
     Route::prefix('mentor')->name('mentor.')->group(function () {
         Route::get('/dashboard', [MentorDashboardController::class, 'index'])->name('dashboard');
         Route::get('/mycourses', [MentorCourseController::class, 'browse'])->name('mycourses');
