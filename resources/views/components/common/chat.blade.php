@@ -1,7 +1,10 @@
 {{-- resources/views/components/common/chat.blade.php --}}
 @props(['chats', 'selectedChat' => null, 'role', 'courses' => []])
 
-@php $isMentor = ($role === 'mentor'); @endphp
+@php
+    $isMentor = ($role === 'mentor');
+    $currentUserId = Auth::id();
+@endphp
 
 @push('styles')
 <style>
@@ -200,8 +203,14 @@
                             $courseTitle = $chat->course->title ?? 'Course';
                             $collegeName = null;
                         }
+
+                        $latestMessage = $chat->messages->last();
+                        $unreadCount = $chat->messages
+                            ->where('sender_id', '!=', $currentUserId)
+                            ->where('is_read', false)
+                            ->count();
                     @endphp
-                    <div class="chat-contact" 
+                    <div class="chat-contact {{ $unreadCount > 0 ? 'unread' : '' }}" 
                          :class="{ 'active-chat': activeChat?.id === {{ $chat->id }} }"
                          @click="openChat({{ $chat->id }})">
                         @if($otherProfile)
@@ -212,10 +221,15 @@
                         <div class="contact-info">
                             <div class="contact-name">{{ $otherName }}</div>
                             <div class="contact-course">
-                                {{ $courseTitle }}
+                                {{ $latestMessage?->message ? \Illuminate\Support\Str::limit($latestMessage->message, 42) : $courseTitle }}
                                 @if($collegeName) · {{ $collegeName }} @endif
                             </div>
                         </div>
+                        @if($unreadCount > 0)
+                            <span class="badge bg-danger rounded-pill ms-2">{{ $unreadCount }}</span>
+                        @elseif($latestMessage)
+                            <small class="text-muted ms-2">{{ $latestMessage->created_at?->diffForHumans() }}</small>
+                        @endif
                     </div>
                 @empty
                     <div class="p-3 text-muted text-center">No accepted chats yet</div>
@@ -267,6 +281,7 @@
                                 <div class="message-meta">
                                     <span x-text="msg.time"></span>
                                     <i class="bi bi-check2-all ms-1" x-show="msg.sender_id == {{ Auth::id() }} && msg.is_read"></i>
+                                    <span class="badge bg-warning text-dark ms-2" x-show="msg.sender_id != {{ Auth::id() }} && !msg.is_read">New</span>
                                 </div>
                             </div>
                         </template>

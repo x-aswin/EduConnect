@@ -75,13 +75,15 @@ class ChatController extends Controller
                 'student',
                 'studentProfile',
                 'course.college',
+            'messages.sender',
             ])
             ->where('mentor_id', Auth::id())
             ->where('status', 'accepted')
             ->latest()
             ->get();
 
-        $courses = Course::where('mentor_id', $mentorProfile->id)
+        $courses = Course::query()
+            ->where('mentor_id', '=', $mentorProfile->id)
             ->withCount('enrollments')
             ->get();
 

@@ -156,12 +156,7 @@
       <div class="d-flex align-items-center ms-lg-3">
         @php
           $currentUser = auth()->user();
-          $lastSeenAt = session('notifications.last_seen_at');
-          $lastSeen = $lastSeenAt ? \Illuminate\Support\Carbon::parse($lastSeenAt) : $currentUser?->created_at;
-
-          $newEnrollments = $currentUser?->enrollments()
-            ->where('updated_at', '>', $lastSeen)
-            ->count() ?? 0;
+          $newEnrollments = 0;
 
           $newMessages = $currentUser
             ? \App\Models\Message::query()
@@ -170,7 +165,6 @@
                 })
                 ->where('sender_id', '!=', $currentUser->id)
                 ->where('is_read', false)
-                ->where('created_at', '>', $lastSeen)
                 ->count()
             : 0;
 

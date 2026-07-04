@@ -125,12 +125,8 @@
                 <div class="d-flex align-items-center ms-lg-3">
                     @php
                         $currentUser = auth()->user();
-                        $lastSeenAt = session('notifications.last_seen_at');
-                        $lastSeen = $lastSeenAt ? \Illuminate\Support\Carbon::parse($lastSeenAt) : $currentUser?->created_at;
-
                         $newRequests = $currentUser?->chatsAsMentor()
                             ->where('status', 'pending')
-                            ->where('updated_at', '>', $lastSeen)
                             ->count() ?? 0;
 
                         $newMessages = $currentUser
@@ -140,7 +136,6 @@
                                 })
                                 ->where('sender_id', '!=', $currentUser->id)
                                 ->where('is_read', false)
-                                ->where('created_at', '>', $lastSeen)
                                 ->count()
                             : 0;
 

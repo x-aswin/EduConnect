@@ -82,6 +82,7 @@ class ChatController extends Controller
         $chats = Chat::with([
                 'mentor',
                 'course.college',
+            'messages.sender',
             ])
             ->where('student_id', Auth::id())
             ->where('status', 'accepted')
