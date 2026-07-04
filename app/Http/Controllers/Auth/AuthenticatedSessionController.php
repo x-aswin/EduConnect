@@ -28,6 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $request->session()->put('notifications.last_seen_at', now()->toIso8601String());
+
         $user = Auth::user();
 
         // $profileExists = match ($user->role) {

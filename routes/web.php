@@ -62,6 +62,12 @@ Route::get('/dashboard', function () {
 })->name('dashboard');
 // ->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::middleware('auth')->get('/notifications/seen', function () {
+    request()->session()->put('notifications.last_seen_at', now()->toIso8601String());
+
+    return back();
+})->name('notifications.mark-seen');
+
 Route::get('/verify', [LandingController::class, 'verify'])->name('certificate.verify');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
