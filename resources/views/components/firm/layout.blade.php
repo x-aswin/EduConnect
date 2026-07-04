@@ -165,13 +165,63 @@
       </ul>
 
       <div class="d-flex align-items-center ms-lg-3">
-        <!-- Notification -->
-        <a href="#" class="text-dark position-relative me-3 d-none d-md-block">
-          <i class="bi bi-bell fs-5"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25rem 0.4rem;">
-            2
-          </span>
-        </a>
+        @php
+          $currentUser = auth()->user();
+          $lastSeenAt = session('notifications.last_seen_at');
+          $lastSeen = $lastSeenAt ? \Illuminate\Support\Carbon::parse($lastSeenAt) : $currentUser?->created_at;
+
+          $newBookings = $currentUser?->enrollments()
+            ->where('updated_at', '>', $lastSeen)
+            ->count() ?? 0;
+
+          $newGroups = $currentUser?->firm?->groups()
+            ->where('updated_at', '>', $lastSeen)
+            ->count() ?? 0;
+
+          $notificationCount = $newBookings + $newGroups;
+          $notificationSummary = $notificationCount > 0
+              ? 'You have ' . $notificationCount . ' new update' . ($notificationCount === 1 ? '' : 's') . ' since your last visit.'
+              : 'No new updates since your last visit.';
+        @endphp
+
+        <div class="dropdown me-3 d-none d-md-block">
+          <button type="button" class="btn p-0 border-0 text-dark position-relative" data-bs-toggle="dropdown" aria-expanded="false" style="box-shadow: none; background: transparent;">
+            <i class="bi bi-bell fs-5"></i>
+            @if($notificationCount > 0)
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; padding: 0.25rem 0.4rem;">
+                {{ $notificationCount > 9 ? '9+' : $notificationCount }}
+              </span>
+            @endif
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 320px;">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+              <div>
+                <div class="fw-semibold">Notifications</div>
+                <div class="small text-secondary">{{ $notificationSummary }}</div>
+              </div>
+              <a href="{{ route('notifications.mark-seen') }}" class="btn btn-sm btn-soft-primary">Mark as seen</a>
+            </div>
+
+            @if($notificationCount > 0)
+              <hr class="my-3">
+              <ul class="list-unstyled mb-0">
+                @if($newBookings > 0)
+                  <li class="d-flex align-items-start gap-2 py-1">
+                    <i class="bi bi-journal-check text-primary mt-1"></i>
+                    <span>{{ $newBookings }} booking update{{ $newBookings === 1 ? '' : 's' }}</span>
+                  </li>
+                @endif
+                @if($newGroups > 0)
+                  <li class="d-flex align-items-start gap-2 py-1">
+                    <i class="bi bi-people-fill text-primary mt-1"></i>
+                    <span>{{ $newGroups }} group update{{ $newGroups === 1 ? '' : 's' }}</span>
+                  </li>
+                @endif
+              </ul>
+            @endif
+          </div>
+        </div>
 
         <!-- Firm profile dropdown -->
         <div class="dropdown">

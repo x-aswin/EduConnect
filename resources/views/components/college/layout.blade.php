@@ -193,13 +193,65 @@
           </div>
         </div>
         
-        <!-- Notifications icon (mock) -->
-        <a href="#" class="text-dark me-3 position-relative d-none d-md-block">
-          <i class="bi bi-bell fs-5"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.25rem 0.4rem;">
-            3
-          </span>
-        </a>
+        @php
+          $currentUser = auth()->user();
+          $lastSeenAt = session('notifications.last_seen_at');
+          $lastSeen = $lastSeenAt ? \Illuminate\Support\Carbon::parse($lastSeenAt) : $currentUser?->created_at;
+
+          $newEnrollments = $currentUser?->college?->courses()
+            ->whereHas('enrollments', function ($query) use ($lastSeen) {
+              $query->where('updated_at', '>', $lastSeen);
+            })
+            ->count() ?? 0;
+
+          $newCourses = $currentUser?->college?->courses()
+            ->where('updated_at', '>', $lastSeen)
+            ->count() ?? 0;
+
+          $notificationCount = $newEnrollments + $newCourses;
+          $notificationSummary = $notificationCount > 0
+              ? 'You have ' . $notificationCount . ' new update' . ($notificationCount === 1 ? '' : 's') . ' since your last visit.'
+              : 'No new updates since your last visit.';
+        @endphp
+
+        <div class="dropdown me-3 d-none d-md-block">
+          <button type="button" class="btn p-0 border-0 text-dark position-relative" data-bs-toggle="dropdown" aria-expanded="false" style="box-shadow: none; background: transparent;">
+            <i class="bi bi-bell fs-5"></i>
+            @if($notificationCount > 0)
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; padding: 0.25rem 0.4rem;">
+                {{ $notificationCount > 9 ? '9+' : $notificationCount }}
+              </span>
+            @endif
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 320px;">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+              <div>
+                <div class="fw-semibold">Notifications</div>
+                <div class="small text-secondary">{{ $notificationSummary }}</div>
+              </div>
+              <a href="{{ route('notifications.mark-seen') }}" class="btn btn-sm btn-soft-primary">Mark as seen</a>
+            </div>
+
+            @if($notificationCount > 0)
+              <hr class="my-3">
+              <ul class="list-unstyled mb-0">
+                @if($newEnrollments > 0)
+                  <li class="d-flex align-items-start gap-2 py-1">
+                    <i class="bi bi-person-check text-primary mt-1"></i>
+                    <span>{{ $newEnrollments }} enrollment update{{ $newEnrollments === 1 ? '' : 's' }}</span>
+                  </li>
+                @endif
+                @if($newCourses > 0)
+                  <li class="d-flex align-items-start gap-2 py-1">
+                    <i class="bi bi-journal-bookmark-fill text-primary mt-1"></i>
+                    <span>{{ $newCourses }} course update{{ $newCourses === 1 ? '' : 's' }}</span>
+                  </li>
+                @endif
+              </ul>
+            @endif
+          </div>
+        </div>
 
         <!-- College admin / profile dropdown -->
         <div class="dropdown">
