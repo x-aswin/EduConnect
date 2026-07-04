@@ -55,6 +55,9 @@ class GeminiChatController extends Controller
             while ($iterations < self::MAX_TOOL_ITERATIONS) {
                 $iterations++;
 
+                // Ensure functionCall args and functionResponse responses are JSON objects
+                $cleanedContents = $this->cleanContentsForApi($contents);
+
                 $response = Http::connectTimeout(30)
                     ->timeout(30)
                     ->withOptions([
@@ -62,15 +65,41 @@ class GeminiChatController extends Controller
                     ])
                     ->withHeaders(['Content-Type' => 'application/json'])
                     ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$this->apiKey}", [
-                        'contents' => $contents,
+                        'contents' => $cleanedContents,
                         'tools' => $toolsConfig,
                         'systemInstruction' => ['parts' => [['text' => $systemInstruction]]],
                     ]);
 
                 if (!$response->successful()) {
-                    $errorMsg = 'Gemini API Error: ' . $response->status() . ' - ' . $response->body();
-                    \Log::error($errorMsg);
-                    return $this->errorResponse('Unable to contact AI service. Error: ' . $response->status() . ' ' . substr($response->body(), 0, 200));
+                    $status = $response->status();
+                    $body = $response->body();
+                    \Log::error("Gemini API Error: {$status} - {$body}");
+
+                    if ($status === 429) {
+                        return $this->errorResponse(
+                            "⚠️ **Gemini API Quota Exceeded (429)**\n\n" .
+                            "The configured Gemini API key has exceeded its daily free quota or rate limit.\n\n" .
+                            "**To resolve this:**\n" .
+                            "1. Generate a new API key from [Google AI Studio](https://aistudio.google.com/).\n" .
+                            "2. Update the `GEMINI_API_KEY` value in your project's `.env` file:\n" .
+                            "   ```env\n" .
+                            "   GEMINI_API_KEY=your_new_api_key_here\n" .
+                            "   ```\n" .
+                            "3. Restart your Laravel server if cached."
+                        );
+                    }
+
+                    if ($status === 403) {
+                        return $this->errorResponse(
+                            "🔒 **Gemini API Permission Denied (403)**\n\n" .
+                            "The configured API key appears to be invalid or restricted.\n\n" .
+                            "**To resolve this:**\n" .
+                            "1. Confirm your key at [Google AI Studio](https://aistudio.google.com/).\n" .
+                            "2. Update the `GEMINI_API_KEY` value in your project's `.env` file."
+                        );
+                    }
+
+                    return $this->errorResponse("Unable to contact AI service. (Error {$status}: " . substr($body, 0, 100) . "...)");
                 }
 
                 $result = $response->json();
@@ -90,14 +119,20 @@ class GeminiChatController extends Controller
                     // Execute the tool
                     $toolResult = $this->executeTool($functionName, $args);
 
+                    // Ensure functionCall args is encoded as a JSON object, not a list
+                    $formattedFunctionCall = [
+                        'name' => $functionName,
+                        'args' => (object)$args
+                    ];
+
                     // Append the model's function call and our response to the conversation
-                    $contents[] = ['role' => 'model', 'parts' => [['functionCall' => $firstPart['functionCall']]]];
+                    $contents[] = ['role' => 'model', 'parts' => [['functionCall' => $formattedFunctionCall]]];
                     $contents[] = [
                         'role' => 'user',
                         'parts' => [[
                             'functionResponse' => [
                                 'name' => $functionName,
-                                'response' => ['output' => $toolResult]
+                                'response' => (object)['output' => json_encode($toolResult)]
                             ]
                         ]]
                     ];
@@ -113,9 +148,9 @@ class GeminiChatController extends Controller
                 $parsed = $this->parseButtonsFromResponse($rawText);
 
                 // Save conversation to session (keep last N turns)
-                $history[] = ['role' => 'model', 'parts' => [['text' => $parsed['text']]]];
-                $history = array_slice($history, -(self::MAX_HISTORY_TURNS * 2));
-                session(['chatbot_history' => $history]);
+                $contents[] = ['role' => 'model', 'parts' => [['text' => $parsed['text']]]];
+                $contents = array_slice($contents, -(self::MAX_HISTORY_TURNS * 2));
+                session(['chatbot_history' => $contents]);
 
                 return response()->json([
                     'status' => 'success',
@@ -253,7 +288,7 @@ PROMPT;
                     [
                         'name' => 'get_all_categories',
                         'description' => 'List all available course categories with the number of courses in each. No parameters needed.',
-                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[]]
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
                     ],
                     [
                         'name' => 'get_courses_by_category',
@@ -280,12 +315,12 @@ PROMPT;
                     [
                         'name' => 'get_user_profile',
                         'description' => 'Retrieve the profile information of the currently authenticated user including their role-specific details.',
-                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[]]
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
                     ],
                     [
                         'name' => 'get_user_enrollments',
                         'description' => 'Fetch the list of courses the current user has enrolled in or booked, including status and payment info.',
-                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[]]
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
                     ],
                     [
                         'name' => 'get_enrollment_status',
@@ -312,7 +347,7 @@ PROMPT;
                     [
                         'name' => 'get_platform_stats',
                         'description' => 'Get overall platform statistics: total courses, colleges, categories, mentors, and students. Use this for "tell me about EduConnect" type questions.',
-                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[]]
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
                     ],
                 ]
             ]
@@ -645,6 +680,38 @@ PROMPT;
             'text' => $text,
             'buttons' => $buttons,
         ];
+    }
+
+    /**
+     * Clean conversation history contents to ensure proper JSON serialization
+     * of empty functionCall args and functionResponse responses.
+     */
+    private function cleanContentsForApi(array $contents): array
+    {
+        foreach ($contents as &$content) {
+            if (isset($content['parts']) && is_array($content['parts'])) {
+                foreach ($content['parts'] as &$part) {
+                    // Ensure functionCall args is always a JSON object, never an array
+                    if (isset($part['functionCall'])) {
+                        $args = $part['functionCall']['args'] ?? [];
+                        $part['functionCall']['args'] = is_array($args) && empty($args)
+                            ? new \stdClass()
+                            : (object)$args;
+                    }
+                    // Ensure functionResponse response is always a JSON object
+                    if (isset($part['functionResponse'])) {
+                        $resp = $part['functionResponse']['response'] ?? [];
+                        if (is_array($resp) && !empty($resp)) {
+                            // Encode nested tool result as a string to avoid schema issues
+                            $part['functionResponse']['response'] = (object)$resp;
+                        } else {
+                            $part['functionResponse']['response'] = new \stdClass();
+                        }
+                    }
+                }
+            }
+        }
+        return $contents;
     }
 
     /**
