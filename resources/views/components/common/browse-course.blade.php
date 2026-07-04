@@ -15,6 +15,11 @@
     .badge:hover {
         opacity: 0.8;
     }
+    .category-filter-list {
+        max-height: 9.5rem;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+    }
 </style>
 @endpush
 
@@ -66,7 +71,7 @@
                     </div>
                 @else
                     <label class="form-label fw-semibold small text-secondary">Category</label>
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="category-filter-list d-flex flex-wrap gap-2">
                         <a href="{{ request()->fullUrlWithQuery(['category' => null, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('category') ? 'bg-light text-secondary' : 'bg-primary bg-opacity-10 text-primary active-filter' }}">All</a>
                         @foreach($categories as $category)
                             <a href="{{ request()->fullUrlWithQuery(['category' => $category, 'page' => 1]) }}" class="badge text-decoration-none px-3 py-2 rounded-pill {{ request('category') === $category ? 'bg-primary bg-opacity-10 text-primary active-filter' : 'bg-light text-secondary' }}">{{ $category }}</a>
