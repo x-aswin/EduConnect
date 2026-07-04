@@ -15,9 +15,34 @@ class CollegeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $colleges = College::with('user')->latest()->get();
+        $search = trim((string) $request->get('search', ''));
+        $status = $request->get('status', 'all');
+
+        $colleges = College::with('user')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder->where('institution_name', 'like', '%' . $search . '%')
+                        ->orWhere('college_phone', 'like', '%' . $search . '%')
+                        ->orWhere('website', 'like', '%' . $search . '%')
+                        ->orWhere('address', 'like', '%' . $search . '%')
+                        ->orWhere('contact_person', 'like', '%' . $search . '%')
+                        ->orWhere('designation', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when(in_array($status, ['pending', 'active', 'blocked'], true), function ($query) use ($status) {
+                $query->whereHas('user', function ($userQuery) use ($status) {
+                    $userQuery->where('status', $status);
+                });
+            })
+            ->latest()
+            ->get();
+
         return view('admin.manage-college', compact('colleges'));
     }
 

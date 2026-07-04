@@ -16,9 +16,37 @@ class MentorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $mentors = Mentor::with(['user', 'college.user'])->latest()->get();
+        $search = trim((string) $request->get('search', ''));
+        $status = $request->get('status', 'all');
+        $collegeId = $request->get('college_id', 'all');
+
+        $mentors = Mentor::with(['user', 'college.user'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder->where('qualification', 'like', '%' . $search . '%')
+                        ->orWhere('expertise', 'like', '%' . $search . '%')
+                        ->orWhere('bio', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                        })
+                        ->orWhereHas('college', function ($collegeQuery) use ($search) {
+                            $collegeQuery->where('institution_name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when(in_array($status, ['pending', 'active', 'blocked'], true), function ($query) use ($status) {
+                $query->whereHas('user', function ($userQuery) use ($status) {
+                    $userQuery->where('status', $status);
+                });
+            })
+            ->when($collegeId !== 'all' && is_numeric($collegeId), function ($query) use ($collegeId) {
+                $query->where('college_id', $collegeId);
+            })
+            ->latest()
+            ->get();
         $colleges = College::with('user')->latest()->get();
 
         return view('admin.manage-mentor', compact('mentors', 'colleges'));

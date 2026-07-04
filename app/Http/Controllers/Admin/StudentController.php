@@ -15,9 +15,31 @@ class StudentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index() 
+    public function index(Request $request) 
     {
-        $students = Student::with('user')->latest()->get();
+        $search = trim((string) $request->get('search', ''));
+        $status = $request->get('status', 'all');
+
+        $students = Student::with('user')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder->where('phone', 'like', '%' . $search . '%')
+                        ->orWhere('current_qualification', 'like', '%' . $search . '%')
+                        ->orWhere('address', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when(in_array($status, ['active', 'blocked'], true), function ($query) use ($status) {
+                $query->whereHas('user', function ($userQuery) use ($status) {
+                    $userQuery->where('status', $status);
+                });
+            })
+            ->latest()
+            ->get();
+
         return view('admin.manage-student', compact('students'));
     }
 

@@ -14,9 +14,43 @@ class EnrollmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->get('search', ''));
+        $status = $request->get('status', 'all');
+        $paymentStatus = $request->get('payment_status', 'all');
+        $type = $request->get('type', 'all');
+
         $enrollments = Enrollment::with(['user', 'course.college', 'participants'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder->whereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('course', function ($courseQuery) use ($search) {
+                        $courseQuery->where('title', 'like', '%' . $search . '%')
+                            ->orWhereHas('college', function ($collegeQuery) use ($search) {
+                                $collegeQuery->where('institution_name', 'like', '%' . $search . '%');
+                            });
+                    })
+                    ->orWhere('requested_venue', 'like', '%' . $search . '%')
+                    ->orWhere('proposed_time', 'like', '%' . $search . '%')
+                    ->orWhereHas('participants', function ($participantQuery) use ($search) {
+                        $participantQuery->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('contact_info', 'like', '%' . $search . '%');
+                    });
+                });
+            })
+            ->when(in_array($status, ['pending', 'confirmed', 'rejected'], true), function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when(in_array($paymentStatus, ['pending', 'paid', 'na'], true), function ($query) use ($paymentStatus) {
+                $query->where('payment_status', $paymentStatus);
+            })
+            ->when(in_array($type, ['student', 'firm'], true), function ($query) use ($type) {
+                $query->where('type', $type);
+            })
             ->latest()
             ->get();
 

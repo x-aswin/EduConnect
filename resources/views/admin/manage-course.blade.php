@@ -29,6 +29,44 @@
     }
 @endphp
 
+<x-admin.filter-card
+    title="Search Courses"
+    action="{{ route('admin.courses.index') }}"
+    search-value="{{ request('search') }}"
+    search-placeholder="Search by title, college, mentor, or category"
+    reset-url="{{ route('admin.courses.index') }}"
+>
+    <x-slot name="filters">
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold">Type</label>
+            <select name="course_type" class="form-select">
+                <option value="all" {{ request('course_type', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                <option value="student_only" {{ request('course_type') === 'student_only' ? 'selected' : '' }}>Student Only</option>
+                <option value="firm_only" {{ request('course_type') === 'firm_only' ? 'selected' : '' }}>Firm Only</option>
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold">Status</label>
+            <select name="status" class="form-select">
+                <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+            </select>
+        </div>
+        <div class="col-lg-3">
+            <label class="form-label fw-semibold">College</label>
+            <select name="college_id" class="form-select">
+                <option value="all" {{ request('college_id', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                @foreach($colleges as $college)
+                    <option value="{{ $college->id }}" {{ (string) request('college_id') === (string) $college->id ? 'selected' : '' }}>
+                        {{ $college->institution_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </x-slot>
+</x-admin.filter-card>
+
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">
     <i class="bi bi-plus-lg"></i> Add New Course
 </button>

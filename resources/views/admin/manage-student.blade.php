@@ -8,6 +8,24 @@
     $isCreate = !isset($editStudent);
 @endphp    
 
+<x-admin.filter-card
+    title="Search Students"
+    action="{{ route('admin.students.index') }}"
+    search-value="{{ request('search') }}"
+    search-placeholder="Search by name, email, phone, qualification, or address"
+    reset-url="{{ route('admin.students.index') }}"
+>
+    <x-slot name="filters">
+        <div class="col-lg-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select name="status" class="form-select">
+                <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>Blocked</option>
+            </select>
+        </div>
+    </x-slot>
+</x-admin.filter-card>
 
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
         <i class="bi bi-plus-lg"></i> Add New Student

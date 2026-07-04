@@ -6,6 +6,13 @@
     $isCreate = !isset($editCategory);
 @endphp    
 
+<x-admin.filter-card
+    title="Search Categories"
+    action="{{ route('admin.categories.index') }}"
+    search-value="{{ request('search') }}"
+    search-placeholder="Search by category name, slug, or description"
+    reset-url="{{ route('admin.categories.index') }}"
+/>
 
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
         <i class="bi bi-plus-lg"></i> Add New Category

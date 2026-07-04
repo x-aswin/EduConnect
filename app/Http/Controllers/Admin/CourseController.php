@@ -18,9 +18,43 @@ class CourseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::with(['college.user', 'mentor.user', 'category'])->latest()->get();
+        $search = trim((string) $request->get('search', ''));
+        $courseType = $request->get('course_type', 'all');
+        $status = $request->get('status', 'all');
+        $collegeId = $request->get('college_id', 'all');
+
+        $courses = Course::with(['college.user', 'mentor.user', 'category'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%')
+                        ->orWhere('venue', 'like', '%' . $search . '%')
+                        ->orWhere('time_slot', 'like', '%' . $search . '%')
+                        ->orWhereHas('college', function ($collegeQuery) use ($search) {
+                            $collegeQuery->where('institution_name', 'like', '%' . $search . '%');
+                        })
+                        ->orWhereHas('mentor.user', function ($mentorQuery) use ($search) {
+                            $mentorQuery->where('name', 'like', '%' . $search . '%');
+                        })
+                        ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                            $categoryQuery->where('name', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when(in_array($courseType, ['student_only', 'firm_only'], true), function ($query) use ($courseType) {
+                $query->where('course_type', $courseType);
+            })
+            ->when(in_array($status, ['active', 'inactive'], true), function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when($collegeId !== 'all' && is_numeric($collegeId), function ($query) use ($collegeId) {
+                $query->where('college_id', $collegeId);
+            })
+            ->latest()
+            ->get();
+
         $colleges = College::with('user')->latest()->get();
         $mentors = Mentor::with(['user', 'college'])->latest()->get();
         $categories = Category::orderByDesc('id')->get();

@@ -6,6 +6,37 @@
     $isCreate = !isset($editMentor);
 @endphp
 
+<x-admin.filter-card
+    title="Search Mentors"
+    action="{{ route('admin.mentors.index') }}"
+    search-value="{{ request('search') }}"
+    search-placeholder="Search by mentor, expertise, qualification, or college"
+    reset-url="{{ route('admin.mentors.index') }}"
+>
+    <x-slot name="filters">
+        <div class="col-lg-3">
+            <label class="form-label fw-semibold">Status</label>
+            <select name="status" class="form-select">
+                <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                <option value="blocked" {{ request('status') === 'blocked' ? 'selected' : '' }}>Blocked</option>
+            </select>
+        </div>
+        <div class="col-lg-3">
+            <label class="form-label fw-semibold">College</label>
+            <select name="college_id" class="form-select">
+                <option value="all" {{ request('college_id', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                @foreach($colleges as $college)
+                    <option value="{{ $college->id }}" {{ (string) request('college_id') === (string) $college->id ? 'selected' : '' }}>
+                        {{ $college->institution_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </x-slot>
+</x-admin.filter-card>
+
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMentorModal">
         <i class="bi bi-plus-lg"></i> Add New Mentor
     </button>

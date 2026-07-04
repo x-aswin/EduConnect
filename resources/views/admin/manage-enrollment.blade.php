@@ -5,6 +5,43 @@
     $isView = isset($editEnrollment) && isset($viewOnly);
 @endphp
 
+<x-admin.filter-card
+    title="Search Enrollments"
+    action="{{ route('admin.enrollments.index') }}"
+    search-value="{{ request('search') }}"
+    search-placeholder="Search by user, course, college, venue, or participant"
+    reset-url="{{ route('admin.enrollments.index') }}"
+>
+    <x-slot name="filters">
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold">Type</label>
+            <select name="type" class="form-select">
+                <option value="all" {{ request('type', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                <option value="student" {{ request('type') === 'student' ? 'selected' : '' }}>Student</option>
+                <option value="firm" {{ request('type') === 'firm' ? 'selected' : '' }}>Firm</option>
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold">Status</label>
+            <select name="status" class="form-select">
+                <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label fw-semibold">Payment</label>
+            <select name="payment_status" class="form-select">
+                <option value="all" {{ request('payment_status', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                <option value="pending" {{ request('payment_status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Paid</option>
+                <option value="na" {{ request('payment_status') === 'na' ? 'selected' : '' }}>N/A</option>
+            </select>
+        </div>
+    </x-slot>
+</x-admin.filter-card>
+
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEnrollmentModal">
     <i class="bi bi-plus-lg"></i> Add New Enrollment
 </button>
