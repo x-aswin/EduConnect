@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chat-messages');
 
-    // 1. Toggle Chat Window Visibility
     chatToggleBtn.addEventListener('click', () => {
         chatbotContainer.classList.toggle('d-none');
         chatInput.focus();
@@ -16,51 +15,119 @@ document.addEventListener('DOMContentLoaded', function () {
         chatbotContainer.classList.add('d-none');
     });
 
-    // 2. Handle Message Submission
     chatbotForm.addEventListener('submit', function (e) {
         e.preventDefault();
         
         const messageText = chatInput.value.trim();
         if (!messageText) return;
 
-        // Append user's message bubble to UI
         appendMessage(messageText, 'user');
         chatInput.value = '';
 
-        // Show a temporary "Thinking..." bubble
-        const thinkingId = appendMessage('Thinking...', 'bot', true);
+        // Add a clean, embedded "Thinking..." status bubble inside the widget only
+        const thinkingId = appendMessage('<span class="spinner-border spinner-border-sm me-2"></span>EduConnect is typing...', 'bot');
 
-        // Placeholder for the upcoming backend Fetch request
-        setTimeout(() => {
-            removeThinkingMessage(thinkingId);
-            appendMessage("I'm ready to connect to the Gemini API! Let's set up our Laravel route next.", 'bot');
-        }, 1000);
+        // Fetch CSRF token for security validation
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+            || '';
+
+        // Connect live to your newly registered backend endpoint
+        fetch('/chatbot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ message: messageText })
+        })
+        .then(async response => {
+            const payload = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                throw new Error(payload?.reply || payload?.message || `Request failed with status ${response.status}`);
+            }
+
+            return payload;
+        })
+        .then(data => {
+            removeMessage(thinkingId);
+            if (data?.status === 'success') {
+                appendMessage(data.reply, 'bot');
+                return;
+            }
+
+            appendMessage(data?.reply?.text || data?.reply || "I ran into a hitch parsing that message. Let's try again.", 'bot');
+        })
+        .catch(error => {
+            removeMessage(thinkingId);
+            appendMessage(error?.message || "I am unable to reach the server right now. Please check your connectivity.", 'bot');
+            console.error('Chat error:', error);
+        });
     });
 
-    // Helper to add message bubbles dynamically
-    function appendMessage(text, sender, isThinking = false) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `d-flex mb-3 ${sender === 'user' ? 'justify-content-end' : ''}`;
+    function appendMessage(data, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `d-flex mb-3 ${sender === 'user' ? 'justify-content-end' : ''}`;
+    
+    const id = 'msg-' + Date.now() + Math.random().toString(36).substr(2, 4);
+    messageDiv.id = id;
+
+    const bubbleClass = sender === 'user' 
+        ? 'bg-primary text-white' 
+        : 'bg-white text-dark shadow-sm border';
+
+    // Handle plain text vs. parsed JSON rich layouts
+    let textContent = '';
+    let buttonsHtml = '';
+
+    if (typeof data === 'object' && data !== null) {
+        textContent = data.text || '';
         
-        const id = 'msg-' + Date.now();
-        if (isThinking) messageDiv.id = id;
-
-        const bubbleClass = sender === 'user' 
-            ? 'bg-primary text-white' 
-            : 'bg-white text-dark shadow-sm';
-
-        messageDiv.innerHTML = `
-            <div class="${bubbleClass} p-3 rounded-3" style="max-width: 75%; font-size: 0.875rem;">
-                <p class="mb-0">${text}</p>
-            </div>
-        `;
-
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto scroll to bottom
-        return id;
+        // If the backend sent interactive buttons, render them cleanly
+        if (data.buttons && Array.isArray(data.buttons)) {
+            buttonsHtml = `<div class="d-flex flex-wrap gap-2 mt-2 pt-2 border-top">`;
+            data.buttons.forEach(btn => {
+                if (btn.action === 'redirect') {
+                    buttonsHtml += `
+                        <a href="${btn.url}" class="btn btn-outline-primary btn-sm rounded-pill py-1 px-3 style="font-size: 0.75rem;">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> ${btn.label}
+                        </a>`;
+                } else if (btn.action === 'chat_suggest') {
+                    buttonsHtml += `
+                        <button type="button" class="btn btn-light border btn-sm rounded-pill py-1 px-3 chat-suggest-btn" data-text="${btn.text}" style="font-size: 0.75rem;">
+                            ${btn.label}
+                        </button>`;
+                }
+            });
+            buttonsHtml += `</div>`;
+        }
+    } else {
+        textContent = data; // Fallback for raw text strings
     }
 
-    function removeThinkingMessage(id) {
+    messageDiv.innerHTML = `
+        <div class="${bubbleClass} p-3 rounded-3" style="max-width: 80%; font-size: 0.875rem; word-break: break-word;">
+            <p class="mb-0">${textContent}</p>
+            ${buttonsHtml}
+        </div>
+    `;
+
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Attach click events immediately to the newly generated quick-suggest buttons
+    messageDiv.querySelectorAll('.chat-suggest-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const suggestText = this.getAttribute('data-text');
+            chatInput.value = suggestText;
+            chatbotForm.requestSubmit(); // Programmatically fires the send loop
+        });
+    });
+
+    return id;
+}
+
+    function removeMessage(id) {
         const el = document.getElementById(id);
         if (el) el.remove();
     }

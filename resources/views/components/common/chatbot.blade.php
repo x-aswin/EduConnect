@@ -17,7 +17,7 @@
     </div>
 
     <div class="card-footer bg-white border-top">
-        <form id="chatbot-form" class="d-flex gap-2">
+        <form id="chatbot-form" class="d-flex gap-2 chat-form">
             <input type="text" id="chat-input" class="form-control form-control-sm" placeholder="Type your question..." required autocomplete="off">
             <button type="submit" class="btn btn-primary btn-sm px-3">
                 <i class="bi bi-send"></i>

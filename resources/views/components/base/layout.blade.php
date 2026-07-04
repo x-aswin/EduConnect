@@ -318,5 +318,7 @@
 </script>
 
 @stack('scripts')
+
+  @include('components.common.chatbot')
 </body>
 </html>
