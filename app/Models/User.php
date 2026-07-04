@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
@@ -46,6 +48,20 @@ class User extends Authenticatable implements MustVerifyEmail
         );
 
         Log::channel('stderr')->info("Verification link for {$this->email}: {$verificationUrl}");
+
+        $this->notify(new VerifyEmail);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $resetUrl = url(route('password.reset', [
+            'token' => $token,
+            'email' => $this->getEmailForPasswordReset(),
+        ], false));
+
+        Log::channel('stderr')->info("Password reset link for {$this->email}: {$resetUrl}");
+
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /**
