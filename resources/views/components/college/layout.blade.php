@@ -266,10 +266,10 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ route('college.profile.edit') }}"><i class="bi bi-person-circle"></i> My Profile</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-building"></i> College Settings</a></li>
+            {{-- <li><a class="dropdown-item" href="#"><i class="bi bi-building"></i> College Settings</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-shield-check"></i> Verification Status</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle"></i> Help & Support</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle"></i> Help & Support</a></li> --}}
             <li>
               <form method="POST" action="{{ route('logout') }}">
                 @csrf
