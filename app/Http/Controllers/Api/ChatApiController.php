@@ -88,6 +88,7 @@ class ChatApiController extends Controller
         abort(403);
     }
 
+
     private function authorizeAccess(Chat $chat, string $role): void
     {
         if ($role === 'student' && $chat->student_id !== Auth::id()) abort(403);
