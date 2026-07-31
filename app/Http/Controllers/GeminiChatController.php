@@ -189,68 +189,158 @@ class GeminiChatController extends Controller
 
         if ($user) {
             $role = ucfirst($user->role);
-            $userContext = "The user is LOGGED IN as a **{$role}**. Name: {$user->name}, Email: {$user->email}, ID: {$user->id}.";
+            $userContext = "The user is LOGGED IN as a **{$role}**.\n";
+            $userContext .= "- **Name**: {$user->name}\n";
+            $userContext .= "- **Email**: {$user->email}\n";
+            $userContext .= "- **User ID**: {$user->id}\n";
+            $userContext .= "- **Account Status**: {$user->status}\n";
 
-            // Add role-specific context
-            if ($user->role === 'student') {
-                $enrollmentCount = Enrollment::where('user_id', $user->id)->count();
-                $userContext .= " They have {$enrollmentCount} enrollment(s).";
-            } elseif ($user->role === 'firm') {
-                $bookingCount = Enrollment::where('user_id', $user->id)->where('type', 'firm')->count();
-                $userContext .= " They have {$bookingCount} firm booking(s).";
+            // Role-specific detailed context & instructions
+            switch ($user->role) {
+                case 'student':
+                    $student = $user->student;
+                    $enrollmentCount = Enrollment::where('user_id', $user->id)->count();
+                    $lastEnrollment = Enrollment::where('user_id', $user->id)->with('course')->latest()->first();
+                    $lastCourseTitle = $lastEnrollment?->course?->title ?? 'None';
+                    
+                    $userContext .= "- **Qualification**: " . ($student?->current_qualification ?? 'N/A') . "\n";
+                    $userContext .= "- **Phone**: " . ($student?->phone ?? 'N/A') . "\n";
+                    $userContext .= "- **Total Enrollments**: {$enrollmentCount}\n";
+                    $userContext .= "- **Latest Enrollment**: {$lastCourseTitle} (Status: " . ($lastEnrollment?->status ?? 'N/A') . ")\n";
+                    $userContext .= "ROLE GUIDELINE: Assist the student with course discovery, enrollment status, payments, mentor chat access, and certificate downloads. When discussing their enrollments or last enrollment, ALWAYS add a button to view their enrollments page (/student/my-enrollments).";
+                    break;
+
+                case 'firm':
+                    $firm = $user->firm;
+                    $bookingCount = Enrollment::where('user_id', $user->id)->where('type', 'firm')->count();
+                    $lastBooking = Enrollment::where('user_id', $user->id)->where('type', 'firm')->with('course')->latest()->first();
+
+                    $userContext .= "- **Organization**: " . ($firm?->org_name ?? $user->name) . "\n";
+                    $userContext .= "- **Org Type**: " . ($firm?->org_type ?? 'Corporate/NGO') . "\n";
+                    $userContext .= "- **Contact Person**: " . ($firm?->contact_person ?? $user->name) . "\n";
+                    $userContext .= "- **Total Group Bookings**: {$bookingCount}\n";
+                    $userContext .= "- **Latest Booking**: " . ($lastBooking?->course?->title ?? 'None') . " (Status: " . ($lastBooking?->status ?? 'N/A') . ")\n";
+                    $userContext .= "ROLE GUIDELINE: Assist the firm with corporate offline course bookings, group cohort management, proposed venue/schedule status, payments, and multi-page QR certificate bundles. When discussing bookings, ALWAYS add a button to view corporate bookings (/firm/bookings).";
+                    break;
+
+                case 'college':
+                    $college = $user->college;
+                    $collegeId = $college?->id;
+                    $courseCount = $collegeId ? Course::where('college_id', $collegeId)->count() : 0;
+                    $pendingCount = $collegeId ? Enrollment::whereHas('course', fn($q) => $q->where('college_id', $collegeId))->where('status', 'pending')->count() : 0;
+
+                    $userContext .= "- **Institution**: " . ($college?->institution_name ?? $user->name) . "\n";
+                    $userContext .= "- **Campus Address**: " . ($college?->address ?? 'N/A') . "\n";
+                    $userContext .= "- **Listed Offline Courses**: {$courseCount}\n";
+                    $userContext .= "- **Pending Applications Awaiting Review**: {$pendingCount}\n";
+                    $userContext .= "ROLE GUIDELINE: Assist the college with course listings, offline seat management, assigning mentors, approving/rejecting enrollment requests, and signature-authorized certificate issuance. Add buttons to management pages (/college/courses, /college/enrollments).";
+                    break;
+
+                case 'mentor':
+                    $mentor = $user->mentor;
+                    $assignedCoursesCount = $mentor ? Course::where('mentor_id', $mentor->id)->count() : 0;
+
+                    $userContext .= "- **Expertise**: " . ($mentor?->expertise ?? 'N/A') . "\n";
+                    $userContext .= "- **Qualification**: " . ($mentor?->qualification ?? 'N/A') . "\n";
+                    $userContext .= "- **Assigned Offline Courses**: {$assignedCoursesCount}\n";
+                    $userContext .= "ROLE GUIDELINE: Assist the mentor with viewing assigned courses, managing student live chat requests, and mentorship reports. Add buttons to mentor pages (/mentor/mycourses, /mentor/chat-requests).";
+                    break;
+
+                case 'admin':
+                    $pendingColleges = User::where('role', 'college')->where('status', 'pending')->count();
+                    $pendingFirms = User::where('role', 'firm')->where('status', 'pending')->count();
+
+                    $userContext .= "- **System Role**: Platform Super Admin\n";
+                    $userContext .= "- **Pending Institutional Approvals**: Colleges ({$pendingColleges}), Firms ({$pendingFirms})\n";
+                    $userContext .= "ROLE GUIDELINE: Provide executive summaries of platform statistics, institution verification queues, course moderation, category oversight, and system analytics. Add buttons to admin pages (/admin/colleges, /admin/firms, /admin/courses, /admin/reports).";
+                    break;
+
+                default:
+                    $userContext .= "ROLE GUIDELINE: Assist user based on platform guidelines.";
+                    break;
             }
         } else {
-            $userContext = "The user is a **Guest** (not logged in). If they ask for profile data, enrollments, or certificates, politely tell them to sign in first and provide a sign-in button.";
+            $userContext = "The user is a **Guest** (not logged in).\n" .
+                "If they ask about their personal profile, enrollment history, certificates, or booking status, politely inform them that they need to sign in first, and append buttons for Login (/login) and Register (/register).\n" .
+                "They can freely ask about available offline courses, colleges (including locations like Angamaly), course fees, and platform information.";
         }
 
         $prompt = <<<PROMPT
-You are **EduConnect AI**, the intelligent assistant for the EduConnect education platform.
+You are **EduConnect AI**, the official intelligent virtual assistant for **EduConnect** — Multi-Institutional Offline Course Enrollment & Mentorship Platform.
 Today's date: {$now}.
+
 {$userContext}
 
+## Platform Context & Architecture
+EduConnect connects Colleges with Students and Organizations (Firms) for offline skill development and professional coaching:
+1. **Course Marketplace**: Offline training programs provided by accredited colleges with campus venues, offline schedules, price, seat capacity, and category.
+2. **Dual Enrollment**:
+   - **Students**: Individual enrollments with fixed campus venues and schedules.
+   - **Firms**: Corporate group bookings where firms can propose their own venue and session schedule.
+3. **Direct Mentorship**: Live chat guidance connecting enrolled learners with college-assigned mentors.
+4. **QR-Verified Certification**: Colleges issue certificates with authorized signature uploads, downloadable as PDF with instant public QR verification.
+
 ## Your Capabilities
-- You can search courses, categories, colleges, mentors, and enrollments from the live database using your tools.
-- You can answer general knowledge questions about any topic.
-- You are helpful, friendly, and concise.
+- You can query live data using your tools: search courses by keyword/location (e.g. Angamaly), get last enrollment details, list categories, inspect college info, retrieve enrollment statuses, check certificates, and view platform stats.
+- Answer general and platform-specific questions concisely, clearly, and politely.
+
+## Query Handling Instructions
+1. **Enrollment Queries (e.g., "my last enrollment details", "enrollment status")**:
+   - Call `get_last_enrollment` (or `get_user_enrollments`).
+   - Detail the course title, college, venue, schedule, status (Pending/Confirmed/Rejected), payment status, fee amount, and any college notes.
+   - **ALWAYS** include a redirect button to open the enrollment page:
+     - For Students: `/student/my-enrollments`
+     - For Firms: `/firm/bookings`
+     - For Guests: `/login`
+
+2. **Location & Course Inquiries (e.g., "new courses provided by colleges in Angamaly", "courses near Kochi")**:
+   - Call `search_courses` with `location` or `query` set to the city/location name (e.g., "Angamaly").
+   - Display title, college name, location/venue, dates, price, seat availability, and certification status.
+   - **ALWAYS** append a button to Explore Courses (`/explore`) or the specific course page (`/courses/{slug}`).
+
+3. **Certificate Inquiries**:
+   - Call `get_certificate_status` or `get_last_enrollment`.
+   - Explain whether the certificate has been issued by the college.
+   - Include redirect button to `/student/my-enrollments` (Student) or `/firm/bookings` (Firm) or `/verify` (Public Verification).
+
+4. **Mentor / Live Chat Queries**:
+   - Direct students to `/student/chat` and mentors to `/mentor/chat-requests`.
 
 ## Response Formatting Rules
-1. Always use **Markdown** formatting: bold, bullet lists, numbered lists, headings (use ### at most).
-2. Keep responses concise but informative. Use bullet points for lists.
-3. When showing course information, always include: title, price, venue, dates, available seats.
-4. Use emojis sparingly for visual appeal (📚 🎓 📅 💰 📍 ✅ ❌ ⏳).
+1. Always use standard **Markdown**: bold labels (`**Course**: Title`), bullet lists, and tables/headings where helpful.
+2. Keep responses structured, concise, and easy to read.
+3. Use emojis effectively (📚 🎓 📅 💰 📍 ✅ ⏳ 📜 💬).
 
-## Button Rules
-When your response can lead to a useful next action, append a JSON block at the very end of your text response in this exact format:
+## Button Output Format
+Whenever your response references a specific page or next action, ALWAYS append a JSON block at the VERY END of your response text in this EXACT format:
 
 :::buttons
 [
   {"action": "redirect", "label": "Button Text", "url": "/path/to/page"},
-  {"action": "chat_suggest", "label": "Button Text", "text": "Follow-up question to ask"}
+  {"action": "chat_suggest", "label": "Button Text", "text": "Follow-up query to ask"}
 ]
 :::
 
-Button guidelines:
-- Use "redirect" for navigation: viewing courses (/courses/{slug}), explore page (/explore), enrollments (/student/my-enrollments), dashboard (/dashboard), login (/login), register (/register).
-- Use "chat_suggest" for follow-up questions the user might want to ask.
-- Include 1-4 buttons maximum. Don't add buttons for simple greetings.
-- Always use the correct URL paths for this platform.
+### URL Reference Guide for Buttons
+- Student Enrollments: `/student/my-enrollments`
+- Student Explore: `/explore`
+- Student Chat with Mentor: `/student/chat`
+- Firm Group Bookings: `/firm/bookings`
+- Firm Explore: `/firm/explore`
+- Firm Groups/Cohorts: `/firm/groups`
+- College Course Management: `/college/courses`
+- College Enrollment Approvals: `/college/enrollments`
+- College Mentors: `/college/mentors`
+- College Certificate Issuance: `/college/certificates`
+- Mentor Assigned Courses: `/mentor/mycourses`
+- Mentor Chat Requests: `/mentor/chat-requests`
+- Admin Approvals: `/admin/colleges` or `/admin/firms`
+- Admin Reports: `/admin/reports`
+- Public Verification: `/verify`
+- Login / Register: `/login`, `/register`
 
-## URL Reference
-- Course detail: /courses/{slug}
-- Explore courses: /explore
-- Student enrollments: /student/my-enrollments
-- Student dashboard: /student/dashboard
-- Firm bookings: /firm/bookings
-- Firm dashboard: /firm/dashboard
-- Login: /login
-- Register: /register
-
-## Tool Usage
-- If the user asks about courses, categories, colleges, or enrollments — ALWAYS use the appropriate tool first.
-- If no matching tool exists, answer from your general knowledge.
-- If a tool requires authentication and the user is a guest, explain they need to sign in.
+Include 1-4 relevant buttons maximum. Ensure labels are clear and include icons/emojis (e.g., "📋 Open My Enrollments", "🔍 Explore All Courses").
 PROMPT;
-
         return $prompt;
     }
 
@@ -264,14 +354,21 @@ PROMPT;
             [
                 'functionDeclarations' => [
                     [
+                        'name' => 'get_last_enrollment',
+                        'description' => 'Fetch full details of the current user\'s single most recent course enrollment or group booking. Use this when the user asks "my last enrollment details", "latest enrollment", or "what course did I enroll in last".',
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
+                    ],
+                    [
                         'name' => 'search_courses',
-                        'description' => 'Search courses by keyword. Matches against title, category name, venue, and description. Returns up to 6 results.',
+                        'description' => 'Search offline courses by keyword or location (e.g., "Angamaly", "Python", "Web"). Matches title, description, venue, category, and college name/address.',
                         'parameters' => [
                             'type' => 'OBJECT',
                             'properties' => [
-                                'query' => ['type' => 'STRING', 'description' => 'Search keyword (e.g., "python", "web development", "online").']
+                                'query' => ['type' => 'STRING', 'description' => 'Keyword to search in course title, description, or category (e.g., "web development").'],
+                                'location' => ['type' => 'STRING', 'description' => 'City or location to filter by (e.g., "Angamaly", "Kochi", "Ernakulam").'],
+                                'sort_by' => ['type' => 'STRING', 'description' => 'Sort order: "latest" for new courses, "price_low", "price_high". Default is "latest".']
                             ],
-                            'required' => ['query']
+                            'required' => []
                         ]
                     ],
                     [
@@ -303,11 +400,11 @@ PROMPT;
                     ],
                     [
                         'name' => 'get_college_info',
-                        'description' => 'Get information about colleges on the platform. Can search by name or list all.',
+                        'description' => 'Get information about colleges on the platform, including location, address, contact details, and courses count. Can search by college name or location (e.g., "Angamaly").',
                         'parameters' => [
                             'type' => 'OBJECT',
                             'properties' => [
-                                'query' => ['type' => 'STRING', 'description' => 'Optional college name to search for. Leave empty to list all.']
+                                'query' => ['type' => 'STRING', 'description' => 'Optional college name or location (e.g. "Angamaly") to search for.']
                             ],
                             'required' => []
                         ]
@@ -341,12 +438,32 @@ PROMPT;
                             'properties' => [
                                 'course_title' => ['type' => 'STRING', 'description' => 'The course title to check certificate status for.']
                             ],
-                            'required' => ['course_title']
+                            'required' => []
                         ]
                     ],
                     [
+                        'name' => 'get_college_pending_enrollments',
+                        'description' => 'For College users: List student and firm enrollment requests awaiting review/approval.',
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
+                    ],
+                    [
+                        'name' => 'get_firm_group_bookings',
+                        'description' => 'For Firm users: List bulk group bookings, participant rosters, and schedule proposals.',
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
+                    ],
+                    [
+                        'name' => 'get_mentor_assigned_courses',
+                        'description' => 'For Mentor users: List courses assigned by colleges and pending student live chat requests.',
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
+                    ],
+                    [
+                        'name' => 'get_admin_pending_approvals',
+                        'description' => 'For Admin users: List colleges and firms currently waiting for platform verification and approval.',
+                        'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
+                    ],
+                    [
                         'name' => 'get_platform_stats',
-                        'description' => 'Get overall platform statistics: total courses, colleges, categories, mentors, and students. Use this for "tell me about EduConnect" type questions.',
+                        'description' => 'Get overall platform statistics: total courses, colleges, categories, mentors, and students.',
                         'parameters' => ['type' => 'OBJECT', 'properties' => (object)[], 'required' => []]
                     ],
                 ]
@@ -361,40 +478,115 @@ PROMPT;
     private function executeTool(string $name, array $args): array
     {
         return match ($name) {
-            'search_courses'        => $this->toolSearchCourses($args),
-            'get_course_details'    => $this->toolGetCourseDetails($args),
-            'get_all_categories'    => $this->toolGetAllCategories(),
-            'get_courses_by_category' => $this->toolGetCoursesByCategory($args),
-            'get_college_info'      => $this->toolGetCollegeInfo($args),
-            'get_user_profile'      => $this->toolGetUserProfile(),
-            'get_user_enrollments'  => $this->toolGetUserEnrollments(),
-            'get_enrollment_status' => $this->toolGetEnrollmentStatus($args),
-            'get_certificate_status' => $this->toolGetCertificateStatus($args),
-            'get_platform_stats'    => $this->toolGetPlatformStats(),
-            default                 => ['error' => "Unknown tool: {$name}"]
+            'get_last_enrollment'            => $this->toolGetLastEnrollment(),
+            'search_courses'                 => $this->toolSearchCourses($args),
+            'get_course_details'             => $this->toolGetCourseDetails($args),
+            'get_all_categories'             => $this->toolGetAllCategories(),
+            'get_courses_by_category'        => $this->toolGetCoursesByCategory($args),
+            'get_college_info'               => $this->toolGetCollegeInfo($args),
+            'get_user_profile'               => $this->toolGetUserProfile(),
+            'get_user_enrollments'           => $this->toolGetUserEnrollments(),
+            'get_enrollment_status'          => $this->toolGetEnrollmentStatus($args),
+            'get_certificate_status'         => $this->toolGetCertificateStatus($args),
+            'get_college_pending_enrollments'=> $this->toolGetCollegePendingEnrollments(),
+            'get_firm_group_bookings'        => $this->toolGetFirmGroupBookings(),
+            'get_mentor_assigned_courses'    => $this->toolGetMentorAssignedCourses(),
+            'get_admin_pending_approvals'    => $this->toolGetAdminPendingApprovals(),
+            'get_platform_stats'             => $this->toolGetPlatformStats(),
+            default                          => ['error' => "Unknown tool: {$name}"]
         };
     }
 
     // ── Individual Tool Implementations ───────────────────────────────
 
+    private function toolGetLastEnrollment(): array
+    {
+        if (!Auth::check()) {
+            return ['error' => 'User is not logged in. Please ask them to sign in first.'];
+        }
+
+        $enrollment = Enrollment::where('user_id', Auth::id())
+            ->with(['course.college', 'course.category', 'course.mentor.user', 'participants'])
+            ->latest()
+            ->first();
+
+        if (!$enrollment) {
+            return ['message' => 'You do not have any enrollments or bookings yet.'];
+        }
+
+        $c = $enrollment->course;
+
+        return [
+            'enrollment_id' => $enrollment->id,
+            'type' => $enrollment->type,
+            'course_title' => $c?->title ?? 'Unknown Course',
+            'course_slug' => $c?->slug ?? '',
+            'college_name' => $c?->college?->institution_name ?? 'N/A',
+            'college_address' => $c?->college?->address ?? 'N/A',
+            'category' => $c?->category?->name ?? 'N/A',
+            'venue' => $c?->venue ?? $enrollment->requested_venue ?? 'TBA',
+            'start_date' => $c?->start_date ?? $enrollment->proposed_start ?? 'TBA',
+            'end_date' => $c?->end_date ?? $enrollment->proposed_end ?? 'TBA',
+            'time_slot' => $c?->time_slot ?? $enrollment->proposed_time ?? 'TBA',
+            'status' => $enrollment->status,
+            'payment_status' => $enrollment->payment_status,
+            'total_amount' => $enrollment->total_amount ? ('₹' . number_format($enrollment->total_amount, 2)) : (($c && $c->price) ? ('₹' . number_format($c->price, 2)) : 'Free'),
+            'college_note' => $enrollment->college_note ?? 'No extra notes',
+            'certificate_issued' => $enrollment->certificate_issued ? 'Yes' : 'No',
+            'certificate_code' => $enrollment->certificate_code ?? 'Not yet issued',
+            'mentor_name' => $c?->mentor?->user?->name ?? 'Not assigned yet',
+            'participant_count' => $enrollment->type === 'firm' ? ($enrollment->participant_count ?? count($enrollment->participants)) : 1,
+            'enrolled_at' => $enrollment->created_at?->format('F j, Y, g:i a'),
+        ];
+    }
+
     private function toolSearchCourses(array $args): array
     {
-        $query = $args['query'] ?? '';
-        $courses = Course::where('status', 'active')
-            ->where(function ($q) use ($query) {
+        $query = isset($args['query']) ? $args['query'] : '';
+        $location = isset($args['location']) ? $args['location'] : '';
+        $sortBy = isset($args['sort_by']) ? $args['sort_by'] : 'latest';
+
+        $qBuilder = Course::where('status', 'active')
+            ->with(['category:id,name', 'college:id,institution_name,address']);
+
+        // Filter by location if specified
+        if (!empty($location)) {
+            $qBuilder->where(function ($q) use ($location) {
+                $q->where('venue', 'like', "%{$location}%")
+                  ->orWhereHas('college', fn($c) => $c->where('address', 'like', "%{$location}%")
+                                                     ->orWhere('institution_name', 'like', "%{$location}%"));
+            });
+        }
+
+        // Filter by keyword query if specified
+        if (!empty($query)) {
+            $qBuilder->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
                   ->orWhere('description', 'like', "%{$query}%")
                   ->orWhere('venue', 'like', "%{$query}%")
-                  ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$query}%"));
-            })
-            ->with('category:id,name', 'college:id,institution_name')
-            ->take(6)
+                  ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$query}%"))
+                  ->orWhereHas('college', fn($c) => $c->where('institution_name', 'like', "%{$query}%")
+                                                     ->orWhere('address', 'like', "%{$query}%"));
+            });
+        }
+
+        // Sorting
+        if ($sortBy === 'price_low') {
+            $qBuilder->orderBy('price', 'asc');
+        } elseif ($sortBy === 'price_high') {
+            $qBuilder->orderBy('price', 'desc');
+        } else {
+            $qBuilder->latest();
+        }
+
+        $courses = $qBuilder->take(6)
             ->get()
             ->map(fn($c) => [
                 'title' => $c->title,
                 'slug' => $c->slug,
                 'category' => $c->category?->name ?? 'N/A',
                 'college' => $c->college?->institution_name ?? 'N/A',
+                'college_address' => $c->college?->address ?? 'N/A',
                 'type' => $c->course_type,
                 'price' => $c->price > 0 ? '₹' . number_format($c->price, 2) : 'Free',
                 'venue' => $c->venue ?? 'TBA',
@@ -403,10 +595,12 @@ PROMPT;
                 'available_seats' => $c->available_seats,
                 'total_seats' => $c->total_seats,
                 'is_certified' => $c->is_certified ? 'Yes' : 'No',
+                'created_at' => $c->created_at?->format('M j, Y'),
             ])
             ->toArray();
 
-        return $courses ?: ['message' => 'No courses found matching "' . $query . '".'];
+        $searchTerm = trim($query . ' ' . $location);
+        return $courses ?: ['message' => 'No active courses found matching "' . ($searchTerm ?: 'your query') . '".'];
     }
 
     private function toolGetCourseDetails(array $args): array
@@ -414,7 +608,7 @@ PROMPT;
         $identifier = $args['identifier'] ?? '';
         $course = Course::where('slug', 'like', "%{$identifier}%")
             ->orWhere('title', 'like', "%{$identifier}%")
-            ->with('category:id,name', 'college:id,institution_name', 'mentor:id,qualification,expertise', 'mentor.user:id,name')
+            ->with(['category:id,name', 'college:id,institution_name,address', 'mentor:id,qualification,expertise', 'mentor.user:id,name'])
             ->first();
 
         if (!$course) {
@@ -427,6 +621,7 @@ PROMPT;
             'description' => $course->description,
             'category' => $course->category?->name ?? 'N/A',
             'college' => $course->college?->institution_name ?? 'N/A',
+            'college_address' => $course->college?->address ?? 'N/A',
             'mentor' => $course->mentor?->user?->name ?? 'Not assigned',
             'mentor_expertise' => $course->mentor?->expertise ?? 'N/A',
             'type' => $course->course_type,
@@ -453,190 +648,6 @@ PROMPT;
                 'course_count' => $c->course_count,
             ])
             ->toArray();
-    }
-
-    private function toolGetCoursesByCategory(array $args): array
-    {
-        $categoryName = $args['category'] ?? '';
-        $category = Category::where('name', 'like', "%{$categoryName}%")->first();
-
-        if (!$category) {
-            return ['error' => 'Category not found: ' . $categoryName];
-        }
-
-        $courses = Course::where('category_id', $category->id)
-            ->where('status', 'active')
-            ->with('college:id,institution_name')
-            ->take(8)
-            ->get()
-            ->map(fn($c) => [
-                'title' => $c->title,
-                'slug' => $c->slug,
-                'college' => $c->college?->institution_name ?? 'N/A',
-                'price' => $c->price > 0 ? '₹' . number_format($c->price, 2) : 'Free',
-                'venue' => $c->venue ?? 'TBA',
-                'start_date' => $c->start_date,
-                'available_seats' => $c->available_seats,
-            ])
-            ->toArray();
-
-        return $courses ?: ['message' => 'No active courses found in the "' . $category->name . '" category.'];
-    }
-
-    private function toolGetCollegeInfo(array $args): array
-    {
-        $query = $args['query'] ?? '';
-
-        $colleges = College::when($query, function ($q) use ($query) {
-                $q->where('institution_name', 'like', "%{$query}%");
-            })
-            ->with('user:id,name,email')
-            ->withCount('courses')
-            ->take(5)
-            ->get()
-            ->map(fn($c) => [
-                'institution_name' => $c->institution_name,
-                'contact_person' => $c->contact_person ?? $c->user?->name ?? 'N/A',
-                'address' => $c->address ?? 'N/A',
-                'website' => $c->website ?? 'N/A',
-                'phone' => $c->college_phone ?? 'N/A',
-                'total_courses' => $c->courses_count,
-            ])
-            ->toArray();
-
-        return $colleges ?: ['message' => 'No colleges found' . ($query ? ' matching "' . $query . '"' : '') . '.'];
-    }
-
-    private function toolGetUserProfile(): array
-    {
-        if (!Auth::check()) {
-            return ['error' => 'User is not logged in. Please ask them to sign in first.'];
-        }
-
-        $user = Auth::user();
-        $profile = [
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'member_since' => $user->created_at?->format('F j, Y'),
-        ];
-
-        // Add role-specific data
-        if ($user->role === 'student' && $user->student) {
-            $profile['phone'] = $user->student->phone ?? 'Not set';
-            $profile['qualification'] = $user->student->current_qualification ?? 'Not set';
-            $profile['gender'] = $user->student->gender ?? 'Not set';
-        } elseif ($user->role === 'firm' && $user->firm) {
-            $profile['organization'] = $user->firm->org_name ?? 'Not set';
-            $profile['org_type'] = $user->firm->org_type ?? 'Not set';
-            $profile['contact_person'] = $user->firm->contact_person ?? 'Not set';
-        } elseif ($user->role === 'college' && $user->college) {
-            $profile['institution'] = $user->college->institution_name ?? 'Not set';
-            $profile['address'] = $user->college->address ?? 'Not set';
-            $profile['website'] = $user->college->website ?? 'Not set';
-        } elseif ($user->role === 'mentor' && $user->mentor) {
-            $profile['expertise'] = $user->mentor->expertise ?? 'Not set';
-            $profile['qualification'] = $user->mentor->qualification ?? 'Not set';
-        }
-
-        return $profile;
-    }
-
-    private function toolGetUserEnrollments(): array
-    {
-        if (!Auth::check()) {
-            return ['error' => 'User is not logged in. Please ask them to sign in first.'];
-        }
-
-        $enrollments = Enrollment::where('user_id', Auth::id())
-            ->with('course:id,title,slug,venue,start_date,end_date,price,is_certified')
-            ->latest()
-            ->take(8)
-            ->get()
-            ->map(fn($e) => [
-                'course_title' => $e->course?->title ?? 'Unknown',
-                'course_slug' => $e->course?->slug ?? '',
-                'type' => $e->type,
-                'status' => $e->status,
-                'payment_status' => $e->payment_status,
-                'venue' => $e->course?->venue ?? $e->requested_venue ?? 'TBA',
-                'start_date' => $e->course?->start_date ?? $e->proposed_start,
-                'certificate_issued' => $e->certificate_issued ? 'Yes' : 'No',
-                'enrolled_at' => $e->created_at?->format('M j, Y'),
-            ])
-            ->toArray();
-
-        return $enrollments ?: ['message' => 'You have no enrollments yet.'];
-    }
-
-    private function toolGetEnrollmentStatus(array $args): array
-    {
-        if (!Auth::check()) {
-            return ['error' => 'User is not logged in. Please ask them to sign in first.'];
-        }
-
-        $courseTitle = $args['course_title'] ?? '';
-        $enrollment = Enrollment::where('user_id', Auth::id())
-            ->whereHas('course', fn($q) => $q->where('title', 'like', "%{$courseTitle}%"))
-            ->with('course:id,title,slug,price')
-            ->latest()
-            ->first();
-
-        if (!$enrollment) {
-            return ['error' => 'No enrollment found for a course matching "' . $courseTitle . '".'];
-        }
-
-        return [
-            'course_title' => $enrollment->course?->title,
-            'course_slug' => $enrollment->course?->slug,
-            'enrollment_status' => $enrollment->status,
-            'payment_status' => $enrollment->payment_status,
-            'type' => $enrollment->type,
-            'total_amount' => $enrollment->total_amount ? '₹' . number_format($enrollment->total_amount, 2) : 'N/A',
-            'college_note' => $enrollment->college_note ?? 'None',
-            'enrolled_at' => $enrollment->created_at?->format('F j, Y'),
-            'certificate_issued' => $enrollment->certificate_issued ? 'Yes' : 'No',
-        ];
-    }
-
-    private function toolGetCertificateStatus(array $args): array
-    {
-        if (!Auth::check()) {
-            return ['error' => 'User is not logged in. Please ask them to sign in first.'];
-        }
-
-        $courseTitle = $args['course_title'] ?? '';
-        $enrollment = Enrollment::where('user_id', Auth::id())
-            ->whereHas('course', fn($q) => $q->where('title', 'like', "%{$courseTitle}%"))
-            ->with('course:id,title,is_certified')
-            ->latest()
-            ->first();
-
-        if (!$enrollment) {
-            return ['error' => 'No enrollment found for a course matching "' . $courseTitle . '".'];
-        }
-
-        return [
-            'course_title' => $enrollment->course?->title,
-            'is_certified_course' => $enrollment->course?->is_certified ? 'Yes' : 'No',
-            'certificate_issued' => $enrollment->certificate_issued ? 'Yes' : 'No',
-            'certificate_code' => $enrollment->certificate_code ?? 'Not yet issued',
-            'issued_at' => $enrollment->certificate_issued_at?->format('F j, Y') ?? 'N/A',
-        ];
-    }
-
-    private function toolGetPlatformStats(): array
-    {
-        return [
-            'total_courses' => Course::count(),
-            'active_courses' => Course::where('status', 'active')->count(),
-            'total_categories' => Category::count(),
-            'total_colleges' => College::count(),
-            'total_mentors' => Mentor::count(),
-            'total_students' => User::where('role', 'student')->count(),
-            'total_firms' => User::where('role', 'firm')->count(),
-            'total_enrollments' => Enrollment::count(),
-        ];
     }
 
     // ══════════════════════════════════════════════════════════════════

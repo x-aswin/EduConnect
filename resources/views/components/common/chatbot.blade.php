@@ -15,7 +15,11 @@
                 <h6 class="chatbot-title">EduConnect AI</h6>
                 <span class="chatbot-subtitle">
                     <span class="status-dot"></span>
-                    Online
+                    @auth
+                        {{ ucfirst(Auth::user()->role) }} Assistant
+                    @else
+                        EduConnect Guide
+                    @endauth
                 </span>
             </div>
         </div>
@@ -34,7 +38,7 @@
         <div class="msg-row msg-bot">
             <div class="msg-bubble msg-bubble-bot">
                 <p>👋 Hi there! I'm <strong>EduConnect AI</strong>.</p>
-                <p>I can help you find courses, check your enrollments, and answer questions about the platform.</p>
+                <p>I can help you find courses, check enrollments, and answer questions about the platform.</p>
                 <p class="mb-0">Try asking me something! 👇</p>
             </div>
         </div>
@@ -42,10 +46,37 @@
 
     {{-- Quick Suggest Chips --}}
     <div class="chatbot-chips" id="chat-chips">
-        <button class="chip" data-text="Show me available courses"><i class="bi bi-book me-1"></i> Browse Courses</button>
-        <button class="chip" data-text="What courses are near Angamaly?"><i class="bi bi-geo-alt me-1"></i> Near Angamaly</button>
-        <button class="chip" data-text="Show my enrollments"><i class="bi bi-journal-check me-1"></i> My Enrollments</button>
-        <button class="chip" data-text="Upcoming courses this month"><i class="bi bi-calendar3 me-1"></i> Upcoming</button>
+        @auth
+            @if(Auth::user()->role === 'student')
+                <button class="chip" data-text="What are my last enrollment details?"><i class="bi bi-journal-check me-1"></i> My Last Enrollment</button>
+                <button class="chip" data-text="Show new courses provided by colleges in Angamaly"><i class="bi bi-geo-alt me-1"></i> Courses in Angamaly</button>
+                <button class="chip" data-text="Check my certificate status"><i class="bi bi-award me-1"></i> My Certificates</button>
+                <button class="chip" data-text="How do I live chat with my course mentor?"><i class="bi bi-chat-dots me-1"></i> Mentor Chat</button>
+            @elseif(Auth::user()->role === 'firm')
+                <button class="chip" data-text="Show my organization group bookings"><i class="bi bi-building me-1"></i> Group Bookings</button>
+                <button class="chip" data-text="What courses in Angamaly are available for firm bookings?"><i class="bi bi-geo-alt me-1"></i> Angamaly Courses</button>
+                <button class="chip" data-text="How can I manage firm groups and cohorts?"><i class="bi bi-people me-1"></i> Manage Groups</button>
+                <button class="chip" data-text="Where can I download member certificates?"><i class="bi bi-award me-1"></i> Member Certificates</button>
+            @elseif(Auth::user()->role === 'college')
+                <button class="chip" data-text="List all of our active offline courses"><i class="bi bi-book me-1"></i> Our Active Courses</button>
+                <button class="chip" data-text="Show pending student and firm enrollments awaiting review"><i class="bi bi-hourglass-split me-1"></i> Pending Enrollments</button>
+                <button class="chip" data-text="How do I assign mentors to course offerings?"><i class="bi bi-person-badge me-1"></i> Course Mentors</button>
+                <button class="chip" data-text="Tell me about certificate issuance with QR codes"><i class="bi bi-award me-1"></i> Issue Certificates</button>
+            @elseif(Auth::user()->role === 'mentor')
+                <button class="chip" data-text="List all of my assigned offline courses"><i class="bi bi-book me-1"></i> Assigned Courses</button>
+                <button class="chip" data-text="Are there any pending student live chat requests?"><i class="bi bi-chat-left-quote me-1"></i> Chat Requests</button>
+                <button class="chip" data-text="Show my student participation reports summary"><i class="bi bi-graph-up me-1"></i> Mentorship Summary</button>
+            @elseif(Auth::user()->role === 'admin')
+                <button class="chip" data-text="Show overall platform statistics"><i class="bi bi-bar-chart-fill me-1"></i> Platform Stats</button>
+                <button class="chip" data-text="Show pending college approvals"><i class="bi bi-bank me-1"></i> College Approvals</button>
+                <button class="chip" data-text="Show pending firm approvals"><i class="bi bi-building me-1"></i> Firm Approvals</button>
+            @endif
+        @else
+            <button class="chip" data-text="Show active offline courses"><i class="bi bi-book me-1"></i> Browse Courses</button>
+            <button class="chip" data-text="What new courses are provided by colleges in Angamaly?"><i class="bi bi-geo-alt me-1"></i> Angamaly Courses</button>
+            <button class="chip" data-text="How does the dual enrollment model work?"><i class="bi bi-info-circle me-1"></i> How it Works</button>
+            <button class="chip" data-text="How do I register an account to enroll?"><i class="bi bi-person-plus me-1"></i> How to Enroll</button>
+        @endauth
     </div>
 
     {{-- Input Area --}}
@@ -351,6 +382,58 @@
         color: var(--cb-slate);
         margin-top: 8px;
         letter-spacing: 0.3px;
+    }
+
+    /* ── Action Buttons in Bot Messages ────────────────────────────── */
+    .msg-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(226, 232, 240, 0.8);
+    }
+    .msg-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 9px 14px;
+        border-radius: 10px;
+        font-size: 12.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        cursor: pointer;
+    }
+    /* Primary action link buttons (e.g. redirect links) */
+    .msg-btn:not(.msg-btn-suggest) {
+        background: linear-gradient(135deg, var(--cb-primary) 0%, #1d4ed8 100%);
+        color: white;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+    .msg-btn:not(.msg-btn-suggest):hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+        color: white;
+    }
+    /* Suggestion / query chips style buttons */
+    .msg-btn-suggest {
+        background: #f1f5f9;
+        color: var(--cb-navy);
+        border: 1px solid var(--cb-border);
+    }
+    .msg-btn-suggest:hover {
+        background: #e2e8f0;
+        color: var(--cb-primary);
+        border-color: var(--cb-primary-light);
+        transform: translateY(-1.5px);
+    }
+    .msg-btn:active {
+        transform: translateY(0);
     }
 
     /* ── Responsive ────────────────────────────────────────────────── */

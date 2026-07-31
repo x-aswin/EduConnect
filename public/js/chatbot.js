@@ -28,9 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isOpen) {
             chatContainer.classList.remove('chatbot-hidden');
             chatContainer.classList.add('chatbot-visible');
-            iconOpen.style.display = 'none';
-            iconClose.style.display = 'block';
-            chatPulse.style.display = 'none';
+            if (iconOpen) iconOpen.style.display = 'none';
+            if (iconClose) iconClose.style.display = 'block';
+            if (chatPulse) chatPulse.style.display = 'none';
             chatInput.focus();
         } else {
             closeChat();
@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', function () {
         isOpen = false;
         chatContainer.classList.remove('chatbot-visible');
         chatContainer.classList.add('chatbot-hidden');
-        iconOpen.style.display = 'block';
-        iconClose.style.display = 'none';
+        if (iconOpen) iconOpen.style.display = 'block';
+        if (iconClose) iconClose.style.display = 'none';
     }
 
     // ── Clear Chat ────────────────────────────────────────────────────
