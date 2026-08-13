@@ -252,7 +252,7 @@
 
         @if($type === 'enrollments')
             <div class="table-responsive">
-                <table class="table align-middle mb-0">
+                <table class="table align-middle mb-0 export-data">
                     <thead>
                         <tr>
                             <th>Enrollment ID</th>
@@ -302,7 +302,7 @@
 
         @elseif($type === 'payments')
             <div class="table-responsive">
-                <table class="table align-middle mb-0">
+                <table class="table align-middle mb-0 export-data">
                     <thead>
                         <tr>
                             <th>Transaction ID</th>
@@ -344,7 +344,7 @@
 
         @elseif($type === 'mentorships')
             <div class="table-responsive">
-                <table class="table align-middle mb-0">
+                <table class="table align-middle mb-0 export-data">
                     <thead>
                         <tr>
                             <th>Mentor Name</th>
@@ -380,7 +380,7 @@
 
         @elseif($type === 'certificates')
             <div class="table-responsive">
-                <table class="table align-middle mb-0">
+                <table class="table align-middle mb-0 export-data">
                     <thead>
                         <tr>
                             <th>Certificate Code</th>
@@ -464,6 +464,62 @@
                 document.getElementById('reportFilterForm').submit();
             });
         });
+
+
+        $(document).ready(function() {
+        if ($('.table').length > 0) {
+            $('.table').DataTable({
+                paging: false,
+                searching: true,
+                info: false,
+                ordering: true,
+                dom: '<"d-flex justify-content-between align-items-center mb-3"fB>rt',
+                buttons: {
+                    dom: {
+                        button: {
+                            tag: 'button',
+                            className: 'btn btn-sm'
+                        }
+                    },
+                    buttons: [
+                        {
+                            extend: 'copyHtml5',
+                            className: 'btn-outline-secondary',
+                            text: '<i class="fas fa-copy me-1"></i> Copy Data'
+                        },
+                        {
+                            extend: 'excelHtml5',
+                            className: 'btn-outline-success',
+                            text: '<i class="fas fa-file-excel me-1"></i> Export Excel',
+                            title: '{{ ucfirst($type) }} Report - {{ date("Y-m-d") }}'
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            className: 'btn-outline-info',
+                            text: '<i class="fas fa-file-csv me-1"></i> Export CSV',
+                            title: '{{ ucfirst($type) }} Report - {{ date("Y-m-d") }}'
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            className: 'btn-outline-danger',
+                            text: '<i class="fas fa-file-pdf me-1"></i> Download PDF',
+                            orientation: 'landscape',
+                            pageSize: 'A4',
+                            title: '{{ ucfirst($type) }} Report - {{ date("Y-m-d") }}'
+                        },
+                        {
+                            extend: 'print',
+                            className: 'btn-outline-dark',
+                            text: '<i class="fas fa-print me-1"></i> Print Table'
+                        }
+                    ]
+                }
+            });
+        }
+    });
+
+
+
     </script>
     @endpush
 </x-student.layout>
