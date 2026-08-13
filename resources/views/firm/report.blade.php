@@ -243,133 +243,269 @@
         @if($type === 'bookings')
             <div class="table-responsive">
                 <table class="table align-middle mb-0 export-data">
-                    <thead>
-                        <tr>
-                            <th>Booking ID</th>
-                            <th>Course</th>
-                            <th>College</th>
-                            <th>Status</th>
-                            <th>Payment</th>
-                            <th>Participants</th>
-                            <th>Total Cost</th>
-                            <th>Booked Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $booking)
-                            <tr>
-                                <td class="fw-bold">#{{ $booking->id }}</td>
-                                <td class="fw-semibold">{{ $booking->course?->title ?? 'N/A' }}</td>
-                                <td>{{ $booking->course?->college?->institution_name ?? 'N/A' }}</td>
-                                <td>
-                                    <span class="badge-status badge-{{ $booking->status }}">
-                                        {{ ucfirst($booking->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @if(($booking->course->price ?? 0) == 0)
-                                        <span class="badge-status badge-paid">
-                                            FREE
-                                        </span>
-                                    @else
-                                        <span class="badge-status badge-{{ $booking->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
-                                            {{ strtoupper($booking->payment_status ?? 'unpaid') }}
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>{{ max($booking->participants->count(), $booking->participant_count ?? 0) }}</td>
-                                <td class="fw-bold text-primary">₹{{ number_format($booking->total_amount, 2) }}</td>
-                                <td>{{ $booking->created_at->format('d M Y h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No booking data matches the filter criteria.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>Booking ID</th>
+            <th>Course Title</th>
+            <th>Offering College</th>
+            <th>Booking Status</th>
+            <th>Payment Status</th>
+            <th>Participants</th>
+            <th>Total Cost</th>
+            <th>Booked Date</th>
+            <th class="text-end">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $booking)
+            <tr>
+                {{-- Booking ID --}}
+                <td class="fw-bold">
+                    <code class="text-dark">#{{ $booking->id }}</code>
+                </td>
+
+                {{-- Course Title --}}
+                <td class="fw-semibold">{{ $booking->course?->title ?? 'N/A' }}</td>
+
+                {{-- College Name --}}
+                <td class="text-muted">
+                    <i class="bi bi-building me-1"></i>{{ $booking->course?->college?->institution_name ?? 'N/A' }}
+                </td>
+
+                {{-- Booking Status --}}
+                <td>
+                    <span class="badge-status badge-{{ $booking->status ?? 'pending' }}">
+                        {{ ucfirst($booking->status ?? 'pending') }}
+                    </span>
+                </td>
+
+                {{-- Payment Status --}}
+                <td>
+                    @if(($booking->course?->price ?? 0) == 0)
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">
+                            FREE
+                        </span>
+                    @else
+                        <span class="badge-status badge-{{ ($booking->payment_status === 'paid') ? 'paid' : 'unpaid' }}">
+                            {{ strtoupper($booking->payment_status ?? 'unpaid') }}
+                        </span>
+                    @endif
+                </td>
+
+                {{-- Participants Display --}}
+                <td>
+                    @if($booking->participants->isNotEmpty())
+                        <div class="d-flex flex-wrap gap-1 align-items-center">
+                            {{-- Show up to 2 participant names --}}
+                            @foreach($booking->participants->take(2) as $participant)
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-person me-1"></i>{{ $participant->name }}
+                                </span>
+                            @endforeach
+
+                            {{-- Overflow badge for additional participants --}}
+                            @if($booking->participants->count() > 2)
+                                <span class="badge bg-secondary-subtle text-secondary border" 
+                                      title="{{ $booking->participants->skip(2)->pluck('name')->join(', ') }}">
+                                    +{{ $booking->participants->count() - 2 }} more
+                                </span>
+                            @endif
+                        </div>
+                    @else
+                        <span class="badge bg-light text-muted border">
+                            <i class="bi bi-people me-1"></i>{{ $booking->participant_count ?? 0 }} total
+                        </span>
+                    @endif
+                </td>
+
+                {{-- Total Amount --}}
+                <td class="fw-bold text-primary">
+                    ₹{{ number_format($booking->total_amount ?? 0, 2) }}
+                </td>
+
+                {{-- Booked Date --}}
+                <td class="small text-muted">
+                    {{ $booking->created_at ? $booking->created_at->format('d M Y, h:i A') : 'N/A' }}
+                </td>
+
+                {{-- Action Link --}}
+                <td class="text-end">
+                    <a href="{{ route('firm.bookings.show', $booking->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        <i class="bi bi-eye me-1"></i> View
+                    </a>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="9" class="text-center py-5 text-secondary">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No booking data matches the filter criteria.
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
 
         @elseif($type === 'payments')
             <div class="table-responsive">
                 <table class="table align-middle mb-0 export-data">
-                    <thead>
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>Course</th>
-                            <th>Total Cost</th>
-                            <th>Payment Status</th>
-                            <th>Date / Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $booking)
-                            <tr>
-                                <td class="fw-bold">#TXN{{ $booking->id }}</td>
-                                <td class="fw-semibold">{{ $booking->course?->title ?? 'N/A' }}</td>
-                                <td class="fw-bold text-primary">₹{{ number_format($booking->total_amount, 2) }}</td>
-                                <td>
-                                    @if(($booking->course->price ?? 0) == 0)
-                                        <span class="badge-status badge-paid">
-                                            FREE
-                                        </span>
-                                    @else
-                                        <span class="badge-status badge-{{ $booking->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
-                                            {{ strtoupper($booking->payment_status ?? 'unpaid') }}
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>{{ $booking->updated_at->format('d M Y h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-credit-card-2-front fs-2 d-block mb-2"></i> No payment data matches the filter criteria.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>Transaction ID</th>
+            <th>Course</th>
+            <th>Offering Institution</th>
+            <th>Total Amount</th>
+            <th>Payment Status</th>
+            <th>Date / Time</th>
+            <th class="text-end">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $booking)
+            <tr>
+                {{-- Transaction / Booking Reference --}}
+                <td class="fw-bold">
+                    <code class="text-dark fs-6">#TXN{{ $booking->id }}</code>
+                </td>
+
+                {{-- Course Title --}}
+                <td class="fw-semibold">{{ $booking->course?->title ?? 'N/A' }}</td>
+
+                {{-- Offering College --}}
+                <td class="text-muted small">
+                    <i class="bi bi-building me-1"></i>{{ $booking->course?->college?->institution_name ?? 'N/A' }}
+                </td>
+
+                {{-- Total Amount --}}
+                <td class="fw-bold text-primary fs-6">
+                    ₹{{ number_format($booking->total_amount ?? 0, 2) }}
+                </td>
+
+                {{-- Payment Status --}}
+                <td>
+                    @if(($booking->course?->price ?? 0) == 0)
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">
+                            FREE
+                        </span>
+                    @else
+                        <span class="badge-status badge-{{ ($booking->payment_status === 'paid') ? 'paid' : 'unpaid' }}">
+                            {{ strtoupper($booking->payment_status ?? 'unpaid') }}
+                        </span>
+                    @endif
+                </td>
+
+                {{-- Date / Time --}}
+                <td class="small text-muted">
+                    {{ $booking->updated_at ? $booking->updated_at->format('d M Y, h:i A') : 'N/A' }}
+                </td>
+
+                {{-- Action Column --}}
+                <td class="text-end">
+                    @if($booking->payment_status !== 'paid' && ($booking->course?->price ?? 0) > 0)
+                        {{-- Direct Link to Payment Page if Unpaid --}}
+                        <a href="{{ route('firm.bookings.payment', $booking->id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                            <i class="bi bi-credit-card me-1"></i> Pay Now
+                        </a>
+                    @else
+                        {{-- Link to Booking Details if Paid/Free --}}
+                        <a href="{{ route('firm.bookings.show', $booking->id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                            <i class="bi bi-eye me-1"></i> View
+                        </a>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="7" class="text-center py-5 text-secondary">
+                    <i class="bi bi-credit-card-2-front fs-2 d-block mb-2"></i> No payment data matches the filter criteria.
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
 
         @elseif($type === 'participants')
             <div class="table-responsive">
                 <table class="table align-middle mb-0 export-data">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Contact Info</th>
-                            <th>Booking ID</th>
-                            <th>Registered Course</th>
-                            <th>Booking Status</th>
-                            <th>Added Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $participant)
-                            <tr>
-                                <td class="fw-semibold">{{ $participant->name }}</td>
-                                <td>{{ $participant->contact_info ?? '-' }}</td>
-                                <td class="fw-bold">#{{ $participant->enrollment_id }}</td>
-                                <td>{{ $participant->enrollment?->course?->title ?? 'N/A' }}</td>
-                                <td>
-                                    <span class="badge-status badge-{{ $participant->enrollment?->status ?? 'pending' }}">
-                                        {{ ucfirst($participant->enrollment?->status ?? 'pending') }}
-                                    </span>
-                                </td>
-                                <td>{{ $participant->created_at->format('d M Y h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-people fs-2 d-block mb-2"></i> No participants matched the filter criteria.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>Participant Name</th>
+            <th>Contact Info</th>
+            <th>Booking ID</th>
+            <th>Registered Course</th>
+            <th>Offering College</th>
+            <th>Booking Status</th>
+            <th>Added Date</th>
+            <th class="text-end">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $participant)
+            <tr>
+                {{-- Name --}}
+                <td class="fw-semibold text-dark">
+                    <i class="bi bi-person-circle me-1 text-secondary"></i>
+                    {{ $participant->name }}
+                </td>
+
+                {{-- Contact Info --}}
+                <td>
+                    @if($participant->contact_info)
+                        <span class="text-dark">{{ $participant->contact_info }}</span>
+                    @else
+                        <span class="text-muted small">N/A</span>
+                    @endif
+                </td>
+
+                {{-- Booking ID --}}
+                <td class="fw-bold">
+                    <code class="text-dark fs-6">#{{ $participant->enrollment_id }}</code>
+                </td>
+
+                {{-- Registered Course Title --}}
+                <td class="fw-semibold text-primary">
+                    {{ $participant->enrollment?->course?->title ?? 'N/A' }}
+                </td>
+
+                {{-- Offering College --}}
+                <td class="text-muted small">
+                    <i class="bi bi-building me-1"></i>
+                    {{ $participant->enrollment?->course?->college?->institution_name ?? 'N/A' }}
+                </td>
+
+                {{-- Booking Status --}}
+                <td>
+                    <span class="badge-status badge-{{ $participant->enrollment?->status ?? 'pending' }}">
+                        {{ ucfirst($participant->enrollment?->status ?? 'pending') }}
+                    </span>
+                </td>
+
+                {{-- Added Date --}}
+                <td class="small text-muted">
+                    {{ $participant->created_at ? $participant->created_at->format('d M Y, h:i A') : 'N/A' }}
+                </td>
+
+                {{-- Action Column --}}
+                <td class="text-end">
+                    @if($participant->enrollment_id)
+                        <a href="{{ route('firm.bookings.show', $participant->enrollment_id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-eye me-1"></i> View Booking
+                        </a>
+                    @else
+                        <span class="text-muted small">N/A</span>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="8" class="text-center py-5 text-secondary">
+                    <i class="bi bi-people fs-2 d-block mb-2"></i> No participants matched the filter criteria.
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
         @endif
 
