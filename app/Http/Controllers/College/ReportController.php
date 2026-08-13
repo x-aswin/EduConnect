@@ -53,23 +53,26 @@ class ReportController extends Controller
             $summary['confirmed'] = (clone $query)->where('status', 'confirmed')->count();
             $results = $query->orderBy('created_at', 'desc')->paginate(25)->withQueryString();
         } elseif ($type === 'courses') {
-            $query = Course::query()->with(['college', 'category', 'mentor.user'])
-                ->where('college_id', $college->id);
-            $query = $applyDateRange($query);
+    $query = Course::query()
+        ->with(['college.user', 'category', 'mentor.user', 'enrollments'])
+        ->where('college_id', $college->id);
+        
+    $query = $applyDateRange($query);
 
-            if (in_array($subFilter, ['student_only', 'firm_only'], true)) {
-                $query->where('course_type', $subFilter);
-            }
+    if (in_array($subFilter, ['student_only', 'firm_only'], true)) {
+        $query->where('course_type', $subFilter);
+    }
 
-            $summary['total'] = $query->count();
-            $summary['active'] = (clone $query)->where('status', 'active')->count();
-            $summary['inactive'] = (clone $query)->where('status', 'inactive')->count();
-            $summary['by_category'] = (clone $query)
-                ->get()
-                ->groupBy(fn ($course) => $course->category?->name ?? 'Uncategorized')
-                ->map(fn ($items) => $items->count())
-                ->toArray();
-            $results = $query->orderBy('created_at', 'desc')->paginate(25)->withQueryString();
+    $summary['total'] = $query->count();
+    $summary['active'] = (clone $query)->where('status', 'active')->count();
+    $summary['inactive'] = (clone $query)->where('status', 'inactive')->count();
+    $summary['by_category'] = (clone $query)
+        ->get()
+        ->groupBy(fn ($course) => $course->category?->name ?? 'Uncategorized')
+        ->map(fn ($items) => $items->count())
+        ->toArray();
+
+    $results = $query->orderBy('created_at', 'desc')->paginate(25)->withQueryString();
         } elseif ($type === 'mentors') {
             $query = Mentor::query()->with(['user', 'college'])->withCount('courses')
                 ->where('college_id', $college->id);

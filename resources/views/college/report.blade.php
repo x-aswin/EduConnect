@@ -99,6 +99,7 @@
                             <th>Total Amount</th>
                             <th>Requested Venue</th>
                             <th>Proposed Schedule</th>
+                            <th>Certificate Issued</th>
                             <th>Created</th>
                             <th>Updated</th>
                         </tr>
@@ -156,6 +157,13 @@
                                         @endif
                                     @endif
                                 </td>
+                                <td>
+                                    @if($enrollment->certificate_issued)
+                                        <span class="badge bg-success">Yes</span>
+                                    @else
+                                        <span class="badge bg-secondary">No</span>
+                                    @endif
+                                </td>
                                 <td>{{ $enrollment->created_at->format('d M Y h:i A') }}</td>
                                 <td>{{ $enrollment->updated_at->format('d M Y h:i A') }}</td>
                             </tr>
@@ -171,41 +179,134 @@
         @elseif(request('type') === 'courses')
             <div class="table-responsive report-table-scroll">
                 <table class="table table-hover align-middle table-sm export-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Title</th>
-                            <th>Category</th>
-                            <th>Mentor</th>
-                            <th>Type</th>
-                            <th>Price</th>
-                            <th>Seats</th>
-                            <th>Available</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Updated</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $course)
-                            <tr>
-                                <td>{{ $course->id }}</td>
-                                <td>{{ $course->title ?? 'N/A' }}</td>
-                                <td>{{ $course->category?->name ?? 'N/A' }}</td>
-                                <td>{{ $course->mentor?->user?->name ?? 'N/A' }}</td>
-                                <td>{{ $course->course_type ?? '-' }}</td>
-                                <td>{{ $course->price ?? '0.00' }}</td>
-                                <td>{{ $course->total_seats ?? '-' }}</td>
-                                <td>{{ $course->available_seats ?? '-' }}</td>
-                                <td>{{ ucfirst($course->status ?? '-') }}</td>
-                                <td>{{ $course->created_at->format('d M Y h:i A') }}</td>
-                                <td>{{ $course->updated_at->format('d M Y h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="11" class="text-center text-muted">No courses in this range</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Mentor</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Certified</th>
+            <th>Seats</th>
+            <th>Available</th>
+            <th>Enrollments</th>
+            <th>Schedule / Venue / Duration</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $course)
+            <tr>
+                <td>{{ $course->id }}</td>
+                
+                {{-- Course Image --}}
+                <td>
+                    @if(!empty($course->course_image))
+                        <img src="{{ \Illuminate\Support\Str::startsWith($course->course_image, ['http://', 'https://', '/']) ? $course->course_image : asset('storage/' . ltrim($course->course_image, '/')) }}" 
+                             alt="Course image" 
+                             class="img-thumbnail rounded" 
+                             style="width: 48px; height: 48px; object-fit: cover;">
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
+                </td>
+
+                <td><strong>{{ $course->title ?? 'N/A' }}</strong></td>
+                <td>{{ $course->category?->name ?? 'Uncategorized' }}</td>
+                <td>{{ $course->mentor?->user?->name ?? 'Unassigned' }}</td>
+                
+                {{-- Course Type Badge --}}
+                <td>
+                    @if(($course->course_type ?? '') === 'firm_only')
+                        <span class="badge bg-info text-dark">Firm Only</span>
+                    @elseif(($course->course_type ?? '') === 'student_only')
+                        <span class="badge bg-primary">Student Only</span>
+                    @else
+                        <span class="badge bg-secondary">{{ ucfirst($course->course_type ?? 'N/A') }}</span>
+                    @endif
+                </td>
+
+                {{-- Price --}}
+                <td>
+                    @if((float) ($course->price ?? 0) === 0.0)
+                        <span class="badge bg-success">Free</span>
+                    @else
+                        ₹{{ number_format($course->price, 2) }}
+                    @endif
+                </td>
+
+                {{-- Certification Status --}}
+                <td>
+                    <span class="badge bg-{{ $course->is_certified ? 'success' : 'secondary' }}">
+                        {{ $course->is_certified ? 'Yes' : 'No' }}
+                    </span>
+                </td>
+
+                {{-- Total & Available Seats --}}
+                {{-- Total Seats --}}
+<td>
+    @if(($course->course_type ?? '') === 'firm_only')
+        <span class="text-muted">N/A</span>
+    @else
+        {{ $course->total_seats ?? '-' }}
+    @endif
+</td>
+
+{{-- Available Seats --}}
+<td>
+    @if(($course->course_type ?? '') === 'firm_only')
+        <span class="text-muted">N/A</span>
+    @else
+        {{ $course->available_seats ?? '-' }}
+    @endif
+</td>
+
+                {{-- Total Enrollments Count --}}
+                <td>
+                    <span class="fw-bold">{{ $course->enrollments->count() }}</span>
+                </td>
+
+                {{-- Schedule/Venue for Student courses OR Duration for Firm courses --}}
+                <td class="small">
+                    @if(($course->course_type ?? '') === 'firm_only')
+                        <span class="text-muted">Duration:</span> {{ $course->firm_duration ?? 'On Demand' }}
+                    @else
+                        <div>
+                            <strong>Dates:</strong> 
+                            {{ $course->start_date ? \Carbon\Carbon::parse($course->start_date)->format('d M Y') : '-' }} 
+                            to 
+                            {{ $course->end_date ? \Carbon\Carbon::parse($course->end_date)->format('d M Y') : '-' }}
+                        </div>
+                        @if($course->time_slot)
+                            <div><strong>Time:</strong> {{ $course->time_slot }}</div>
+                        @endif
+                        @if($course->venue)
+                            <div><strong>Venue:</strong> {{ $course->venue }}</div>
+                        @endif
+                    @endif
+                </td>
+
+                {{-- Status Badge --}}
+                <td>
+                    <span class="badge bg-{{ $course->status === 'active' ? 'success' : ($course->status === 'draft' ? 'warning' : 'danger') }}">
+                        {{ ucfirst($course->status ?? '-') }}
+                    </span>
+                </td>
+
+                <td>{{ $course->created_at ? $course->created_at->format('d M Y h:i A') : '-' }}</td>
+                <td>{{ $course->updated_at ? $course->updated_at->format('d M Y h:i A') : '-' }}</td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="15" class="text-center text-muted">No courses in this range</td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
             @if($results instanceof \Illuminate\Pagination\LengthAwarePaginator)
                 <div class="mt-3">{{ $results->links() }}</div>
@@ -213,37 +314,73 @@
         @elseif(request('type') === 'mentors')
             <div class="table-responsive report-table-scroll">
                 <table class="table table-hover align-middle table-sm export-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Qualification</th>
-                            <th>Expertise</th>
-                            <th>Courses</th>
-                            <th>Created</th>
-                            <th>Updated</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $mentor)
-                            <tr>
-                                <td>{{ $mentor->id }}</td>
-                                <td>{{ $mentor->user?->name ?? 'N/A' }}</td>
-                                <td>{{ $mentor->user?->email ?? 'N/A' }}</td>
-                                <td>{{ ucfirst($mentor->user?->status ?? 'n/a') }}</td>
-                                <td>{{ $mentor->qualification ?? '-' }}</td>
-                                <td>{{ $mentor->expertise ?? '-' }}</td>
-                                <td>{{ $mentor->courses_count ?? 0 }}</td>
-                                <td>{{ $mentor->created_at->format('d M Y h:i A') }}</td>
-                                <td>{{ $mentor->updated_at->format('d M Y h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="9" class="text-center text-muted">No mentors in this range</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Qualification</th>
+            <th>Expertise</th>
+            <th>Bio</th>
+            <th>Courses</th>
+            <th>Created</th>
+            <th>Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $mentor)
+            <tr>
+                <td>{{ $mentor->id }}</td>
+                
+                {{-- Profile Photo --}}
+                <td>
+                    @if(!empty($mentor->photo))
+                        <img src="{{ \Illuminate\Support\Str::startsWith($mentor->photo, ['http://', 'https://', '/']) ? $mentor->photo : asset('storage/' . ltrim($mentor->photo, '/')) }}" 
+                             alt="{{ $mentor->user?->name ?? 'Mentor' }}" 
+                             class="rounded-circle" 
+                             style="width: 40px; height: 40px; object-fit: cover;">
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
+                </td>
+
+                <td><strong>{{ $mentor->user?->name ?? 'N/A' }}</strong></td>
+                <td>{{ $mentor->user?->email ?? 'N/A' }}</td>
+                
+                {{-- Status Badge --}}
+                <td>
+                    <span class="badge bg-{{ ($mentor->user?->status ?? '') === 'active' ? 'success' : 'secondary' }}">
+                        {{ ucfirst($mentor->user?->status ?? 'n/a') }}
+                    </span>
+                </td>
+
+                <td>{{ $mentor->qualification ?? '-' }}</td>
+                <td>{{ $mentor->expertise ?? '-' }}</td>
+                
+                {{-- Bio Snippet --}}
+                <td title="{{ $mentor->bio }}">
+                    {{ \Illuminate\Support\Str::limit($mentor->bio ?? '-', 35) }}
+                </td>
+
+                {{-- Associated Courses Count --}}
+                <td>
+                    <span class="badge bg-light text-dark border">
+                        {{ $mentor->courses_count ?? $mentor->courses?->count() ?? 0 }}
+                    </span>
+                </td>
+
+                <td>{{ $mentor->created_at ? $mentor->created_at->format('d M Y h:i A') : '-' }}</td>
+                <td>{{ $mentor->updated_at ? $mentor->updated_at->format('d M Y h:i A') : '-' }}</td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="11" class="text-center text-muted">No mentors in this range</td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
             @if($results instanceof \Illuminate\Pagination\LengthAwarePaginator)
                 <div class="mt-3">{{ $results->links() }}</div>
