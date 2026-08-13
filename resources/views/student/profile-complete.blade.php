@@ -66,10 +66,47 @@
                                 <label for="current_qualification" class="form-label fw-semibold small text-secondary">Current Qualification</label>
                                 <select id="current_qualification" name="current_qualification" class="form-select rounded-pill py-2 @error('current_qualification') is-invalid @enderror" required>
                                     <option value="">-- Select Qualification --</option>
-                                    <option value="+2"   {{ old('current_qualification', $student->current_qualification ?? '') == '+2'   ? 'selected' : '' }}>Higher Secondary (+2)</option>
-                                    <option value="BCA"  {{ old('current_qualification', $student->current_qualification ?? '') == 'BCA'  ? 'selected' : '' }}>BCA</option>
-                                    <option value="BSc"  {{ old('current_qualification', $student->current_qualification ?? '') == 'BSc'  ? 'selected' : '' }}>BSc Computer Science</option>
-                                    <option value="Other"{{ old('current_qualification', $student->current_qualification ?? '') == 'Other'? 'selected' : '' }}>Other</option>
+
+<!-- High School / Higher Secondary -->
+<optgroup label="School Education">
+    <option value="10th" {{ old('current_qualification', $student->current_qualification ?? '') == '10th' ? 'selected' : '' }}>SSLC / 10th Standard</option>
+    <option value="+2" {{ old('current_qualification', $student->current_qualification ?? '') == '+2' ? 'selected' : '' }}>Higher Secondary / Plus Two (+2)</option>
+    <option value="VHSE" {{ old('current_qualification', $student->current_qualification ?? '') == 'VHSE' ? 'selected' : '' }}>VHSE (Vocational Higher Secondary)</option>
+</optgroup>
+
+<!-- Undergraduate Degrees -->
+<optgroup label="Undergraduate (UG)">
+    <option value="BCA" {{ old('current_qualification', $student->current_qualification ?? '') == 'BCA' ? 'selected' : '' }}>BCA (Bachelor of Computer Applications)</option>
+    <option value="B.Sc CS" {{ old('current_qualification', $student->current_qualification ?? '') == 'B.Sc CS' ? 'selected' : '' }}>B.Sc Computer Science</option>
+    <option value="B.Sc IT" {{ old('current_qualification', $student->current_qualification ?? '') == 'B.Sc IT' ? 'selected' : '' }}>B.Sc Information Technology</option>
+    <option value="B.Tech/B.E" {{ old('current_qualification', $student->current_qualification ?? '') == 'B.Tech/B.E' ? 'selected' : '' }}>B.Tech / B.E (Engineering)</option>
+    <option value="BBA" {{ old('current_qualification', $student->current_qualification ?? '') == 'BBA' ? 'selected' : '' }}>BBA (Bachelor of Business Administration)</option>
+    <option value="B.Com" {{ old('current_qualification', $student->current_qualification ?? '') == 'B.Com' ? 'selected' : '' }}>B.Com (Bachelor of Commerce)</option>
+    <option value="B.A" {{ old('current_qualification', $student->current_qualification ?? '') == 'B.A' ? 'selected' : '' }}>B.A (Bachelor of Arts)</option>
+    <option value="Other UG" {{ old('current_qualification', $student->current_qualification ?? '') == 'Other UG' ? 'selected' : '' }}>Other Undergraduate Degree</option>
+</optgroup>
+
+<!-- Postgraduate Degrees -->
+<optgroup label="Postgraduate (PG)">
+    <option value="MCA" {{ old('current_qualification', $student->current_qualification ?? '') == 'MCA' ? 'selected' : '' }}>MCA (Master of Computer Applications)</option>
+    <option value="IMCA" {{ old('current_qualification', $student->current_qualification ?? '') == 'IMCA' ? 'selected' : '' }}>Integrated MCA</option>
+    <option value="M.Sc CS/IT" {{ old('current_qualification', $student->current_qualification ?? '') == 'M.Sc CS/IT' ? 'selected' : '' }}>M.Sc Computer Science / IT</option>
+    <option value="M.Tech" {{ old('current_qualification', $student->current_qualification ?? '') == 'M.Tech' ? 'selected' : '' }}>M.Tech / M.E</option>
+    <option value="MBA" {{ old('current_qualification', $student->current_qualification ?? '') == 'MBA' ? 'selected' : '' }}>MBA (Master of Business Administration)</option>
+    <option value="M.Com" {{ old('current_qualification', $student->current_qualification ?? '') == 'M.Com' ? 'selected' : '' }}>M.Com (Master of Commerce)</option>
+    <option value="Other PG" {{ old('current_qualification', $student->current_qualification ?? '') == 'Other PG' ? 'selected' : '' }}>Other Postgraduate Degree</option>
+</optgroup>
+
+<!-- Diploma & Certifications -->
+<optgroup label="Diploma & Vocational">
+    <option value="Polytechnic Diploma" {{ old('current_qualification', $student->current_qualification ?? '') == 'Polytechnic Diploma' ? 'selected' : '' }}>Polytechnic / Technical Diploma</option>
+    <option value="PG Diploma" {{ old('current_qualification', $student->current_qualification ?? '') == 'PG Diploma' ? 'selected' : '' }}>PG Diploma</option>
+</optgroup>
+
+<!-- Other -->
+<optgroup label="Other">
+    <option value="Other" {{ old('current_qualification', $student->current_qualification ?? '') == 'Other' ? 'selected' : '' }}>Other Qualification</option>
+</optgroup>
                                 </select>
                                 @error('current_qualification')
                                     <div class="invalid-feedback">{{ $message }}</div>

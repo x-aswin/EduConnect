@@ -146,7 +146,49 @@
 
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Current Qualification</label>
-                                <input type="text" name="current_qualification" class="form-control @error('current_qualification') is-invalid @enderror" value="{{ old('current_qualification', auth()->user()->student?->current_qualification) }}" placeholder="e.g., BCA, B.Tech">
+                                @php
+    $currentQual = old('current_qualification', auth()->user()->student?->current_qualification);
+@endphp
+
+<select name="current_qualification" class="form-control @error('current_qualification') is-invalid @enderror">
+    <option value="">-- Select Qualification --</option>
+
+    <optgroup label="School Education">
+        <option value="10th" {{ $currentQual == '10th' ? 'selected' : '' }}>SSLC / 10th Standard</option>
+        <option value="+2" {{ $currentQual == '+2' ? 'selected' : '' }}>Higher Secondary / Plus Two (+2)</option>
+        <option value="VHSE" {{ $currentQual == 'VHSE' ? 'selected' : '' }}>VHSE (Vocational Higher Secondary)</option>
+    </optgroup>
+
+    <optgroup label="Undergraduate (UG)">
+        <option value="BCA" {{ $currentQual == 'BCA' ? 'selected' : '' }}>BCA (Bachelor of Computer Applications)</option>
+        <option value="B.Sc CS" {{ $currentQual == 'B.Sc CS' ? 'selected' : '' }}>B.Sc Computer Science</option>
+        <option value="B.Sc IT" {{ $currentQual == 'B.Sc IT' ? 'selected' : '' }}>B.Sc Information Technology</option>
+        <option value="B.Tech/B.E" {{ $currentQual == 'B.Tech/B.E' ? 'selected' : '' }}>B.Tech / B.E (Engineering)</option>
+        <option value="BBA" {{ $currentQual == 'BBA' ? 'selected' : '' }}>BBA (Bachelor of Business Administration)</option>
+        <option value="B.Com" {{ $currentQual == 'B.Com' ? 'selected' : '' }}>B.Com (Bachelor of Commerce)</option>
+        <option value="B.A" {{ $currentQual == 'B.A' ? 'selected' : '' }}>B.A (Bachelor of Arts)</option>
+        <option value="Other UG" {{ $currentQual == 'Other UG' ? 'selected' : '' }}>Other Undergraduate Degree</option>
+    </optgroup>
+
+    <optgroup label="Postgraduate (PG)">
+        <option value="MCA" {{ $currentQual == 'MCA' ? 'selected' : '' }}>MCA (Master of Computer Applications)</option>
+        <option value="IMCA" {{ $currentQual == 'IMCA' ? 'selected' : '' }}>Integrated MCA</option>
+        <option value="M.Sc CS/IT" {{ $currentQual == 'M.Sc CS/IT' ? 'selected' : '' }}>M.Sc Computer Science / IT</option>
+        <option value="M.Tech" {{ $currentQual == 'M.Tech' ? 'selected' : '' }}>M.Tech / M.E</option>
+        <option value="MBA" {{ $currentQual == 'MBA' ? 'selected' : '' }}>MBA (Master of Business Administration)</option>
+        <option value="M.Com" {{ $currentQual == 'M.Com' ? 'selected' : '' }}>M.Com (Master of Commerce)</option>
+        <option value="Other PG" {{ $currentQual == 'Other PG' ? 'selected' : '' }}>Other Postgraduate Degree</option>
+    </optgroup>
+
+    <optgroup label="Diploma & Vocational">
+        <option value="Polytechnic Diploma" {{ $currentQual == 'Polytechnic Diploma' ? 'selected' : '' }}>Polytechnic / Technical Diploma</option>
+        <option value="PG Diploma" {{ $currentQual == 'PG Diploma' ? 'selected' : '' }}>PG Diploma</option>
+    </optgroup>
+
+    <optgroup label="Other">
+        <option value="Other" {{ $currentQual == 'Other' ? 'selected' : '' }}>Other Qualification</option>
+    </optgroup>
+</select>
                                 @error('current_qualification')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

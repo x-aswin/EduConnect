@@ -37,7 +37,7 @@ class ProfileController extends Controller
             'current_qualification' => 'required|string|max:100',
             'address'               => 'required|string|max:500',
             'photo'                 => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'verification_doc'      => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'verification_doc'      => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         // Find the existing student record
