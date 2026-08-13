@@ -253,163 +253,333 @@
         @if($type === 'enrollments')
             <div class="table-responsive">
                 <table class="table align-middle mb-0 export-data">
-                    <thead>
-                        <tr>
-                            <th>Enrollment ID</th>
-                            <th>Course</th>
-                            <th>College</th>
-                            <th>Status</th>
-                            <th>Payment</th>
-                            <th>Start Date</th>
-                            <th>Enrolled Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $enrollment)
-                            <tr>
-                                <td class="fw-bold">#{{ $enrollment->id }}</td>
-                                <td class="fw-semibold">{{ $enrollment->course?->title ?? 'N/A' }}</td>
-                                <td>{{ $enrollment->course?->college?->institution_name ?? 'N/A' }}</td>
-                                <td>
-                                    <span class="badge-status badge-{{ $enrollment->status }}">
-                                        {{ ucfirst($enrollment->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @if(($enrollment->course->price ?? 0) == 0)
-                                        <span class="badge-status badge-paid">
-                                            FREE
-                                        </span>
-                                    @else
-                                        <span class="badge-status badge-{{ $enrollment->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
-                                            {{ strtoupper($enrollment->payment_status ?? 'unpaid') }}
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>{{ $enrollment->course->start_date ? \Carbon\Carbon::parse($enrollment->course->start_date)->format('d M Y') : 'N/A' }}</td>
-                                <td>{{ $enrollment->created_at->format('d M Y h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No enrollment data matches the filter criteria.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>Enrollment ID</th>
+            <th>Course Details</th>
+            <th>College</th>
+            <th>Venue & Schedule</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Certificate</th>
+            <th>Enrolled Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $enrollment)
+            <tr>
+                {{-- ID --}}
+                <td class="fw-bold">#{{ $enrollment->id }}</td>
+
+                {{-- Course Title & Category --}}
+                <td>
+                    <span class="fw-semibold d-block">{{ $enrollment->course?->title ?? 'N/A' }}</span>
+                    @if($enrollment->course?->category)
+                        <small class="text-muted">{{ $enrollment->course->category->name }}</small>
+                    @endif
+                </td>
+
+                {{-- College Name --}}
+                <td>{{ $enrollment->course?->college?->institution_name ?? 'N/A' }}</td>
+
+                {{-- Venue & Time Slot / Dates --}}
+                <td class="small">
+                    <div>
+                        <strong>Venue:</strong> {{ $enrollment->course?->venue ?? 'Online / TBD' }}
+                    </div>
+                    @if($enrollment->course?->start_date)
+                        <div>
+                            <strong>Dates:</strong> 
+                            {{ \Carbon\Carbon::parse($enrollment->course->start_date)->format('d M Y') }}
+                            @if($enrollment->course->end_date)
+                                - {{ \Carbon\Carbon::parse($enrollment->course->end_date)->format('d M Y') }}
+                            @endif
+                        </div>
+                    @endif
+                    @if($enrollment->course?->time_slot)
+                        <div class="text-muted"><strong>Time:</strong> {{ $enrollment->course->time_slot }}</div>
+                    @endif
+                </td>
+
+                {{-- Total Amount / Price --}}
+                <td>
+                    @if((float)($enrollment->total_amount ?? $enrollment->course?->price ?? 0) === 0.0)
+                        <span class="badge bg-success">Free</span>
+                    @else
+                        ₹{{ number_format($enrollment->total_amount ?? $enrollment->course->price, 2) }}
+                    @endif
+                </td>
+
+                {{-- Status --}}
+                <td>
+                    <span class="badge-status badge-{{ $enrollment->status }}">
+                        {{ ucfirst($enrollment->status ?? 'pending') }}
+                    </span>
+                </td>
+
+                {{-- Payment Status --}}
+                <td>
+                    @if((float)($enrollment->total_amount ?? $enrollment->course?->price ?? 0) === 0.0)
+                        <span class="badge-status badge-paid">FREE</span>
+                    @else
+                        <span class="badge-status badge-{{ $enrollment->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
+                            {{ strtoupper($enrollment->payment_status ?? 'unpaid') }}
+                        </span>
+                    @endif
+                </td>
+
+                {{-- Certificate Badge / Code --}}
+                <td>
+                    @if($enrollment->certificate_issued)
+                        <span class="badge bg-success" title="Code: {{ $enrollment->certificate_code }}">
+                            <i class="bi bi-patch-check-fill me-1"></i> Issued
+                        </span>
+                    @elseif($enrollment->course?->is_certified)
+                        <span class="badge bg-light text-dark border">Pending</span>
+                    @else
+                        <span class="text-muted small">N/A</span>
+                    @endif
+                </td>
+
+                {{-- Created At --}}
+                <td>{{ $enrollment->created_at ? $enrollment->created_at->format('d M Y h:i A') : '-' }}</td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="9" class="text-center py-5 text-secondary">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No enrollment data matches the filter criteria.
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
 
         @elseif($type === 'payments')
             <div class="table-responsive">
                 <table class="table align-middle mb-0 export-data">
-                    <thead>
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>Course</th>
-                            <th>Total Amount</th>
-                            <th>Payment Status</th>
-                            <th>Date / Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $enrollment)
-                            <tr>
-                                <td class="fw-bold">#TXN{{ $enrollment->id }}</td>
-                                <td class="fw-semibold">{{ $enrollment->course?->title ?? 'N/A' }}</td>
-                                <td class="fw-bold text-primary">₹{{ number_format($enrollment->total_amount, 2) }}</td>
-                                <td>
-                                    @if(($enrollment->course->price ?? 0) == 0)
-                                        <span class="badge-status badge-paid">
-                                            FREE
-                                        </span>
-                                    @else
-                                        <span class="badge-status badge-{{ $enrollment->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
-                                            {{ strtoupper($enrollment->payment_status ?? 'unpaid') }}
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>{{ $enrollment->updated_at->format('d M Y h:i A') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-credit-card-2-front fs-2 d-block mb-2"></i> No payment data matches the filter criteria.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>Transaction ID</th>
+            <th>Course & Provider</th>
+            <th>Original Price</th>
+            <th>Amount Billed</th>
+            <th>Enrollment Status</th>
+            <th>Payment Status</th>
+            <th>Payment Date</th>
+            {{-- <th>Action</th> --}}
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $enrollment)
+            <tr>
+                {{-- Transaction / Invoice Ref --}}
+                <td class="fw-bold text-nowrap">#TXN-{{ str_pad($enrollment->id, 5, '0', STR_PAD_LEFT) }}</td>
+
+                {{-- Course Title & Offering College --}}
+                <td>
+                    <div class="fw-semibold">{{ $enrollment->course?->title ?? 'N/A' }}</div>
+                    <small class="text-muted d-block">
+                        <i class="bi bi-building me-1"></i>{{ $enrollment->course?->college?->institution_name ?? 'N/A' }}
+                    </small>
+                </td>
+
+                {{-- Listed Course Price --}}
+                <td class="text-muted">
+                    @if((float)($enrollment->course?->price ?? 0) === 0.0)
+                        Free
+                    @else
+                        ₹{{ number_format($enrollment->course->price, 2) }}
+                    @endif
+                </td>
+
+                {{-- Billed Amount --}}
+                <td class="fw-bold text-primary">
+                    @if((float)($enrollment->total_amount ?? $enrollment->course?->price ?? 0) === 0.0)
+                        <span class="text-success">₹0.00</span>
+                    @else
+                        ₹{{ number_format($enrollment->total_amount ?? $enrollment->course->price, 2) }}
+                    @endif
+                </td>
+
+                {{-- Academic/Enrollment Status --}}
+                <td>
+                    <span class="badge-status badge-{{ $enrollment->status }}">
+                        {{ ucfirst($enrollment->status ?? 'pending') }}
+                    </span>
+                </td>
+
+                {{-- Financial Payment Status --}}
+                <td>
+                    @if((float)($enrollment->total_amount ?? $enrollment->course?->price ?? 0) === 0.0)
+                        <span class="badge-status badge-paid">FREE</span>
+                    @else
+                        <span class="badge-status badge-{{ $enrollment->payment_status === 'paid' ? 'paid' : 'unpaid' }}">
+                            {{ strtoupper($enrollment->payment_status ?? 'unpaid') }}
+                        </span>
+                    @endif
+                </td>
+
+                {{-- Updated/Paid Timestamp --}}
+                <td class="text-nowrap small text-muted">
+                    {{ $enrollment->updated_at ? $enrollment->updated_at->format('d M Y, h:i A') : '-' }}
+                </td>
+
+                {{-- Action / Invoice button --}}
+                {{-- <td>
+                    @if($enrollment->payment_status === 'paid' || (float)($enrollment->total_amount ?? 0) === 0.0)
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()" title="Print Receipt">
+                            <i class="bi bi-receipt"></i>
+                        </button>
+                    @else
+                        <span class="badge bg-warning text-dark">Pending Payment</span>
+                    @endif
+                </td> --}}
+            </tr>
+        @empty
+            <tr>
+                <td colspan="8" class="text-center py-5 text-secondary">
+                    <i class="bi bi-credit-card-2-front fs-2 d-block mb-2"></i> No billing or transaction records match the selected criteria.
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
 
         @elseif($type === 'mentorships')
             <div class="table-responsive">
-                <table class="table align-middle mb-0 export-data">
-                    <thead>
-                        <tr>
-                            <th>Mentor Name</th>
-                            <th>Related Course</th>
-                            <th>Request Status</th>
-                            <th>Messages Exchanged</th>
-                            <th>Last Active</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $chat)
-                            <tr>
-                                <td class="fw-bold">{{ $chat->mentor?->name ?? 'N/A' }}</td>
-                                <td>{{ $chat->course?->title ?? 'N/A' }}</td>
-                                <td>
-                                    <span class="badge-status badge-{{ $chat->status }}">
-                                        {{ ucfirst($chat->status) }}
-                                    </span>
-                                </td>
-                                <td>{{ $chat->messages->count() }}</td>
-                                <td>{{ $chat->updated_at->diffForHumans() }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-chat-quote fs-2 d-block mb-2"></i> No mentorship request history found.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                 <table class="table align-middle mb-0 export-data">
+    <thead>
+        <tr>
+            <th>Mentor</th>
+            <th>Related Course</th>
+            <th>Request Status</th>
+            <th>Messages</th>
+            <th>Last Active</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $chat)
+            <tr>
+                {{-- Mentor Name & Expertise --}}
+                <td>
+                    <div class="fw-bold">{{ $chat->mentor?->name ?? 'N/A' }}</div>
+                    @if($chat->mentorProfile?->expertise)
+                        <small class="text-muted d-block">{{ $chat->mentorProfile->expertise }}</small>
+                    @endif
+                </td>
+
+                {{-- Related Course Title --}}
+                <td class="fw-semibold">{{ $chat->course?->title ?? 'N/A' }}</td>
+
+                {{-- Chat Status --}}
+                <td>
+                    <span class="badge-status badge-{{ $chat->status }}">
+                        {{ ucfirst($chat->status ?? 'pending') }}
+                    </span>
+                </td>
+
+                {{-- Messages Count + Unread Badge --}}
+                <td>
+                    <span class="badge bg-light text-dark border me-1">
+                        {{ $chat->messages_count ?? $chat->messages->count() }} msgs
+                    </span>
+                    @php
+                        $unreadCount = $chat->messages->where('is_read', false)->where('sender_id', '!=', auth()->id())->count();
+                    @endphp
+                    @if($unreadCount > 0)
+                        <span class="badge bg-danger">{{ $unreadCount }} new</span>
+                    @endif
+                </td>
+
+                {{-- Last Updated --}}
+                <td class="small text-muted">{{ $chat->updated_at ? $chat->updated_at->diffForHumans() : '-' }}</td>
+
+                {{-- Chat Action Link --}}
+                <td>
+                   {{-- Change student.chats.show to student.chat.show --}}
+<a href="{{ route('student.chat.show', $chat->id) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+    <i class="bi bi-chat-dots me-1"></i> Open Chat
+</a>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="6" class="text-center py-5 text-secondary">
+                    <i class="bi bi-chat-quote fs-2 d-block mb-2"></i> No mentorship request history found.
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
 
         @elseif($type === 'certificates')
             <div class="table-responsive">
                 <table class="table align-middle mb-0 export-data">
-                    <thead>
-                        <tr>
-                            <th>Certificate Code</th>
-                            <th>Course</th>
-                            <th>Issued Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($results as $enrollment)
-                            <tr>
-                                <td class="fw-mono fw-bold text-dark">{{ $enrollment->certificate_code }}</td>
-                                <td class="fw-semibold">{{ $enrollment->course?->title ?? 'N/A' }}</td>
-                                <td>{{ $enrollment->certificate_issued_at ? $enrollment->certificate_issued_at->format('d M Y') : 'N/A' }}</td>
-                                <td>
-                                    <a href="{{ route('student.certificates.download', $enrollment->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                        <i class="bi bi-download me-1"></i> Download
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-award fs-2 d-block mb-2"></i> No certificates earned yet. Keep learning!
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <thead>
+        <tr>
+            <th>Certificate Code</th>
+            <th>Course</th>
+            <th>Issuing Institution</th>
+            <th>Issued Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $enrollment)
+            <tr>
+                {{-- Certificate Code --}}
+                <td>
+                    <code class="fw-bold text-primary fs-6">{{ $enrollment->certificate_code ?? 'N/A' }}</code>
+                </td>
+
+                {{-- Course Title --}}
+                <td class="fw-semibold">{{ $enrollment->course?->title ?? 'N/A' }}</td>
+
+                {{-- Issuing Institution (College) --}}
+                <td class="text-muted small">
+                    <i class="bi bi-building me-1"></i>
+                    {{ $enrollment->course?->college?->institution_name ?? ($enrollment->course?->college?->user?->name ?? 'N/A') }}
+                </td>
+
+                {{-- Issued Date --}}
+                <td>
+                    @if($enrollment->certificate_issued_at)
+                        {{ $enrollment->certificate_issued_at->format('d M Y') }}
+                    @else
+                        <span class="badge bg-light text-secondary">N/A</span>
+                    @endif
+                </td>
+
+                {{-- Actions --}}
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('student.certificates.download', $enrollment->id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-download me-1"></i> Download
+                        </a>
+                        
+                        {{-- Public Verification Link --}}
+                        @if($enrollment->certificate_code)
+                            <a href="{{ route('certificate.verify', ['code' => $enrollment->certificate_code]) }}" target="_blank" class="btn btn-sm btn-light rounded-pill px-3 text-secondary" title="Verify Certificate">
+                                <i class="bi bi-patch-check me-1"></i> Verify
+                            </a>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="5" class="text-center py-5 text-secondary">
+                    <i class="bi bi-award fs-2 d-block mb-2"></i> No certificates earned yet. Keep learning!
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
             </div>
         @endif
 
