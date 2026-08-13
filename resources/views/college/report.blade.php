@@ -113,10 +113,49 @@
                                 <td>{{ ucfirst($enrollment->type) }}</td>
                                 <td>{{ ucfirst($enrollment->status) }}</td>
                                 <td>{{ strtoupper($enrollment->payment_status ?? 'na') }}</td>
-                                <td>{{ $enrollment->participant_count ?? 0 }}</td>
-                                <td>{{ $enrollment->total_amount ?? '0.00' }}</td>
-                                <td>{{ $enrollment->requested_venue ?? '-' }}</td>
-                                <td>{{ $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('d M Y h:i A') : '-' }}</td>
+                                <td>
+                                    @if(($enrollment->type ?? '') === 'student')
+                                        <span class="text-muted">N/A</span>
+                                    @else
+                                        {{ $enrollment->participant_count ?? 0 }}
+                                    @endif
+                                </td>
+                                <td>
+                                    @if((float) ($enrollment->total_amount ?? 0) === 0.0)
+                                        <span class="badge bg-success">Free</span>
+                                    @else
+                                        ₹{{ number_format($enrollment->total_amount, 2) }}
+                                    @endif
+                                </td>
+                                <td>
+                                    @if(($enrollment->type ?? '') === 'student')
+                                        {{ $enrollment->course?->venue ?? '-' }}
+                                    @else
+                                        {{ $enrollment->requested_venue ?? '-' }}
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if(($enrollment->type ?? '') === 'student')
+                                        {{-- Student Course: Dates from Course table --}}
+                                        @if(!empty($enrollment->course?->start_date) && !empty($enrollment->course?->end_date))
+                                            {{ \Carbon\Carbon::parse($enrollment->course->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($enrollment->course->end_date)->format('d M Y') }}
+                                        @elseif(!empty($enrollment->course?->start_date))
+                                            {{ \Carbon\Carbon::parse($enrollment->course->start_date)->format('d M Y') }}
+                                        @else
+                                            -
+                                        @endif
+                                    @else
+                                        {{-- Firm Course: Proposed dates from Enrollment table --}}
+                                        @if(!empty($enrollment->proposed_start) && !empty($enrollment->proposed_end))
+                                            {{ \Carbon\Carbon::parse($enrollment->proposed_start)->format('d M Y') }} - {{ \Carbon\Carbon::parse($enrollment->proposed_end)->format('d M Y') }}
+                                        @elseif(!empty($enrollment->proposed_start))
+                                            {{ \Carbon\Carbon::parse($enrollment->proposed_start)->format('d M Y') }}
+                                        @else
+                                            -
+                                        @endif
+                                    @endif
+                                </td>
                                 <td>{{ $enrollment->created_at->format('d M Y h:i A') }}</td>
                                 <td>{{ $enrollment->updated_at->format('d M Y h:i A') }}</td>
                             </tr>
