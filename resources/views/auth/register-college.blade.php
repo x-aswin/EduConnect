@@ -18,10 +18,10 @@
 
                             <!-- College / Institution Name -->
                             <div class="mb-3">
-                                <label for="name" class="form-label fw-semibold small text-secondary">College / Institution Name</label>
+                                <label for="name" class="form-label fw-semibold small text-secondary">College / Institution Acronym</label>
                                 <input type="text" id="name" name="name" value="{{ old('name') }}"
                                        class="form-control rounded-pill py-2 @error('name') is-invalid @enderror"
-                                       required autofocus autocomplete="organization" placeholder="e.g., Cochin University">
+                                       required autofocus autocomplete="organization" placeholder="e.g., DiST, CUSAT, IITM">
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

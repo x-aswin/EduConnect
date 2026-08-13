@@ -127,6 +127,14 @@ class ProfileController extends Controller
         $college->user_id = Auth::id();
         $college->save();
 
+        // Update the authenticated user's status to 'pending'
+        $user = Auth::user();
+        if ($user) {
+            $user->update([
+                'status' => 'pending',
+            ]);
+        }
+
         return redirect()->route('college.dashboard')->with('success', 'Profile Completed!');
     }
 }

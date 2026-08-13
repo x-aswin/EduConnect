@@ -16,7 +16,7 @@
 
                             <!-- Institution Name -->
                             <div class="mb-3">
-                                <label for="institution_name" class="form-label fw-semibold small text-secondary">Institution Name</label>
+                                <label for="institution_name" class="form-label fw-semibold small text-secondary">Institution Name <span class="text-danger">(Here update with Complete Institution Name)</span></label>
                                 <input type="text" id="institution_name" name="institution_name"
                                        class="form-control rounded-pill py-2 @error('institution_name') is-invalid @enderror"
                                        value="{{ old('institution_name', $college->institution_name ?? $college->user->name ?? auth()->user()->name) }}" required>
