@@ -320,7 +320,17 @@
                                     <td>{{ $firm->designation ?? '-' }}</td>
                                     <td>{{ $firm->phone ?? '-' }}</td>
                                     <td>{{ \Illuminate\Support\Str::limit($firm->address ?? '-', 40) }}</td>
-                                    <td>{{ $firm->verification_doc ?? '-' }}</td>
+                                    <td>
+                                        @if(!empty($firm->verification_doc))
+                                            <a href="{{ \Illuminate\Support\Str::startsWith($firm->verification_doc, ['http://', 'https://']) ? $firm->verification_doc : asset('storage/' . ltrim($firm->verification_doc, '/')) }}" 
+                                            target="_blank" 
+                                            class="btn btn-sm btn-outline-primary py-0 px-2">
+                                                <i class="bi bi-file-earmark-text me-1"></i> View Doc
+                                            </a>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @if(!empty($firm->photo))
                                             @php($photoUrl = \Illuminate\Support\Str::startsWith($firm->photo, ['http://', 'https://', '/']) ? $firm->photo : asset('storage/' . ltrim($firm->photo, '/')))
@@ -557,32 +567,66 @@
                             @forelse($results as $course)
                                 <tr>
                                     <td>{{ $course->id }}</td>
-                                    <td>{{ $course->title ?? 'N/A' }}</td>
+                                    <td><strong>{{ $course->title ?? 'N/A' }}</strong></td>
                                     <td>{{ $course->slug ?? 'N/A' }}</td>
                                     <td>{{ $course->college?->institution_name ?? 'N/A' }}</td>
                                     <td>{{ $course->category?->name ?? 'N/A' }}</td>
                                     <td>{{ $course->mentor?->user?->name ?? 'N/A' }}</td>
-                                    <td>{{ $course->course_type ?? '-' }}</td>
-                                    <td>{{ $course->price ?? '0.00' }}</td>
-                                    <td>{{ $course->is_certified ? 'Yes' : 'No' }}</td>
-                                    <td>{{ $course->total_seats ?? '-' }}</td>
-                                    <td>{{ $course->available_seats ?? '-' }}</td>
-                                    <td>{{ $course->start_date ? \Carbon\Carbon::parse($course->start_date)->format('d M Y') : '-' }}</td>
-                                    <td>{{ $course->end_date ? \Carbon\Carbon::parse($course->end_date)->format('d M Y') : '-' }}</td>
-                                    <td>{{ $course->time_slot ?? '-' }}</td>
-                                    <td>{{ $course->venue ?? '-' }}</td>
-                                    <td>{{ ucfirst($course->status ?? '-') }}</td>
+                                    <td>
+                                        @if(($course->course_type ?? '') === 'firm_only')
+                                            <span class="badge bg-info text-dark">Firm Only</span>
+                                        @elseif(($course->course_type ?? '') === 'student_only')
+                                            <span class="badge bg-primary">Student Only</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ ucfirst($course->course_type ?? 'N/A') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if((float) ($course->price ?? 0) === 0.0)
+                                            <span class="badge bg-success">Free</span>
+                                        @else
+                                            ₹{{ number_format($course->price, 2) }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ $course->is_certified ? 'success' : 'secondary' }}">
+                                            {{ $course->is_certified ? 'Yes' : 'No' }}
+                                        </span>
+                                    </td>
+
+                                    {{-- Individual 6 cells to maintain exact 20-column count --}}
+                                    @if(($course->course_type ?? '') === 'firm_only')
+                                        <td class="text-muted small fst-italic">N/A</td>
+                                        <td class="text-muted small fst-italic">N/A</td>
+                                        <td class="text-muted small fst-italic">N/A</td>
+                                        <td class="text-muted small fst-italic">N/A</td>
+                                        <td class="text-muted small fst-italic">N/A</td>
+                                        <td class="text-muted small fst-italic">N/A</td>
+                                    @else
+                                        <td>{{ $course->total_seats ?? '-' }}</td>
+                                        <td>{{ $course->available_seats ?? '-' }}</td>
+                                        <td>{{ $course->start_date ? \Carbon\Carbon::parse($course->start_date)->format('d M Y') : '-' }}</td>
+                                        <td>{{ $course->end_date ? \Carbon\Carbon::parse($course->end_date)->format('d M Y') : '-' }}</td>
+                                        <td>{{ $course->time_slot ?? '-' }}</td>
+                                        <td>{{ $course->venue ?? '-' }}</td>
+                                    @endif
+
+                                    <td>
+                                        <span class="badge bg-{{ $course->status === 'active' ? 'success' : ($course->status === 'draft' ? 'warning' : 'danger') }}">
+                                            {{ ucfirst($course->status ?? '-') }}
+                                        </span>
+                                    </td>
                                     <td>{{ \Illuminate\Support\Str::limit($course->description ?? '-', 40) }}</td>
                                     <td>
                                         @if(!empty($course->course_image))
                                             @php($photoUrl = \Illuminate\Support\Str::startsWith($course->course_image, ['http://', 'https://', '/']) ? $course->course_image : asset('storage/' . ltrim($course->course_image, '/')))
-                                            <img src="{{ $photoUrl }}" alt="Course image" class="img-thumbnail" style="width: 56px; height: 56px; object-fit: cover;">
+                                            <img src="{{ $photoUrl }}" alt="Course image" class="img-thumbnail rounded" style="width: 48px; height: 48px; object-fit: cover;">
                                         @else
-                                            -
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
-                                    <td>{{ $course->created_at->format('d M Y h:i A') }}</td>
-                                    <td>{{ $course->updated_at->format('d M Y h:i A') }}</td>
+                                    <td>{{ $course->created_at ? $course->created_at->format('d M Y h:i A') : '-' }}</td>
+                                    <td>{{ $course->updated_at ? $course->updated_at->format('d M Y h:i A') : '-' }}</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="20" class="text-center text-muted">No courses in this range</td></tr>
