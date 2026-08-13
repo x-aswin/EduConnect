@@ -122,8 +122,8 @@
                                 <th>Payment</th>
                                 <th>Participants</th>
                                 <th>Total Amount</th>
-                                <th>Requested Venue</th>
-                                <th>Proposed Schedule</th>
+                                <th>Venue</th>
+                                <th>Schedule</th>
                                 <th>College Note</th>
                                 <th>Created</th>
                                 <th>Updated</th>
@@ -140,11 +140,47 @@
                                     <td>{{ ucfirst($enrollment->type) }}</td>
                                     <td>{{ ucfirst($enrollment->status) }}</td>
                                     <td>{{ strtoupper($enrollment->payment_status ?? 'na') }}</td>
-                                    <td>{{ $enrollment->participant_count ?? 0 }}</td>
-                                    <td>{{ $enrollment->total_amount ?? '0.00' }}</td>
-                                    <td>{{ $enrollment->requested_venue ?? '-' }}</td>
-                                    <td>{{ $enrollment->proposed_schedule ? \Carbon\Carbon::parse($enrollment->proposed_schedule)->format('d M Y h:i A') : '-' }}</td>
-                                    <td>{{ $enrollment->college_note ?? '-' }}</td>
+                                    <td>{{ $enrollment->participant_count ?? 'N/A' }}</td>
+                                    <td>
+                                        @if(isset($enrollment->total_amount) && $enrollment->total_amount == 0)
+                                            <span class="badge bg-success-subtle text-success">Free</span>
+                                        @elseif(!empty($enrollment->total_amount))
+                                            ₹{{ number_format($enrollment->total_amount, 2) }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(strtolower($enrollment->type) === 'student')
+                                            {{ $enrollment->course?->venue ?? '-' }}
+                                        @else
+                                            {{ $enrollment->requested_venue ?? '-' }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(strtolower($enrollment->type) === 'student')
+                                            {{-- Student Courses: Dates from Course model --}}
+                                            @if($enrollment->course?->start_date && $enrollment->course?->end_date)
+                                                {{ \Carbon\Carbon::parse($enrollment->course->start_date)->format('d M Y') }} - 
+                                                {{ \Carbon\Carbon::parse($enrollment->course->end_date)->format('d M Y') }}
+                                            @elseif($enrollment->course?->start_date)
+                                                {{ \Carbon\Carbon::parse($enrollment->course->start_date)->format('d M Y') }}
+                                            @else
+                                                -
+                                            @endif
+                                        @else
+                                            {{-- Firm Courses: Dates from Enrollment model --}}
+                                            @if($enrollment->proposed_start && $enrollment->proposed_end)
+                                                {{ \Carbon\Carbon::parse($enrollment->proposed_start)->format('d M Y') }} - 
+                                                {{ \Carbon\Carbon::parse($enrollment->proposed_end)->format('d M Y') }}
+                                            @elseif($enrollment->proposed_start)
+                                                {{ \Carbon\Carbon::parse($enrollment->proposed_start)->format('d M Y') }}
+                                            @else
+                                                -
+                                            @endif
+                                        @endif
+                                    </td>
+                                    <td>{{ $enrollment->college_note ?? 'N/A' }}</td>
                                     <td>{{ $enrollment->created_at->format('d M Y h:i A') }}</td>
                                     <td>{{ $enrollment->updated_at->format('d M Y h:i A') }}</td>
                                 </tr>
@@ -160,56 +196,91 @@
             @elseif(request('type') === 'colleges')
                 <div class="table-responsive report-table-scroll">
                     <table class="table table-hover align-middle table-sm export-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Institution</th>
-                                <th>Owner</th>
-                                <th>Owner Email</th>
-                                <th>Owner Status</th>
-                                <th>College Phone</th>
-                                <th>Address</th>
-                                <th>Website</th>
-                                <th>Contact Person</th>
-                                <th>Designation</th>
-                                <th>Contact Number</th>
-                                <th>Verification Doc</th>
-                                <th>Photo</th>
-                                <th>Created</th>
-                                <th>Updated</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($results as $college)
-                                <tr>
-                                    <td>{{ $college->id }}</td>
-                                    <td>{{ $college->institution_name ?? 'N/A' }}</td>
-                                    <td>{{ $college->user?->name ?? 'N/A' }}</td>
-                                    <td>{{ $college->user?->email ?? 'N/A' }}</td>
-                                    <td>{{ ucfirst($college->user?->status ?? 'n/a') }}</td>
-                                    <td>{{ $college->college_phone ?? '-' }}</td>
-                                    <td>{{ \Illuminate\Support\Str::limit($college->address ?? '-', 40) }}</td>
-                                    <td>{{ $college->website ?? '-' }}</td>
-                                    <td>{{ $college->contact_person ?? '-' }}</td>
-                                    <td>{{ $college->designation ?? '-' }}</td>
-                                    <td>{{ $college->contact_number ?? '-' }}</td>
-                                    <td>{{ $college->verification_doc ?? '-' }}</td>
-                                    <td>
-                                        @if(!empty($college->photo))
-                                            @php($photoUrl = \Illuminate\Support\Str::startsWith($college->photo, ['http://', 'https://', '/']) ? $college->photo : asset('storage/' . ltrim($college->photo, '/')))
-                                            <img src="{{ $photoUrl }}" alt="College photo" class="img-thumbnail" style="width: 56px; height: 56px; object-fit: cover;">
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td>{{ $college->created_at->format('d M Y h:i A') }}</td>
-                                    <td>{{ $college->updated_at->format('d M Y h:i A') }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="14" class="text-center text-muted">No colleges in this range</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Institution</th>
+            <th>Acronym</th>
+            <th>Email</th>
+            <th>Email Verified</th>
+            <th>Status</th>
+            <th>College Phone</th>
+            <th>Address</th>
+            <th>Website</th>
+            <th>Contact Person</th>
+            <th>Designation</th>
+            <th>Contact Number</th>
+            <th>Mentors Count</th>
+            <th>Courses Count</th>
+            <th>Verification Doc</th>
+            <th>Photo</th>
+            <th>Created</th>
+            <th>Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $college)
+            <tr>
+                <td>{{ $college->id }}</td>
+                <td>{{ $college->user_id }}</td>
+                <td>{{ $college->institution_name ?? 'N/A' }}</td>
+                <td>{{ $college->user?->name ?? 'N/A' }}</td>
+                <td>{{ $college->user?->email ?? 'N/A' }}</td>
+                <td>
+                    @if($college->user?->email_verified_at)
+                        <span class="badge bg-success">Verified</span>
+                    @else
+                        <span class="badge bg-warning text-dark">Unverified</span>
+                    @endif
+                </td>
+                <td>
+                    <span class="badge bg-{{ $college->user?->status === 'active' ? 'success' : ($college->user?->status === 'pending' ? 'warning' : 'danger') }}">
+                        {{ ucfirst($college->user?->status ?? 'n/a') }}
+                    </span>
+                </td>
+                <td>{{ $college->college_phone ?? '-' }}</td>
+                <td>{{ \Illuminate\Support\Str::limit($college->address ?? '-', 40) }}</td>
+                <td>
+                    @if(!empty($college->website))
+                        <a href="{{ \Illuminate\Support\Str::startsWith($college->website, ['http://', 'https://']) ? $college->website : 'https://' . $college->website }}" target="_blank" rel="noopener noreferrer">
+                            {{ $college->website }}
+                        </a>
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>{{ $college->contact_person ?? '-' }}</td>
+                <td>{{ $college->designation ?? '-' }}</td>
+                <td>{{ $college->contact_number ?? '-' }}</td>
+                <td class="text-center">{{ $college->mentors_count ?? $college->mentors()->count() }}</td>
+                <td class="text-center">{{ $college->courses_count ?? $college->courses()->count() }}</td>
+                <td>
+                    @if(!empty($college->verification_doc))
+                        @php($docUrl = \Illuminate\Support\Str::startsWith($college->verification_doc, ['http://', 'https://', '/']) ? $college->verification_doc : asset('storage/' . ltrim($college->verification_doc, '/')))
+                        <a href="{{ $docUrl }}" target="_blank" class="btn btn-xs btn-outline-primary ms-1">
+                            <i class="fas fa-file-alt"></i> View Doc
+                        </a>
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>
+                    @if(!empty($college->photo))
+                        @php($photoUrl = \Illuminate\Support\Str::startsWith($college->photo, ['http://', 'https://', '/']) ? $college->photo : asset('storage/' . ltrim($college->photo, '/')))
+                        <img src="{{ $photoUrl }}" alt="College photo" class="img-thumbnail" style="width: 56px; height: 56px; object-fit: cover;">
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>{{ $college->created_at ? $college->created_at->format('d M Y h:i A') : '-' }}</td>
+                <td>{{ $college->updated_at ? $college->updated_at->format('d M Y h:i A') : '-' }}</td>
+            </tr>
+        @empty
+            <tr><td colspan="19" class="text-center text-muted">No colleges found</td></tr>
+        @endforelse
+    </tbody>
+</table>
                 </div>
                 @if($results instanceof \Illuminate\Pagination\LengthAwarePaginator)
                     <div class="mt-3">{{ $results->links() }}</div>
