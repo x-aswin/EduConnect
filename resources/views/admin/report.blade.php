@@ -109,7 +109,7 @@
 
             @if(request('type','enrollments') === 'enrollments')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -159,7 +159,7 @@
                 @endif
             @elseif(request('type') === 'colleges')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -217,7 +217,7 @@
             @endif
             @if(request('type') === 'firms')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -274,7 +274,7 @@
 
             @if(request('type') === 'students')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -329,7 +329,7 @@
 
             @if(request('type') === 'mentors')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -382,7 +382,7 @@
 
             @if(request('type') === 'categories')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -419,7 +419,7 @@
             @endif
             @if(request('type') === 'users')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -457,7 +457,7 @@
 
             @if(request('type') === 'courses')
                 <div class="table-responsive report-table-scroll">
-                    <table class="table table-hover align-middle table-sm">
+                    <table class="table table-hover align-middle table-sm export-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -586,6 +586,59 @@ document.querySelectorAll('.quick-range').forEach(btn => {
 // auto-submit when report type or dates change
 document.querySelectorAll('.auto-submit').forEach(el => el.addEventListener('change', () => el.closest('form').submit()));
 document.querySelectorAll('input[name="start_date"], input[name="end_date"]').forEach(el => el.addEventListener('change', () => el.closest('form').submit()));
+
+   $(document).ready(function() {
+        if ($('.table').length > 0) {
+            $('.table').DataTable({
+                paging: false,
+                searching: true,
+                info: false,
+                ordering: true,
+                dom: '<"d-flex justify-content-between align-items-center mb-3"fB>rt',
+                buttons: {
+                    dom: {
+                        button: {
+                            tag: 'button',
+                            className: 'btn btn-sm'
+                        }
+                    },
+                    buttons: [
+                        {
+                            extend: 'copyHtml5',
+                            className: 'btn-outline-secondary',
+                            text: '<i class="fas fa-copy me-1"></i> Copy Data'
+                        },
+                        {
+                            extend: 'excelHtml5',
+                            className: 'btn-outline-success',
+                            text: '<i class="fas fa-file-excel me-1"></i> Export Excel',
+                            title: '{{ ucfirst($currentType) }} Report - {{ date("Y-m-d") }}'
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            className: 'btn-outline-info',
+                            text: '<i class="fas fa-file-csv me-1"></i> Export CSV',
+                            title: '{{ ucfirst($currentType) }} Report - {{ date("Y-m-d") }}'
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            className: 'btn-outline-danger',
+                            text: '<i class="fas fa-file-pdf me-1"></i> Download PDF',
+                            orientation: 'landscape',
+                            pageSize: 'A4',
+                            title: '{{ ucfirst($currentType) }} Report - {{ date("Y-m-d") }}'
+                        },
+                        {
+                            extend: 'print',
+                            className: 'btn-outline-dark',
+                            text: '<i class="fas fa-print me-1"></i> Print Table'
+                        }
+                    ]
+                }
+            });
+        }
+    });
+
 </script>
 @endpush
 

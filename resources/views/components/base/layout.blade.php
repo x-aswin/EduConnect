@@ -10,6 +10,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ asset('css/modals.css') }}">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+    <!-- DataTables Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+
+
     @stack('styles')
     <title>{{ $title ?? 'EduConnect' }}</title>
     
@@ -184,6 +190,31 @@
             background-image: none !important;
             animation: none !important;
         }
+
+
+    /* Fix DataTables container alignment */
+    div.dt-buttons {
+        float: none !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Remove default DataTables dark background wrappers */
+    .dt-buttons .btn,
+    div.dt-button-collection .btn {
+        background-image: none !important;
+        box-shadow: none !important;
+        border-radius: 0.375rem !important;
+        margin-left: 0.25rem !important;
+    }
+
+    /* Ensure crisp text & icon contrast on hover */
+    .dt-buttons .btn-outline-secondary:hover,
+    .dt-buttons .btn-outline-success:hover,
+    .dt-buttons .btn-outline-info:hover,
+    .dt-buttons .btn-outline-danger:hover,
+    .dt-buttons .btn-outline-dark:hover {
+        color: #fff !important;
+    }
     </style>
 </head>
 <body>
@@ -212,6 +243,23 @@
     {{ $slot }}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+<!-- jQuery (Required by DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables Core & JS Dependencies -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- DataTables Buttons Extensions for PDF, Excel, Print & Copy -->
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
