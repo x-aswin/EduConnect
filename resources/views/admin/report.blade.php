@@ -356,52 +356,71 @@
             @if(request('type') === 'students')
                 <div class="table-responsive report-table-scroll">
                     <table class="table table-hover align-middle table-sm export-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Status</th>
-                                <th>Enrollments</th>
-                                <th>Phone</th>
-                                <th>DOB</th>
-                                <th>Gender</th>
-                                <th>Qualification</th>
-                                <th>Address</th>
-                                <th>Photo</th>
-                                <th>Created</th>
-                                <th>Updated</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($results as $student)
-                                <tr>
-                                    <td>{{ $student->id }}</td>
-                                    <td>{{ $student->user?->name ?? 'N/A' }}</td>
-                                    <td>{{ $student->user?->email ?? 'N/A' }}</td>
-                                    <td>{{ ucfirst($student->user?->status ?? 'n/a') }}</td>
-                                    <td>{{ $summary['enroll_counts'][$student->user_id] ?? 0 }}</td>
-                                    <td>{{ $student->phone ?? 'N/A' }}</td>
-                                    <td>{{ $student->dob ? $student->dob->format('d M Y') : '-' }}</td>
-                                    <td>{{ $student->gender ?? '-' }}</td>
-                                    <td>{{ $student->current_qualification ?? '-' }}</td>
-                                    <td>{{ \Illuminate\Support\Str::limit($student->address ?? '-', 40) }}</td>
-                                    <td>
-                                        @if(!empty($student->photo))
-                                            @php($photoUrl = \Illuminate\Support\Str::startsWith($student->photo, ['http://', 'https://', '/']) ? $student->photo : asset('storage/' . ltrim($student->photo, '/')))
-                                            <img src="{{ $photoUrl }}" alt="Student photo" class="img-thumbnail" style="width: 56px; height: 56px; object-fit: cover;">
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td>{{ $student->created_at->format('d M Y h:i A') }}</td>
-                                    <td>{{ $student->updated_at->format('d M Y h:i A') }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="13" class="text-center text-muted">No students in this range</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Enrollments</th>
+            <th>Phone</th>
+            <th>DOB</th>
+            <th>Gender</th>
+            <th>Qualification</th>
+            <th>Address</th>
+            <th>Photo</th>
+            <th>Verification Doc</th>
+            <th>Created</th>
+            <th>Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($results as $student)
+            <tr>
+                <td>{{ $student->id }}</td>
+                <td>{{ $student->user?->name ?? 'N/A' }}</td>
+                <td>{{ $student->user?->email ?? 'N/A' }}</td>
+                <td>{{ ucfirst($student->user?->status ?? 'n/a') }}</td>
+                <td>{{ $summary['enroll_counts'][$student->user_id] ?? 0 }}</td>
+                <td>{{ $student->phone ?? 'N/A' }}</td>
+                <td>{{ $student->dob ? $student->dob->format('d M Y') : '-' }}</td>
+                <td>{{ $student->gender ?? '-' }}</td>
+                <td>{{ $student->current_qualification ?? '-' }}</td>
+                <td>{{ \Illuminate\Support\Str::limit($student->address ?? '-', 40) }}</td>
+                
+                {{-- Photo Column --}}
+                <td>
+                    @if(!empty($student->photo))
+                        <img src="{{ \Illuminate\Support\Str::startsWith($student->photo, ['http://', 'https://', '/']) ? $student->photo : asset('storage/' . ltrim($student->photo, '/')) }}" 
+                             alt="Student photo" 
+                             class="img-thumbnail" 
+                             style="width: 56px; height: 56px; object-fit: cover;">
+                    @else
+                        -
+                    @endif
+                </td>
+
+                {{-- Verification Doc Column --}}
+                <td>
+                    @if(!empty($student->verification_doc))
+                        <a href="{{ \Illuminate\Support\Str::startsWith($student->verification_doc, ['http://', 'https://']) ? $student->verification_doc : asset('storage/' . ltrim($student->verification_doc, '/')) }}" 
+                           target="_blank" 
+                           class="btn btn-sm btn-outline-primary py-0 px-2">
+                            <i class="bi bi-file-earmark-text me-1"></i> View Doc
+                        </a>
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
+                </td>
+
+                <td>{{ $student->created_at->format('d M Y h:i A') }}</td>
+                <td>{{ $student->updated_at->format('d M Y h:i A') }}</td>
+            </tr>
+        @empty
+            <tr><td colspan="14" class="text-center text-muted">No students in this range</td></tr>
+        @endforelse
+    </tbody>
+</table>
                 </div>
                 @if($results instanceof \Illuminate\Pagination\LengthAwarePaginator)
                     <div class="mt-3">{{ $results->links() }}</div>
@@ -482,7 +501,16 @@
                                     <td>{{ $category->id }}</td>
                                     <td>{{ $category->name }}</td>
                                     <td>{{ $category->slug }}</td>
-                                    <td>{{ $category->icon }}</td>
+                                    <td>
+    @if(!empty($category->icon))
+        <img src="{{ \Illuminate\Support\Str::startsWith($category->icon, ['http://', 'https://', '/']) ? $category->icon : asset('storage/' . ltrim($category->icon, '/')) }}" 
+             alt="{{ $category->name ?? 'Category Icon' }}" 
+             class="img-thumbnail" 
+             style="width: 40px; height: 40px; object-fit: cover;">
+    @else
+        <span class="text-muted">-</span>
+    @endif
+</td>
                                     <td>{{ $summary['courses_by_category'][$category->id] ?? 0 }}</td>
                                     <td>{{ $category->description ?? '' }}</td>
                                     <td>{{ $category->created_at->format('d M Y h:i A') }}</td>
