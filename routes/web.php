@@ -31,6 +31,7 @@ use App\Http\Controllers\Firm\GroupMemberController;
 use App\Http\Controllers\Mentor\DashboardController as MentorDashboardController;
 use App\Http\Controllers\Mentor\CourseController as MentorCourseController;
 use App\Http\Controllers\Mentor\ChatController as MentorChatController;
+use App\Http\Controllers\Mentor\ProfileController as MentorProfileController;
 
 use App\Http\Controllers\Guest\LandingController as LandingController;
 
@@ -215,6 +216,9 @@ Route::middleware(['auth', 'verified', 'role:mentor'])->group(function () {
         Route::post('/chat/{chat}/decline', [MentorChatController::class, 'decline'])->name('chat.decline');
         Route::get('/chat/{chat?}',          [MentorChatController::class, 'show'])->name('chat.show');
         Route::post('/chat/{chat}/message', [MentorChatController::class, 'sendMessage'])->name('chat.send');
+
+        Route::get('/profile', [MentorProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [MentorProfileController::class, 'update'])->name('profile.update');
 
         // Route::get('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'edit'])->name('profile.edit');
         // Route::patch('/profile', [\App\Http\Controllers\Mentor\ProfileController::class, 'update'])->name('profile.update');
