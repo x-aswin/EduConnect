@@ -1,9 +1,9 @@
-FROM richarvey/nginx-php-fpm:php8.4
+FROM richarvey/nginx-php-fpm:php8.3
 
 # Copy application files
 COPY . /var/www/html
 
-# Install dependencies ignoring platform requirements temporarily, or using matching runtime
+# Install dependencies during build
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Set Webroot to public directory
