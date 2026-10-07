@@ -33,6 +33,9 @@ RUN a2enmod rewrite
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
+# Create the storage link
+RUN php artisan storage:link
+
 # Fix permissions for storage, cache, and database directory
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
