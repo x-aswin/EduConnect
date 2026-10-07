@@ -1,19 +1,16 @@
-FROM richarvey/nginx-php-fpm:latest
-
-# Set working directory
-WORKDIR /var/www/html
+FROM richarvey/nginx-php-fpm:php8.4
 
 # Copy application files
-COPY . .
+COPY . /var/www/html
 
-# Set Nginx root directory to public
+# Install dependencies ignoring platform requirements temporarily, or using matching runtime
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Set Webroot to public directory
 ENV WEBROOT /var/www/html/public
 ENV PHP_ERRORS_STDERR 1
 
-# Install composer dependencies during image build
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Set correct permissions for Laravel storage & cache
+# Fix permissions for Laravel storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
