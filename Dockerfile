@@ -29,8 +29,8 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Enable Apache mod_rewrite for Laravel routing
 RUN a2enmod rewrite
 
-# Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install Laravel dependencies while ignoring PHP version mismatch
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Set permissions for storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
