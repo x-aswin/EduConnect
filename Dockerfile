@@ -1,15 +1,19 @@
 FROM richarvey/nginx-php-fpm:latest
 
-# Copy project files
-COPY . /var/www/html
+# Set working directory
+WORKDIR /var/www/html
 
-# Set Webroot to public
+# Copy application files
+COPY . .
+
+# Set Nginx root directory to public
 ENV WEBROOT /var/www/html/public
 ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV SKIP_COMPOSER 0
 
-# Laravel permissions
+# Install composer dependencies during image build
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Set correct permissions for Laravel storage & cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
