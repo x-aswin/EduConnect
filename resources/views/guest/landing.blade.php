@@ -548,11 +548,14 @@
 <div class="max-w-container-max mx-auto px-md">
 <p class="text-center font-label-md text-label-md text-on-surface-variant mb-lg uppercase tracking-widest">Our Institutional Partners</p>
 <div class="flex flex-wrap justify-center items-center gap-xl grayscale opacity-60">
+<!--
 <div class="flex items-center gap-xs"><span class="material-symbols-outlined text-4xl">account_balance</span> <span class="font-bold">OXFORD</span></div>
 <div class="flex items-center gap-xs"><span class="material-symbols-outlined text-4xl">architecture</span> <span class="font-bold">MIT</span></div>
 <div class="flex items-center gap-xs"><span class="material-symbols-outlined text-4xl">science</span> <span class="font-bold">STANFORD</span></div>
 <div class="flex items-center gap-xs"><span class="material-symbols-outlined text-4xl">gavel</span> <span class="font-bold">HARVARD</span></div>
 <div class="flex items-center gap-xs"><span class="material-symbols-outlined text-4xl">public</span> <span class="font-bold">CAMBRIDGE</span></div>
+-->
+<img src="{{ asset('assets/images/dist-logo.png') }}" alt="DIST college logo" class="h-16 w-auto object-contain">
 </div>
 </div>
 </section>
