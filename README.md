@@ -28,6 +28,18 @@ User-uploaded files are intentionally excluded from version control. The
 `storage/app/public/images` directory contains the project-owned `icon.png` and
 `logo.png` assets and remains tracked.
 
+For a non-Docker deployment, install dependencies and create Laravel's public
+storage link after configuring `.env`:
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan storage:link
+php artisan migrate --force
+```
+
+The storage link exposes user uploads at `public/storage`. The project-owned
+images are already served directly from `public/assets/images`.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

@@ -1,17 +1,16 @@
 FROM php:8.3-apache
 
-# Install system dependencies & SQLite build tools
+# Install system dependencies & MariaDB build tools
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    sqlite3 \
-    libsqlite3-dev \
+    default-libmysqlclient-dev \
     zip \
     unzip \
     git \
     curl \
-    && docker-php-ext-install pdo pdo_sqlite mbstring exif pcntl bcmath gd
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
 # Get official Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
