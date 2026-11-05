@@ -35,7 +35,7 @@ use App\Http\Controllers\Mentor\ProfileController as MentorProfileController;
 
 use App\Http\Controllers\Guest\LandingController as LandingController;
 
-use App\Http\Controllers\ChatbotController as ChatbotController;
+// use App\Http\Controllers\ChatbotController as ChatbotController;
 
 use App\Http\Controllers\ProfileController;
 use App\Models\College;
@@ -240,8 +240,9 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
 
 // Route::post('/chatbot/message', [ChatbotController::class, 'message'])->name('chatbot.message');
 // Route::get('/chatbot-test', fn() => view('guest.chatbot-test'))->name('chatbot.test');
-use App\Http\Controllers\GeminiChatController;
-Route::post('/chatbot', [GeminiChatController::class, 'sendMessage'])->name('api.chatbot');
-Route::post('/chatbot/clear', [GeminiChatController::class, 'clearHistory'])->name('api.chatbot.clear');
+// AI chatbot routes disabled temporarily.
+// use App\Http\Controllers\GeminiChatController;
+// Route::post('/chatbot', [GeminiChatController::class, 'sendMessage'])->name('api.chatbot');
+// Route::post('/chatbot/clear', [GeminiChatController::class, 'clearHistory'])->name('api.chatbot.clear');
 
 require __DIR__.'/auth.php';

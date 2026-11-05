@@ -369,6 +369,7 @@
 
 @stack('scripts')
 
-  @include('components.common.chatbot')
+  {{-- AI chatbot disabled temporarily. Re-enable when the chatbot feature is ready. --}}
+  {{-- @include('components.common.chatbot') --}}
 </body>
 </html>
