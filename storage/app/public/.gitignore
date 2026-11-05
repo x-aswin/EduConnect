@@ -1,1 +1,4 @@
-# Track uploaded files in this directory.
+# Keep user uploads out of version control while retaining project assets.
+*
+!images/
+!images/*

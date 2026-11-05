@@ -7,6 +7,27 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Deployment database
+
+The project is configured for MariaDB by default. Before running migrations, create
+an empty database named `EduConnect` in MariaDB/phpMyAdmin and set the matching
+values in `.env`:
+
+```dotenv
+DB_CONNECTION=mariadb
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=EduConnect
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Run `php artisan migrate` only after the database credentials are configured.
+
+User-uploaded files are intentionally excluded from version control. The
+`storage/app/public/images` directory contains the project-owned `icon.png` and
+`logo.png` assets and remains tracked.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
