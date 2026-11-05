@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Support\EmailVerification;
 
 class RegisteredUserController extends Controller
 {
@@ -54,6 +55,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'status' => 'active',
+            'email_verified_at' => EmailVerification::enabled() ? null : now(),
         ]);
 
         if ($request->role === 'student') {

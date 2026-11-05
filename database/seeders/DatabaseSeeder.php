@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,6 +16,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        Setting::updateOrCreate(
+            ['key' => 'email_verification_enabled'],
+            ['value' => '0'],
+        );
+
         // User::factory(10)->create();
 
         User::factory()->create([

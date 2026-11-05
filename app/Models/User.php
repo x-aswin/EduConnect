@@ -16,7 +16,7 @@ use App\Notifications\CustomResetPassword;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
-#[Fillable(['name', 'email', 'password', 'role', 'status'])]
+#[Fillable(['name', 'email', 'password', 'role', 'status', 'email_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {

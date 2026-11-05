@@ -24,6 +24,19 @@ DB_PASSWORD=
 
 Run `php artisan migrate` only after the database credentials are configured.
 
+Email verification is disabled by default. Its global state is controlled by the
+`settings.email_verification_enabled` value:
+
+```sql
+UPDATE settings
+SET value = '0'
+WHERE `key` = 'email_verification_enabled';
+```
+
+Set the value to `1` to require verification again. New registrations are
+marked verified automatically while the setting is disabled, and the
+verification middleware is bypassed for all users while it is disabled.
+
 User-uploaded files are intentionally excluded from version control. The
 `storage/app/public/images` directory contains the project-owned `icon.png` and
 `logo.png` assets and remains tracked.
