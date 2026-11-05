@@ -34,28 +34,32 @@ class DashboardController extends Controller
                                         ->take(5)
                                         ->get();
 
+        $monthExpression = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%m', created_at)"
+            : "DATE_FORMAT(created_at, '%m')";
+
         // Get enrollment trends by month
         $enrollmentTrends = Enrollment::with('user')
-            ->selectRaw("strftime('%m', created_at) as month, COUNT(*) as count")
+            ->selectRaw("{$monthExpression} as month, COUNT(*) as count")
             ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy(DB::raw("strftime('%m', created_at)"))
-            ->orderBy(DB::raw("strftime('%m', created_at)"))
+            ->groupBy(DB::raw($monthExpression))
+            ->orderBy(DB::raw($monthExpression))
             ->get();
 
         // Get student vs firm enrollments by month
         $studentEnrollments = Enrollment::whereHas('user', function($q) { $q->where('role', 'student'); })
-            ->selectRaw("strftime('%m', created_at) as month, COUNT(*) as count")
+            ->selectRaw("{$monthExpression} as month, COUNT(*) as count")
             ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy(DB::raw("strftime('%m', created_at)"))
-            ->orderBy(DB::raw("strftime('%m', created_at)"))
+            ->groupBy(DB::raw($monthExpression))
+            ->orderBy(DB::raw($monthExpression))
             ->pluck('count', 'month')
             ->toArray();
 
         $firmEnrollments = Enrollment::whereHas('user', function($q) { $q->where('role', 'firm'); })
-            ->selectRaw("strftime('%m', created_at) as month, COUNT(*) as count")
+            ->selectRaw("{$monthExpression} as month, COUNT(*) as count")
             ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy(DB::raw("strftime('%m', created_at)"))
-            ->orderBy(DB::raw("strftime('%m', created_at)"))
+            ->groupBy(DB::raw($monthExpression))
+            ->orderBy(DB::raw($monthExpression))
             ->pluck('count', 'month')
             ->toArray();
 
