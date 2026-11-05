@@ -9,12 +9,12 @@
 
 ## Deployment database
 
-The project is configured for MariaDB by default. Before running migrations, create
-an empty database named `EduConnect` in MariaDB/phpMyAdmin and set the matching
+The project is configured for MySQL by default. Before running migrations, create
+an empty database named `EduConnect` in MySQL/phpMyAdmin and set the matching
 values in `.env`:
 
 ```dotenv
-DB_CONNECTION=mariadb
+DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=EduConnect
@@ -38,8 +38,8 @@ marked verified automatically while the setting is disabled, and the
 verification middleware is bypassed for all users while it is disabled.
 
 User-uploaded files are intentionally excluded from version control. The
-`storage/app/public/images` directory contains the project-owned `icon.png` and
-`logo.png` assets and remains tracked.
+project-owned `icon.png` and `logo.png` assets are tracked under
+`public/assets/images`.
 
 For a non-Docker deployment, install dependencies and create Laravel's public
 storage link after configuring `.env`:

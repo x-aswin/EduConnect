@@ -1,6 +1,6 @@
 FROM php:8.3-apache
 
-# Install system dependencies & MariaDB build tools
+# Install system dependencies & MySQL build tools
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
