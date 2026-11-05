@@ -598,7 +598,7 @@
 </div>
 </div>
 <div class="max-w-container-max mx-auto px-md py-md border-t border-outline-variant flex flex-col md:flex-row justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
-<span class="">© 2024 EduConnect. All rights reserved.</span>
+<span class="">© 2026 EduConnect. All rights reserved.</span>
 <div class="flex gap-md mt-sm md:mt-0">
 <a class="hover:text-primary transition-colors" href="#">Privacy</a>
 <a class="hover:text-primary transition-colors" href="#">Terms</a>
