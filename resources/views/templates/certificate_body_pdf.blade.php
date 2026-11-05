@@ -23,7 +23,7 @@
                                     <path d="M25,47.5 L25,68 C25,72 35,76 50,76 C65,76 75,72 75,68 L75,47.5 L50,59.5 Z" fill="#c9a84c"/>
                                     <path d="M80,44.5 L80,68 L83,68 L83,46 Z" fill="#c9a84c"/>
                                 </svg> -->
-                                <img src="{{ public_path('storage/images/logo.png') }}" alt="EduConnect Logo" style="height: 80px; width: auto; display: block;">
+                                <img src="{{ public_path('assets/images/logo.png') }}" alt="EduConnect Logo" style="height: 80px; width: auto; display: block;">
                             </td>
                             <td style="vertical-align: middle; padding-left: 12px;">
                                 <div class="brand-name">EduConnect</div>

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
 
-    <link rel="icon" type="image/png" href="{{ asset('storage/images/icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/images/icon.png') }}">
 
 
     @stack('styles')

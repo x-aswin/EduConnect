@@ -1,4 +1,2 @@
-# Keep user uploads out of version control while retaining project assets.
+# Keep user uploads out of version control.
 *
-!images/
-!images/*
