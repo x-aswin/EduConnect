@@ -225,6 +225,21 @@
                                     </div>
                                 </div>
 
+                                @php($student = $enrollment->user?->student)
+                                <div class="enrollment-profile student-profile mt-3">
+                                    <div class="small fw-semibold text-primary mb-2">
+                                        <i class="bi bi-person-vcard me-1"></i> Student details
+                                    </div>
+                                    <div class="row g-2 small">
+                                        <div class="col-md-4"><span class="text-muted">Email:</span> {{ $enrollment->user?->email ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Phone:</span> {{ $student?->phone ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Qualification:</span> {{ $student?->current_qualification ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Date of birth:</span> {{ $student?->dob?->format('d M Y') ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Gender:</span> {{ $student?->gender ? ucfirst($student->gender) : 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Address:</span> {{ $student?->address ?? 'Not provided' }}</div>
+                                    </div>
+                                </div>
+
                                 <div class="d-flex justify-content-end mt-3">
                                     <div class="btn-group action-group gap-2" role="group">
                                         <a href="{{ route('college.enrollments.show', array_merge([$enrollment->id], $queryParams)) }}">
@@ -297,6 +312,22 @@
                                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
                                             ₹ {{ number_format((float) ($enrollment->total_amount ?? 0), 2) }}
                                         </span>
+                                    </div>
+                                </div>
+
+                                @php($firm = $enrollment->user?->firm)
+                                <div class="enrollment-profile firm-profile mt-3">
+                                    <div class="small fw-semibold text-success mb-2">
+                                        <i class="bi bi-building me-1"></i> Firm details
+                                    </div>
+                                    <div class="row g-2 small">
+                                        <div class="col-md-4"><span class="text-muted">Organization:</span> {{ $firm?->org_name ?? $enrollment->user?->name ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Account email:</span> {{ $enrollment->user?->email ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Organization type:</span> {{ $firm?->org_type ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Contact person:</span> {{ $firm?->contact_person ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Designation:</span> {{ $firm?->designation ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Phone:</span> {{ $firm?->phone ?? 'Not provided' }}</div>
+                                        <div class="col-md-4"><span class="text-muted">Address:</span> {{ $firm?->address ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
@@ -556,6 +587,43 @@
                                 <label class="form-label fw-semibold">Participants</label>
                                 <input type="text" class="form-control" value="{{ $editEnrollment->type === 'firm' ? ($editEnrollment->participants->count() ?: $editEnrollment->participant_count) : '-' }}" disabled>
                             </div>
+
+                            @if($isView && $editEnrollment->type === 'student')
+                                @php($student = $editEnrollment->user?->student)
+                                <div class="col-12">
+                                    <div class="enrollment-profile student-profile">
+                                        <div class="small fw-semibold text-primary mb-2">
+                                            <i class="bi bi-person-vcard me-1"></i> Student details
+                                        </div>
+                                        <div class="row g-2 small">
+                                            <div class="col-md-4"><span class="text-muted">Email:</span> {{ $editEnrollment->user?->email ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Phone:</span> {{ $student?->phone ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Qualification:</span> {{ $student?->current_qualification ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Date of birth:</span> {{ $student?->dob?->format('d M Y') ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Gender:</span> {{ $student?->gender ? ucfirst($student->gender) : 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Address:</span> {{ $student?->address ?? 'Not provided' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @elseif($isView && $editEnrollment->type === 'firm')
+                                @php($firm = $editEnrollment->user?->firm)
+                                <div class="col-12">
+                                    <div class="enrollment-profile firm-profile">
+                                        <div class="small fw-semibold text-success mb-2">
+                                            <i class="bi bi-building me-1"></i> Firm details
+                                        </div>
+                                        <div class="row g-2 small">
+                                            <div class="col-md-4"><span class="text-muted">Organization:</span> {{ $firm?->org_name ?? $editEnrollment->user?->name ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Account email:</span> {{ $editEnrollment->user?->email ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Organization type:</span> {{ $firm?->org_type ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Contact person:</span> {{ $firm?->contact_person ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Designation:</span> {{ $firm?->designation ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Phone:</span> {{ $firm?->phone ?? 'Not provided' }}</div>
+                                            <div class="col-md-4"><span class="text-muted">Address:</span> {{ $firm?->address ?? 'Not provided' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
 
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Total Cost</label>
@@ -1311,6 +1379,22 @@
 
     .firm-item {
         border-left: 4px solid #1f9d8a;
+    }
+
+    .enrollment-profile {
+        border-radius: 12px;
+        padding: 0.75rem 0.9rem;
+        background: #f8fbff;
+        border: 1px solid #e4edf7;
+    }
+
+    .enrollment-profile .text-muted {
+        color: #718096 !important;
+    }
+
+    .firm-profile {
+        background: #f5fcfa;
+        border-color: #d9eee8;
     }
 
     .note-chip {

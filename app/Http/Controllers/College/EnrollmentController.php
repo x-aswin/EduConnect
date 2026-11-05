@@ -20,7 +20,7 @@ class EnrollmentController extends Controller
     {
         $college = College::where('user_id', Auth::id())->firstOrFail();
 
-        $enrollmentQuery = Enrollment::with(['user', 'course.college', 'participants'])
+        $enrollmentQuery = Enrollment::with(['user.student', 'user.firm', 'course.college', 'participants'])
             ->whereHas('course', function ($query) use ($college) {
                 $query->where('college_id', $college->id);
             });
@@ -241,7 +241,7 @@ class EnrollmentController extends Controller
     {
         $college = College::where('user_id', Auth::id())->firstOrFail();
 
-        $enrollments = Enrollment::with(['user', 'course.college', 'participants'])
+        $enrollments = Enrollment::with(['user.student', 'user.firm', 'course.college', 'participants'])
             ->whereHas('course', function ($query) use ($college) {
                 $query->where('college_id', $college->id);
             })
@@ -257,7 +257,7 @@ class EnrollmentController extends Controller
             ->orderBy('title')
             ->get();
 
-        $editEnrollment = Enrollment::with(['user', 'course.college', 'participants'])
+        $editEnrollment = Enrollment::with(['user.student', 'user.firm', 'course.college', 'participants'])
             ->whereHas('course', function ($query) use ($college) {
                 $query->where('college_id', $college->id);
             })
@@ -275,7 +275,7 @@ class EnrollmentController extends Controller
     {
         $college = College::where('user_id', Auth::id())->firstOrFail();
 
-        $enrollments = Enrollment::with(['user', 'course.college', 'participants'])
+        $enrollments = Enrollment::with(['user.student', 'user.firm', 'course.college', 'participants'])
             ->whereHas('course', function ($query) use ($college) {
                 $query->where('college_id', $college->id);
             })
@@ -294,7 +294,7 @@ class EnrollmentController extends Controller
         $isDeleteMode = $request->query('mode') === 'delete';
 
         if (!$isDeleteMode) {
-            $editEnrollment = Enrollment::with(['user', 'course.college', 'participants'])
+            $editEnrollment = Enrollment::with(['user.student', 'user.firm', 'course.college', 'participants'])
                 ->whereHas('course', function ($query) use ($college) {
                     $query->where('college_id', $college->id);
                 })
@@ -303,7 +303,7 @@ class EnrollmentController extends Controller
             return view('college.manage-enrollment', compact('enrollments', 'users', 'courses', 'editEnrollment'));
         }
 
-        $deleteEnrollment = Enrollment::with(['user', 'course.college'])
+        $deleteEnrollment = Enrollment::with(['user.student', 'user.firm', 'course.college'])
             ->whereHas('course', function ($query) use ($college) {
                 $query->where('college_id', $college->id);
             })

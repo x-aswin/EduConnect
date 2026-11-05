@@ -22,7 +22,11 @@ class DashboardController extends Controller
         $totalCoursesCurrentMonth = Course::where('college_id', '=', $college_id, 'and')->whereMonth('created_at', '=', now()->month, 'and')->count();
 
         $totalMentors = Mentor::where('college_id', '=', $college_id, 'and')->count();
-        $pendingMentors = Mentor::where('college_id', '=', $college_id, 'and')->where('status', '=', 'pending', 'and')->count();
+        $pendingMentors = Mentor::where('college_id', '=', $college_id, 'and')
+            ->whereHas('user', function ($query) {
+                $query->where('status', '=', 'pending');
+            })
+            ->count();
 
         $totalEntrollments=Enrollment::whereHas('course', function($query) use ($college_id) {
             $query->where('college_id', '=', $college_id, 'and');
