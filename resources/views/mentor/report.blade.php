@@ -269,11 +269,6 @@
                                 <td>{{ $chat->created_at->format('d M Y h:i A') }}</td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No mentorship requests match the filter criteria.
-                                </td>
-                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -321,11 +316,6 @@
                                 <td>{{ $course->created_at->format('d M Y') }}</td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-journal-x fs-2 d-block mb-2"></i> No courses match the filter criteria.
-                                </td>
-                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -392,6 +382,9 @@
                 searching: true,
                 info: false,
                 ordering: true,
+                language: {
+                    emptyTable: 'No records found for the selected filters'
+                },
                 dom: '<"d-flex justify-content-between align-items-center mb-3"fB>rt',
                 buttons: {
                     dom: {
