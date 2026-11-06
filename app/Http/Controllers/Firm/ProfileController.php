@@ -30,6 +30,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'org_name' => 'required|string|max:255',
+            'org_type' => 'required|string|max:255',
             'contact_person' => 'nullable|string|max:255',
             'designation' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
@@ -43,6 +44,7 @@ class ProfileController extends Controller
         $firm = $user->firm ?: new Firm(['user_id' => $user->id]);
 
         $firm->org_name = $validated['org_name'];
+        $firm->org_type = $validated['org_type'];
         $firm->contact_person = $validated['contact_person'] ?? $firm->contact_person;
         $firm->designation = $validated['designation'] ?? $firm->designation;
         $firm->phone = $validated['phone'] ?? $firm->phone;

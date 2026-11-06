@@ -98,6 +98,15 @@
                                 </div>
                             </div>
 
+                            {{-- Organization Type --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Organization Type <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-diagram-3 text-muted"></i></span>
+                                    <input type="text" name="org_type" class="form-control border-start-0" value="{{ old('org_type', $firm->org_type ?? '') }}" placeholder="e.g. Company / NGO / Training Provider" required>
+                                </div>
+                            </div>
+
                             <div class="row g-3">
                                 {{-- Contact Person --}}
                                 <div class="col-md-6">

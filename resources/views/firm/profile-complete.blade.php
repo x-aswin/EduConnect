@@ -25,6 +25,18 @@
                                 @enderror
                             </div>
 
+                            <!-- Organization Type -->
+                            <div class="mb-3">
+                                <label for="org_type" class="form-label fw-semibold small text-secondary">Organization Type</label>
+                                <input type="text" id="org_type" name="org_type"
+                                       class="form-control rounded-pill py-2 @error('org_type') is-invalid @enderror"
+                                       value="{{ old('org_type', $firm->org_type ?? '') }}"
+                                       placeholder="e.g., Company, NGO, Training Provider" required>
+                                @error('org_type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                             <!-- Contact Person & Phone -->
                             <div class="row">
                                 <div class="col-md-6 mb-3">
