@@ -336,11 +336,6 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="9" class="text-center py-5 text-secondary">
-                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No booking data matches the filter criteria.
-                </td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -415,11 +410,6 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="7" class="text-center py-5 text-secondary">
-                    <i class="bi bi-credit-card-2-front fs-2 d-block mb-2"></i> No payment data matches the filter criteria.
-                </td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -498,11 +488,6 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="8" class="text-center py-5 text-secondary">
-                    <i class="bi bi-people fs-2 d-block mb-2"></i> No participants matched the filter criteria.
-                </td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -569,6 +554,9 @@
                 searching: true,
                 info: false,
                 ordering: true,
+                language: {
+                    emptyTable: 'No records found for the selected filters'
+                },
                 dom: '<"d-flex justify-content-between align-items-center mb-3"fB>rt',
                 buttons: {
                     dom: {
