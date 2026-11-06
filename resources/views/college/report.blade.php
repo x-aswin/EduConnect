@@ -168,7 +168,6 @@
                                 <td>{{ $enrollment->updated_at->format('d M Y h:i A') }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="13" class="text-center text-muted">No enrollments in this range</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -301,9 +300,6 @@
                 <td>{{ $course->updated_at ? $course->updated_at->format('d M Y h:i A') : '-' }}</td>
             </tr>
         @empty
-            <tr>
-                <td colspan="15" class="text-center text-muted">No courses in this range</td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -375,9 +371,6 @@
                 <td>{{ $mentor->updated_at ? $mentor->updated_at->format('d M Y h:i A') : '-' }}</td>
             </tr>
         @empty
-            <tr>
-                <td colspan="11" class="text-center text-muted">No mentors in this range</td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -453,6 +446,9 @@
                 searching: true,
                 info: false,
                 ordering: true,
+                language: {
+                    emptyTable: 'No records found for the selected filters'
+                },
                 dom: '<"d-flex justify-content-between align-items-center mb-3"fB>rt',
                 buttons: {
                     dom: {

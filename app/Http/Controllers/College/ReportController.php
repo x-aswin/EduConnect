@@ -85,7 +85,9 @@ class ReportController extends Controller
             }
 
             $summary['total'] = $query->count();
-            $summary['courses_total'] = (clone $query)->sum('courses_count');
+            $summary['courses_total'] = $applyDateRange(
+                Course::query()->where('college_id', $college->id)
+            )->count();
             $summary['active_users'] = (clone $query)->whereHas('user', function ($query) {
                 $query->where('status', 'active');
             })->count();

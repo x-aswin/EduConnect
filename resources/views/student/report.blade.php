@@ -346,11 +346,6 @@
                 <td>{{ $enrollment->created_at ? $enrollment->created_at->format('d M Y h:i A') : '-' }}</td>
             </tr>
         @empty
-            <tr>
-                <td colspan="9" class="text-center py-5 text-secondary">
-                    <i class="bi bi-inbox fs-2 d-block mb-2"></i> No enrollment data matches the filter criteria.
-                </td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -438,11 +433,6 @@
                 </td> --}}
             </tr>
         @empty
-            <tr>
-                <td colspan="8" class="text-center py-5 text-secondary">
-                    <i class="bi bi-credit-card-2-front fs-2 d-block mb-2"></i> No billing or transaction records match the selected criteria.
-                </td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -507,11 +497,6 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="6" class="text-center py-5 text-secondary">
-                    <i class="bi bi-chat-quote fs-2 d-block mb-2"></i> No mentorship request history found.
-                </td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -572,11 +557,6 @@
                 </td>
             </tr>
         @empty
-            <tr>
-                <td colspan="5" class="text-center py-5 text-secondary">
-                    <i class="bi bi-award fs-2 d-block mb-2"></i> No certificates earned yet. Keep learning!
-                </td>
-            </tr>
         @endforelse
     </tbody>
 </table>
@@ -643,6 +623,9 @@
                 searching: true,
                 info: false,
                 ordering: true,
+                language: {
+                    emptyTable: 'No records found for the selected filters'
+                },
                 dom: '<"d-flex justify-content-between align-items-center mb-3"fB>rt',
                 buttons: {
                     dom: {
