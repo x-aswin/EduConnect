@@ -185,7 +185,6 @@
                                     <td>{{ $enrollment->updated_at->format('d M Y h:i A') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="15" class="text-center text-muted">No enrollments in this range</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -277,7 +276,6 @@
                 <td>{{ $college->updated_at ? $college->updated_at->format('d M Y h:i A') : '-' }}</td>
             </tr>
         @empty
-            <tr><td colspan="19" class="text-center text-muted">No colleges found</td></tr>
         @endforelse
     </tbody>
 </table>
@@ -343,7 +341,6 @@
                                     <td>{{ $firm->updated_at->format('d M Y h:i A') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="13" class="text-center text-muted">No firms in this range</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -417,7 +414,6 @@
                 <td>{{ $student->updated_at->format('d M Y h:i A') }}</td>
             </tr>
         @empty
-            <tr><td colspan="14" class="text-center text-muted">No students in this range</td></tr>
         @endforelse
     </tbody>
 </table>
@@ -470,7 +466,6 @@
                                     <td>{{ $mentor->updated_at->format('d M Y h:i A') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="12" class="text-center text-muted">No mentors in this range</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -517,7 +512,6 @@
                                     <td>{{ $category->updated_at->format('d M Y h:i A') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8" class="text-center text-muted">No categories</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -554,7 +548,6 @@
                                     <td>{{ $user->updated_at->format('d M Y h:i A') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8" class="text-center text-muted">No users in this range</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -657,7 +650,6 @@
                                     <td>{{ $course->updated_at ? $course->updated_at->format('d M Y h:i A') : '-' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="20" class="text-center text-muted">No courses in this range</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -737,6 +729,9 @@ document.querySelectorAll('input[name="start_date"], input[name="end_date"]').fo
                 searching: true,
                 info: false,
                 ordering: true,
+                language: {
+                    emptyTable: 'No records found for the selected filters'
+                },
                 dom: '<"d-flex justify-content-between align-items-center mb-3"fB>rt',
                 buttons: {
                     dom: {
